@@ -8,7 +8,7 @@ Apprendre l'IA en cours de 5 minutes : 3 parcours (Bird débutant, Gecko étudia
 
 ```bash
 npm install
-cp .env.example .env.local   # déjà rempli pour le projet Supabase « gusgus »
+cp .env.example .env.local   # URL + clé publique déjà remplies ; ajoute SUPABASE_SECRET_KEY
 npm run dev                  # http://localhost:3000
 ```
 
@@ -20,6 +20,8 @@ npm run build && npm start
 npm run test:e2e       # parcours complets desktop + mobile (serveur lancé sur :3000)
 npm run content:check  # infos outils à revérifier (aussi chaque lundi en CI)
 ```
+
+Test de sécurité base de données (droits, `award_xp`) : exécuter `supabase/tests/progress_lock.sql` dans l'éditeur SQL Supabase (transaction annulée, aucune donnée modifiée).
 
 Les tests connectés demandent un compte de test confirmé, passé par l'environnement : `E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e` (sinon ils sont ignorés). Ne jamais commiter ces identifiants.
 
@@ -33,4 +35,4 @@ Les tests connectés demandent un compte de test confirmé, passé par l'environ
 ## À savoir
 
 - Supabase exige la confirmation par email. Le service d'email par défaut est très limité : pour tester des inscriptions, désactive « Confirm email » (Authentication → Sign In / Providers → Email) ou branche un SMTP.
-- L'XP est calculée côté serveur, mais un utilisateur malin peut modifier sa propre ligne `profiles` via l'API (RLS par utilisateur). Acceptable pour un MVP ; à verrouiller avant un classement public.
+- **XP et progression sont verrouillées** : les utilisateurs n'ont qu'un accès en lecture à `xp_events`, `lesson_progress`, `review_items` et aux colonnes XP/série de `profiles` (seuls nom et parcours sont modifiables). Le serveur écrit avec `SUPABASE_SECRET_KEY` (`src/lib/supabase/admin.ts`, server-only) et crédite l'XP via la fonction atomique `award_xp`. Sans cette variable, rien n'est enregistré. À définir aussi dans Vercel (variable serveur, jamais `NEXT_PUBLIC_`).

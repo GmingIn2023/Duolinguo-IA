@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getLesson, getQuestion, isTrackId } from "@/content";
 import type { Answer } from "@/content/types";
 import { getViewer } from "@/lib/data";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeAnswer } from "@/lib/grading";
 import { nextReviewState } from "@/lib/srs";
 import { nextStreak, todayKey } from "@/lib/streak";
@@ -19,6 +20,9 @@ async function viewerOrThrow(): Promise<Viewer> {
   if (!viewer) throw new Error("Ta session a expiré. Reconnecte-toi pour enregistrer ta progression.");
   return viewer;
 }
+
+// Learners can only read their progress (see supabase/migrations/*_lock_progress_writes.sql):
+// every write below goes through the admin client, always scoped to the signed-in user's id.
 
 /** Updates spaced-repetition boxes for the graded questions. */
 async function scheduleReviews(viewer: Viewer, graded: { questionId: string; lessonId: string; correct: boolean }[]) {
@@ -43,26 +47,30 @@ async function scheduleReviews(viewer: Viewer, graded: { questionId: string; les
       last_reviewed_at: now.toISOString(),
     };
   });
-  const { error: upsertError } = await supabase.from("review_items").upsert(rows);
+  const { error: upsertError } = await createAdminClient().from("review_items").upsert(rows);
   if (upsertError) throw new Error(upsertError.message);
 }
 
-/** Adds XP, records the event and moves the streak forward. */
+/** Credits XP atomically (event + total + streak). `awarded` is false if this weekly bonus was already paid. */
 async function awardXp(viewer: Viewer, amount: number, source: "lesson" | "review" | "weekly", ref: string) {
-  const { supabase, user, profile } = viewer;
+  const { user, profile } = viewer;
   const today = todayKey();
-  const streak = nextStreak(profile.streak_days, profile.last_active_date, today);
-  const totalXp = profile.xp + amount;
-  const [{ error: e1 }, { error: e2 }] = await Promise.all([
-    supabase.from("xp_events").insert({ user_id: user.id, amount, source, ref }),
-    supabase.from("profiles").update({ xp: totalXp, streak_days: streak, last_active_date: today, updated_at: new Date().toISOString() }).eq("id", user.id),
-  ]);
-  if (e1 || e2) throw new Error((e1 ?? e2)!.message);
+  const { data, error } = await createAdminClient()
+    .rpc("award_xp", {
+      p_user: user.id,
+      p_amount: amount,
+      p_source: source,
+      p_ref: ref,
+      p_streak: nextStreak(profile.streak_days, profile.last_active_date, today),
+      p_today: today,
+    })
+    .single<{ total_xp: number; streak_days: number; awarded: boolean }>();
+  if (error) throw new Error(error.message);
   // keep the cached profile coherent if several awards happen in one request
-  profile.xp = totalXp;
-  profile.streak_days = streak;
-  profile.last_active_date = today;
-  return { totalXp, streak };
+  if (data.awarded) profile.last_active_date = today;
+  profile.xp = data.total_xp;
+  profile.streak_days = data.streak_days;
+  return { totalXp: data.total_xp, streak: data.streak_days, awarded: data.awarded };
 }
 
 export async function completeLesson(lessonId: string, firstAnswers: Record<string, Answer>): Promise<LessonResult> {
@@ -90,7 +98,7 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
 
   const xpEarned = lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: Boolean(prev) });
   const now = new Date().toISOString();
-  const { error: upsertError } = await supabase.from("lesson_progress").upsert({
+  const { error: upsertError } = await createAdminClient().from("lesson_progress").upsert({
     user_id: user.id,
     lesson_id: lessonId,
     best_score: Math.max(prev?.best_score ?? 0, score),
@@ -122,18 +130,10 @@ export async function submitReview(mode: "daily" | "weekly", firstAnswers: Recor
 
   let weeklyBonus = 0;
   if (mode === "weekly") {
-    const week = isoWeekKey(new Date());
-    const { data: claimed } = await viewer.supabase
-      .from("xp_events")
-      .select("id")
-      .eq("user_id", viewer.user.id)
-      .eq("source", "weekly")
-      .eq("ref", week)
-      .limit(1);
-    if (!claimed?.length) {
-      weeklyBonus = WEEKLY_BONUS_XP;
-      ({ totalXp, streak } = await awardXp(viewer, weeklyBonus, "weekly", week));
-    }
+    // paid once per ISO week: the database refuses a second claim
+    const bonus = await awardXp(viewer, WEEKLY_BONUS_XP, "weekly", isoWeekKey(new Date()));
+    if (bonus.awarded) weeklyBonus = WEEKLY_BONUS_XP;
+    ({ totalXp, streak } = bonus);
   }
   revalidatePath("/learn");
   revalidatePath("/review");

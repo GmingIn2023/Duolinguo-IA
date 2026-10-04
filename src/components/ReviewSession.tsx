@@ -21,8 +21,9 @@ export function ReviewSession({ mode, questions, track }: { mode: "daily" | "wee
     start(async () => {
       try {
         setResult(await submitReview(mode, a));
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Enregistrement impossible.");
+      } catch {
+        // production hides server error details; the server logs them
+        setError("Vérifie ta connexion, puis réessaie. Si ça persiste, reconnecte-toi.");
       }
     });
   }, [mode]);

@@ -39,8 +39,9 @@ export function LessonPlayer({
     startSaving(async () => {
       try {
         setResult(await completeLesson(lesson.id, a));
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Enregistrement impossible.");
+      } catch {
+        // production hides server error details; the server logs them
+        setError("Vérifie ta connexion, puis réessaie. Si ça persiste, reconnecte-toi.");
       }
     });
   }, [lesson.id]);
