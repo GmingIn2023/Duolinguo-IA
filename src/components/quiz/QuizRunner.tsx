@@ -128,8 +128,8 @@ export function QuizRunner({
   return (
     <div className={reveal ? "pb-[26rem] sm:pb-80" : "pb-48"}>
       <div key={`${q.id}-${index}`} className={`fade-in ${reveal && !reveal.correct ? "shake" : ""}`}>
-        {step.retry && <p className="mb-4 inline-flex rounded-full bg-sunk px-3 py-1 text-sm font-medium">Deuxième essai</p>}
         <QuestionView question={q} draft={draft} setDraft={setDraft} reveal={reveal} displayOrder={order} />
+        {step.retry && <p className="mt-5 text-sm font-medium text-ink-2">Deuxième essai sur cette question.</p>}
       </div>
 
       <div

@@ -35,7 +35,7 @@ async function applyKnownAnswer(page: Page, lines: string[]) {
 /** Answers the question on screen: first try deliberately mixed, retries use the shown correction. */
 async function answerCurrent(page: Page, memory: Memory, tryWrong: boolean) {
   // identify the question by its full visible content (several share the same heading)
-  const heading = (await page.locator("main .fade-in").first().innerText()).replace("Deuxième essai", "").replace(/\s+/g, " ").trim();
+  const heading = (await page.locator("main .fade-in").first().innerText()).replace("Deuxième essai sur cette question.", "").replace(/\s+/g, " ").trim();
   const known = memory.get(heading);
   if (known) {
     await applyKnownAnswer(page, known);

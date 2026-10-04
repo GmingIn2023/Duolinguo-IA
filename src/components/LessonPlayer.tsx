@@ -204,11 +204,11 @@ function Done({
   return (
     <div className="grid gap-10 py-6">
       <div>
-        <p className="mb-3 text-lg font-semibold">Cours terminé</p>
         <h1 className="display text-[clamp(4.5rem,16vw,11rem)] leading-[0.85]" aria-label={`${result.xpEarned} XP gagnés`}>
           <span className="reveal-line"><span>+{result.xpEarned}</span></span>
           <span className="reveal-line"><span>XP</span></span>
         </h1>
+        <p className="mt-4 text-lg font-semibold">Cours terminé&nbsp;: {lesson.title}</p>
       </div>
       <dl className="fade-in grid grid-cols-3 gap-3 [animation-delay:500ms]">
         <div className="tile p-4">
