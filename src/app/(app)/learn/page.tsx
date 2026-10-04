@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { CalendarDays, Check, Clock, Lock, RotateCcw, Zap } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { Stat } from "@/components/AppShell";
-import { LEVEL_LABEL } from "@/components/LessonPlayer";
+import { LEVEL_LABEL } from "@/lib/labels";
 import { TRACKS, trackLessons } from "@/content";
 import { getDueQuestionIds, getProgress, getWeeklyPlan, requireViewer } from "@/lib/data";
 import { lessonStatuses } from "@/lib/unlock";

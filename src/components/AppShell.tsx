@@ -18,6 +18,7 @@ export function Stat({ icon, value, label }: { icon: "xp" | "streak"; value: num
 export function AppShell({ profile, dueCount, children }: { profile: Profile; dueCount: number; children: React.ReactNode }) {
   return (
     <div data-track={profile.track_id ?? undefined} className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
+      <a href="#contenu" className="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50">Aller au contenu</a>
       <aside className="sticky top-0 hidden h-dvh flex-col gap-10 border-r border-line px-5 py-7 lg:flex">
         <Wordmark href="/learn" small />
         <AppNav dueCount={dueCount} variant="rail" />
@@ -41,7 +42,7 @@ export function AppShell({ profile, dueCount, children }: { profile: Profile; du
         </div>
       </header>
 
-      <main className="min-w-0 px-4 pb-28 pt-6 sm:px-8 lg:px-12 lg:pb-16 lg:pt-10">{children}</main>
+      <main id="contenu" className="min-w-0 px-4 pb-28 pt-6 sm:px-8 lg:px-12 lg:pb-16 lg:pt-10">{children}</main>
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
         <AppNav dueCount={dueCount} variant="bar" />

@@ -148,7 +148,7 @@ export function Onboarding() {
                       onClick={() => setChosen(id)}
                       className={`tile tile-press flex items-center gap-5 p-5 text-left ${selected ? "tile-accent" : ""}`}
                     >
-                      <span className="grid size-16 flex-none place-items-center rounded-2xl bg-surface">
+                      <span className={`grid size-16 flex-none place-items-center rounded-2xl ${selected ? "bg-surface" : "bg-accent-soft"}`}>
                         <Avatar track={id} size={52} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">

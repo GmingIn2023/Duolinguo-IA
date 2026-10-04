@@ -23,7 +23,7 @@ export function LoginForm() {
         <input type="hidden" name="next" value={params.get("next") ?? "/learn"} />
         <label className="grid gap-1.5">
           <span className="text-sm font-semibold">Email</span>
-          <input name="email" type="email" required autoComplete="email" className="field" defaultValue={state.values?.email} />
+          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" defaultValue={state.values?.email} />
         </label>
         <label className="grid gap-1.5">
           <span className="text-sm font-semibold">Mot de passe</span>

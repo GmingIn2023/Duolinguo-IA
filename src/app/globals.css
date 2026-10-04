@@ -63,8 +63,10 @@
   --font-display: var(--font-archivo);
 }
 
+@layer base {
 /* ───────────────────────── Base ───────────────────────── */
-html { background: var(--paper); color: var(--ink); -webkit-text-size-adjust: 100%; }
+html { background: var(--paper); color: var(--ink); color-scheme: light; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+button, a, [role="radio"], [role="checkbox"] { touch-action: manipulation; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -81,6 +83,9 @@ input { caret-color: var(--ink); }
 .tabular { font-variant-numeric: tabular-nums; }
 html { scrollbar-color: var(--line) transparent; }
 
+}
+
+@layer components {
 /* ───────────────────────── Type ───────────────────────── */
 .display {
   font-family: var(--font-archivo), sans-serif;
@@ -187,6 +192,8 @@ html { scrollbar-color: var(--line) transparent; }
 
 .skeleton { background: linear-gradient(90deg, var(--sunk) 0%, #efefeb 50%, var(--sunk) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; border-radius: var(--radius-tile); }
 @keyframes shimmer { to { background-position: -200% 0; } }
+
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; }

@@ -12,7 +12,7 @@ import { QuizRunner } from "@/components/quiz/QuizRunner";
 
 type Phase = "intro" | "learn" | "quiz" | "done";
 
-export const LEVEL_LABEL = { 1: "Découverte", 2: "Pratique", 3: "Approfondi" } as const;
+import { LEVEL_LABEL } from "@/lib/labels";
 
 export function LessonPlayer({
   lesson,
@@ -233,7 +233,7 @@ function Done({
       </section>
       <div className="fade-in flex flex-wrap gap-3 [animation-delay:700ms]">
         {nextLesson ? (
-          <Link href={`/lesson/${nextLesson.id}`} className="btn btn-primary btn-lg">Cours suivant : {nextLesson.title}</Link>
+          <Link href={`/lesson/${nextLesson.id}`} className="btn btn-primary btn-lg" aria-label={`Cours suivant : ${nextLesson.title}`}>Cours suivant</Link>
         ) : null}
         <Link href="/learn" className={`btn btn-lg ${nextLesson ? "btn-secondary" : "btn-primary"}`}>Retour au parcours</Link>
       </div>

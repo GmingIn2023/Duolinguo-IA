@@ -32,11 +32,12 @@ export function QuestionView({
   displayOrder: string[];
 }) {
   const locked = reveal !== null;
+  const heading = "prompt" in question ? question.prompt : "Cette affirmation est-elle vraie ?";
   return (
     <div className="grid gap-6">
       <div className="grid gap-2">
         <p className="text-sm font-semibold text-muted">{PROMPT_FOR[question.type]}</p>
-        <h2 className="display display-m">{"prompt" in question ? question.prompt : "Cette affirmation est-elle vraie ?"}</h2>
+        <h2 className={`display ${heading.length > 60 ? "display-s sm:text-[1.875rem]" : "display-m"}`}>{heading}</h2>
       </div>
 
       {question.type === "true_false" && (

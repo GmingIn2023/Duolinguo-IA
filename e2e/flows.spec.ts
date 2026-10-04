@@ -78,3 +78,14 @@ test("tracks can be switched and progress persists", async ({ page }) => {
   await page.goto("/profile");
   await expect(page.getByRole("heading", { name: "Historique" })).toBeVisible();
 });
+
+test("daily review runs when questions are due", async ({ page }) => {
+  await login(page);
+  await page.goto("/review");
+  await expect(page.getByRole("heading", { name: "Révision du jour" })).toBeVisible();
+  const start = page.getByRole("link", { name: "Réviser maintenant" });
+  test.skip(!(await start.isVisible()), "no question due for the test account today");
+  await start.click();
+  await finishQuiz(page, /XP gagnés/);
+  await expect(page.getByText(/reviendront plus tard/)).toBeVisible();
+});
