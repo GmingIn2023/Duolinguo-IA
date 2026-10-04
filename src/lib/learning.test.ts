@@ -181,3 +181,11 @@ describe("frenchSpacing hyphens", () => {
     expect(frenchSpacing("Qu'est-ce que c'est")).toBe("Qu'est‑ce que c'est");
   });
 });
+
+import { safeNext } from "./safeNext";
+describe("safeNext", () => {
+  it("keeps internal paths and rejects external redirects", () => {
+    expect(safeNext("/review")).toBe("/review");
+    for (const bad of ["//evil.com", "/\\evil.com", "https://evil.com", "", null]) expect(safeNext(bad)).toBe("/learn");
+  });
+});

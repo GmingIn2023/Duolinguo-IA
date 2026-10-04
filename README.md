@@ -21,7 +21,7 @@ npm run test:e2e       # parcours complets desktop + mobile (serveur lancé sur 
 npm run content:check  # infos outils à revérifier (aussi chaque lundi en CI)
 ```
 
-Les tests e2e utilisent le compte `e2e@gusgus.test` / `gusgus-e2e-2026`.
+Les tests connectés demandent un compte de test confirmé, passé par l'environnement : `E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e` (sinon ils sont ignorés). Ne jamais commiter ces identifiants.
 
 ## Où modifier
 

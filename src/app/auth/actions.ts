@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { isTrackId } from "@/content";
 import { authErrorMessage } from "@/lib/authErrors";
 import { createClient } from "@/lib/supabase/server";
+import { safeNext } from "@/lib/safeNext";
 
 export type AuthState = { error: string | null; sentTo?: string; values?: { name?: string; email?: string } };
 
-const safeNext = (v: FormDataEntryValue | null) => (typeof v === "string" && v.startsWith("/") && !v.startsWith("//") ? v : "/learn");
 
 export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   const email = String(form.get("email") ?? "").trim();

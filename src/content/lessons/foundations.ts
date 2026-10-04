@@ -421,7 +421,7 @@ export const foundations: Lesson[] = [
         options: [
           { id: "a", text: "Perplexity" },
           { id: "b", text: "DeepSeek", feedback: "DeepSeek est surtout connu pour ses modèles de raisonnement et de code." },
-          { id: "c", text: "Claude", feedback: "Claude peut chercher sur le web selon l'offre, mais ce n'est pas son identité principale." },
+          { id: "c", text: "Claude", feedback: "Claude peut aussi chercher sur le web, mais ce n'est pas son identité principale." },
         ],
         answer: "a",
         explanation: "Perplexity se présente comme un moteur de réponse : recherche web et liens numérotés vers les sources.",
@@ -442,9 +442,9 @@ export const foundations: Lesson[] = [
       {
         id: "panorama-outils:q3",
         type: "true_false",
-        statement: "Les données de l'application DeepSeek sont stockées en Chine selon sa politique de confidentialité : mieux vaut éviter d'y mettre des informations sensibles.",
+        statement: "Selon sa politique de confidentialité, DeepSeek stocke les données de ses utilisateurs en Chine : mieux vaut éviter d'y mettre des informations sensibles.",
         answer: true,
-        explanation: "C'est précisé dans sa politique de confidentialité, et plusieurs autorités européennes s'y sont intéressées.",
+        explanation: "C'est écrit dans sa politique de confidentialité. En janvier 2025, l'autorité italienne de protection des données a d'ailleurs ordonné le blocage de l'application.",
       },
       {
         id: "panorama-outils:q4",

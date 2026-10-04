@@ -1,4 +1,4 @@
-// Visual QA capture: node e2e/screens.mjs <outDir>
+// Visual QA capture: E2E_EMAIL=… E2E_EMPTY_EMAIL=… E2E_PASSWORD=… node e2e/screens.mjs <outDir>
 import { chromium, devices } from "@playwright/test";
 const out = process.argv[2] ?? ".impeccable/review/shots";
 const base = "http://localhost:3000";
@@ -9,7 +9,7 @@ const settle = (p) => p.waitForTimeout(1100); // let entrance motion finish
 async function login(p, email) {
   await p.goto(`${base}/login`);
   await p.getByLabel("Email").fill(email);
-  await p.getByLabel("Mot de passe").fill("gusgus-e2e-2026");
+  await p.getByLabel("Mot de passe").fill(process.env.E2E_PASSWORD);
   await p.getByRole("button", { name: "Se connecter" }).click();
   await p.waitForURL(/learn/);
 }
@@ -26,13 +26,13 @@ for (const [name, ctxOpts] of [["desktop", { viewport: { width: 1440, height: 90
   await p.goto(`${base}/signup?track=fox&level=2`); await shot("04-signup", false);
   await p.goto(`${base}/nope`); await shot("05-404", false);
 
-  await login(p, "empty@gusgus.test");
+  await login(p, process.env.E2E_EMPTY_EMAIL);
   await shot("06-learn-empty");
   await p.goto(`${base}/review`); await shot("07-review-empty");
   await p.goto(`${base}/profile`); await shot("08-profile-empty");
   await ctx.clearCookies();
 
-  await login(p, "e2e@gusgus.test");
+  await login(p, process.env.E2E_EMAIL);
   await shot("09-learn");
   await p.goto(`${base}/tracks`); await shot("10-tracks");
   await p.goto(`${base}/review`); await shot("11-review");

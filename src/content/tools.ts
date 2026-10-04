@@ -10,15 +10,16 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     id: "chatgpt",
     name: "ChatGPT",
     maker: "OpenAI (États-Unis)",
-    summary: "L'assistant conversationnel le plus utilisé. Polyvalent : rédaction, analyse de fichiers, images, voix et recherche web selon l'offre.",
+    summary: "L'un des assistants conversationnels les plus utilisés. Polyvalent : rédaction, analyse de fichiers, images, voix et recherche web selon l'offre.",
     goodFor: ["Rédiger et reformuler", "Brainstormer des idées", "Analyser un fichier ou un tableau"],
     watchOut: [
-      "Vérifie dans les paramètres si tes conversations servent à entraîner les modèles.",
+      "Par défaut, tes conversations peuvent servir à entraîner les modèles : désactive « Améliorer le modèle pour tout le monde » dans Paramètres › Contrôle des données.",
+      "Même après ce réglage, donner un pouce haut ou bas peut transmettre la conversation entière pour améliorer les modèles.",
       "Les fonctions disponibles changent entre l'offre gratuite et les offres payantes.",
     ],
     lastVerified: "2026-10-04",
     reviewEveryDays: 7,
-    sources: ["https://openai.com/chatgpt", "https://help.openai.com"],
+    sources: ["https://help.openai.com/en/articles/7730893-data-controls-in-chatgpt", "https://openai.com/policies/how-your-data-is-used-to-improve-model-performance/"],
   },
   claude: {
     id: "claude",
@@ -28,11 +29,11 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     goodFor: ["Travailler sur des documents longs", "Rédaction soignée et nuancée", "Écrire ou relire du code"],
     watchOut: [
       "Les limites d'utilisation dépendent de l'offre choisie.",
-      "Vérifie les réglages de confidentialité de ton compte avant d'y mettre des données sensibles.",
+      "Le réglage « Model Improvement » (Paramètres › Confidentialité) décide si tes conversations servent à améliorer Claude. Les conversations Incognito n'y servent jamais.",
     ],
     lastVerified: "2026-10-04",
     reviewEveryDays: 7,
-    sources: ["https://www.anthropic.com/claude", "https://support.anthropic.com"],
+    sources: ["https://privacy.claude.com/en/articles/10023580-is-my-data-used-for-model-training"],
   },
   gemini: {
     id: "gemini",
@@ -41,12 +42,12 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     summary: "L'assistant de Google, intégré à Gmail, Docs, Android et à la recherche Google.",
     goodFor: ["Tâches dans Gmail, Docs ou Drive", "Comprendre des images ou des vidéos", "Partir d'une recherche Google"],
     watchOut: [
-      "Regarde les paramètres « Activité dans les applications Gemini » pour savoir ce qui est conservé.",
+      "Avec le réglage « Keep Activity » activé, tes conversations sont conservées et une partie est relue par des humains : Google demande de ne pas y mettre d'informations confidentielles.",
       "Les intégrations disponibles varient selon le pays et le type de compte.",
     ],
     lastVerified: "2026-10-04",
     reviewEveryDays: 7,
-    sources: ["https://gemini.google.com", "https://support.google.com/gemini"],
+    sources: ["https://support.google.com/gemini/answer/13594961"],
   },
   deepseek: {
     id: "deepseek",
@@ -55,12 +56,12 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     summary: "Modèles performants en raisonnement, maths et code, dont certains sont publiés en libre téléchargement (open-weight).",
     goodFor: ["Raisonnement, maths et code", "Utiliser un modèle téléchargeable sur sa propre machine"],
     watchOut: [
-      "Selon sa politique de confidentialité, les données de l'application sont stockées en Chine.",
-      "Plusieurs autorités européennes de protection des données ont émis des réserves en 2025 : évite d'y mettre des informations sensibles.",
+      "Selon sa politique de confidentialité, les données sont collectées et stockées en Chine, et peuvent servir à entraîner ses modèles (refus possible).",
+      "En janvier 2025, l'autorité italienne de protection des données a ordonné le blocage de l'application : évite d'y mettre des informations sensibles.",
     ],
     lastVerified: "2026-10-04",
     reviewEveryDays: 7,
-    sources: ["https://www.deepseek.com", "https://chat.deepseek.com"],
+    sources: ["https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html", "https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/10097450"],
   },
   perplexity: {
     id: "perplexity",
@@ -74,7 +75,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     ],
     lastVerified: "2026-10-04",
     reviewEveryDays: 7,
-    sources: ["https://www.perplexity.ai"],
+    sources: ["https://www.perplexity.ai/help-center/en/articles/10352895-how-does-perplexity-work"],
   },
 };
 

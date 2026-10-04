@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { finishQuiz, login } from "./helpers";
+import { HAS_E2E_USER, finishQuiz, login } from "./helpers";
 
 test("landing: thesis, tracks and a playable question", async ({ page }) => {
   await page.goto("/");
@@ -40,6 +40,7 @@ test("protected pages redirect to login; bad credentials show a clear error", as
 });
 
 test("core loop: map → lesson → quiz with corrections → XP saved → weekly review", async ({ page }) => {
+  test.skip(!HAS_E2E_USER, "set E2E_EMAIL and E2E_PASSWORD to a confirmed test account");
   await login(page);
   const xpBefore = Number(await page.getByTitle("points d'expérience").first().locator(".tabular").innerText());
 
@@ -68,6 +69,7 @@ test("core loop: map → lesson → quiz with corrections → XP saved → weekl
 });
 
 test("tracks can be switched and progress persists", async ({ page }) => {
+  test.skip(!HAS_E2E_USER, "set E2E_EMAIL and E2E_PASSWORD to a confirmed test account");
   await login(page);
   await page.goto("/tracks");
   await page.getByRole("button", { name: /Fox/ }).click();
@@ -81,6 +83,7 @@ test("tracks can be switched and progress persists", async ({ page }) => {
 });
 
 test("daily review runs when questions are due", async ({ page }) => {
+  test.skip(!HAS_E2E_USER, "set E2E_EMAIL and E2E_PASSWORD to a confirmed test account");
   await login(page);
   await page.goto("/review");
   await expect(page.getByRole("heading", { name: "Révision du jour" })).toBeVisible();
