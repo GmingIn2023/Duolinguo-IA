@@ -156,20 +156,18 @@ function ToolLandscape() {
     { label: "Chercher et vérifier", tools: ["Perplexity"] },
   ];
   return (
-    <div className="grid gap-3">
-      <div className="grid grid-cols-3 gap-2 sm:gap-4">
-        {groups.map((g) => (
-          <ul key={g.label} className="grid content-end gap-2 rounded-xl bg-sunk p-2.5 sm:p-4" aria-label={g.label}>
+    <ul className="grid gap-2.5">
+      {groups.map((g) => (
+        <li key={g.label} className="grid items-center gap-2.5 rounded-xl bg-sunk p-3 sm:grid-cols-[11rem_1fr] sm:p-4">
+          <span className="text-sm font-semibold">{g.label}</span>
+          <span className="flex flex-wrap gap-2" translate="no">
             {g.tools.map((t) => (
-              <li key={t} className="truncate rounded-full bg-surface px-3 py-1.5 text-center text-sm font-semibold shadow-[0_3px_0_var(--edge)]" translate="no">{t}</li>
+              <span key={t} className="rounded-full bg-surface px-3.5 py-1.5 text-sm font-semibold shadow-[0_3px_0_var(--edge)]">{t}</span>
             ))}
-          </ul>
-        ))}
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-center text-sm font-medium sm:gap-4">
-        {groups.map((g) => <span key={g.label}>{g.label}</span>)}
-      </div>
-    </div>
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
