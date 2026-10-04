@@ -9,8 +9,8 @@ export function LandingDemo() {
   const correct = picked === false;
   return (
     <div className="tile grid gap-6 p-6 sm:p-8" data-track="fox">
-      <p className="text-sm font-semibold text-muted">Vrai ou faux ? · Cours « Les hallucinations »</p>
-      <p className="display text-[clamp(1.5rem,2.6vw,2.25rem)] leading-[1.08] tracking-[-0.025em]">« Une IA qui répond avec assurance a forcément raison. »</p>
+      <p className="display text-[clamp(1.5rem,2.6vw,2.25rem)] leading-[1.08] tracking-[-0.025em]">«&nbsp;Une IA qui répond avec assurance a forcément raison.&nbsp;»</p>
+      <p className="-mt-3 text-ink-2">Vrai ou faux&nbsp;? Une question du cours «&nbsp;Les hallucinations&nbsp;».</p>
       <div className="grid grid-cols-2 gap-3">
         {[true, false].map((v) => (
           <button
@@ -25,7 +25,7 @@ export function LandingDemo() {
           </button>
         ))}
       </div>
-      <div aria-live="polite" className="min-h-[4.5rem]">
+      <div aria-live="polite" className="empty:hidden">
         {picked !== null && (
           <div className="fade-in grid gap-1">
             <p className={`flex items-center gap-2 font-bold ${correct ? "text-good" : "text-bad"}`}>

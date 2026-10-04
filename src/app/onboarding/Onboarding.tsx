@@ -131,9 +131,8 @@ export function Onboarding() {
           placement && (
             <div className="fade-in grid gap-10">
               <div className="grid gap-4">
-                <p className="text-lg font-semibold">Ton niveau estimé : {LEVEL_TEXT[placement.level]}</p>
                 <h1 className="display display-l">On te propose ce parcours.</h1>
-                <p className="lede">{LEVEL_DETAIL[placement.level]} Tu peux choisir un autre parcours maintenant, ou en changer plus tard.</p>
+                <p className="lede">Ton niveau estimé&nbsp;: <strong className="text-ink">{LEVEL_TEXT[placement.level]}</strong>. {LEVEL_DETAIL[placement.level]} Tu peux choisir un autre parcours maintenant, ou en changer plus tard.</p>
               </div>
               <div className="grid gap-3" role="radiogroup" aria-label="Parcours">
                 {[placement.track, ...TRACK_IDS.filter((t) => t !== placement.track)].map((id) => {
@@ -152,12 +151,12 @@ export function Onboarding() {
                         <Avatar track={id} size={52} />
                       </span>
                       <span className="grid min-w-0 flex-1 gap-0.5">
-                        <span className="text-sm font-semibold">
-                          {t.animal} · {t.audience}
-                          {id === placement.track && " · Recommandé"}
-                        </span>
                         <span className="display display-s">{t.name}</span>
                         <span className="text-[0.9375rem]">{t.pitch}</span>
+                        <span className="text-sm font-semibold">
+                          {t.animal} · {t.audience}
+                          {id === placement.track && " · Recommandé pour toi"}
+                        </span>
                       </span>
                     </button>
                   );

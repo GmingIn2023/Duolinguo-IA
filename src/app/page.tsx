@@ -53,9 +53,8 @@ export default async function Home() {
                     <Avatar track={id} size={56} />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold">{t.animal} · {t.audience}</p>
                     <p className="display display-s">{t.name}</p>
-                    <p className="text-sm">{t.lessonIds.length} cours</p>
+                    <p className="text-sm font-medium">{t.animal} · {t.audience} · {t.lessonIds.length} cours</p>
                   </div>
                 </div>
               </li>
@@ -65,43 +64,45 @@ export default async function Home() {
       </section>
 
       {/* Proof: a real question */}
-      <section className="bg-surface">
-        <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-4 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
-          <div className="grid gap-5 lg:col-span-5">
-            <h2 className="display display-l">Essaie, là, maintenant.</h2>
-            <p className="lede">Voici une vraie question d&apos;un cours Gusgus. Réponds : la correction arrive tout de suite, avec l&apos;explication.</p>
-          </div>
-          <div className="lg:col-span-6 lg:col-start-7">
-            <LandingDemo />
-          </div>
+      <section className="mx-auto grid max-w-[90rem] items-center gap-10 px-4 pb-20 sm:px-8 lg:grid-cols-12 lg:pb-28">
+        <div className="grid gap-5 lg:col-span-5">
+          <h2 className="display display-l">Essaie, là, maintenant.</h2>
+          <p className="lede">Voici une vraie question d&apos;un cours Gusgus. Réponds&nbsp;: la correction arrive tout de suite, avec l&apos;explication.</p>
+        </div>
+        <div className="lg:col-span-6 lg:col-start-7">
+          <LandingDemo />
         </div>
       </section>
 
-      {/* The loop: a real sequence, so it is numbered */}
-      <section className="mx-auto max-w-[90rem] px-4 py-20 sm:px-8 lg:py-28">
-        <h2 className="display display-l mb-12 max-w-[16ch]">Une boucle courte, qui revient au bon moment.</h2>
-        <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {LOOP.map((s, i) => (
-            <li key={s.t} className={`tile flex min-h-56 flex-col justify-between gap-8 p-6 ${i === 3 ? "tile-ink" : ""}`}>
-              <span className="display text-5xl">{i + 1}</span>
-              <div>
-                <h3 className="mb-1.5 text-lg font-semibold">{s.t}</h3>
-                <p className={i === 3 ? "text-paper/80" : "text-ink-2"}>{s.d}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
+      {/* The loop */}
+      <section className="bg-surface">
+        <div className="mx-auto max-w-[90rem] px-4 py-20 sm:px-8 lg:py-28">
+          <h2 className="display display-l mb-12 max-w-[16ch]">Une boucle courte, qui revient au bon moment.</h2>
+          <ol className="grid gap-4 lg:grid-cols-6">
+            {LOOP.map((s, i) => (
+              <li
+                key={s.t}
+                className={`tile flex flex-col justify-end gap-3 p-6 sm:p-8 ${
+                  ["!bg-paper lg:col-span-4 lg:min-h-64", "!bg-paper lg:col-span-2", "!bg-paper lg:col-span-2", "tile-ink lg:col-span-4"][i]
+                }`}
+              >
+                <h3 className="display display-s sm:text-[1.875rem]">{s.t}</h3>
+                <p className={`max-w-[40ch] ${i === 3 ? "text-paper/80" : "text-ink-2"}`}>{s.d}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       {/* Concepts first, tools second */}
-      <section className="mx-auto grid max-w-[90rem] gap-10 px-4 pb-20 sm:px-8 lg:grid-cols-12 lg:pb-28">
+      <section className="mx-auto grid max-w-[90rem] gap-10 px-4 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
         <div className="grid content-start gap-5 lg:col-span-5">
           <h2 className="display display-l">D&apos;abord comprendre. Ensuite les outils.</h2>
           <p className="lede">Comment un chatbot écrit, pourquoi il invente, comment le briefer, quoi ne jamais lui confier. Puis les outils, avec des infos datées et revérifiées régulièrement.</p>
         </div>
-        <ul className="flex flex-wrap content-start gap-3 lg:col-span-6 lg:col-start-7">
-          {TOOLS.map((t) => (
-            <li key={t} className="tile px-6 py-4 text-xl font-semibold sm:text-2xl">{t}</li>
+        <ul className="grid grid-cols-2 gap-3 self-center sm:grid-cols-3 lg:col-span-6 lg:col-start-7" translate="no">
+          {TOOLS.map((t, i) => (
+            <li key={t} className={`tile px-5 py-6 text-xl font-semibold sm:text-2xl ${i === 4 ? "col-span-2" : ""}`}>{t}</li>
           ))}
         </ul>
       </section>

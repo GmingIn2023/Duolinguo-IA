@@ -150,30 +150,24 @@ function DataFlow() {
 }
 
 function ToolLandscape() {
-  const tools = [
-    { n: "Claude", x: 14, y: 30 },
-    { n: "ChatGPT", x: 30, y: 62 },
-    { n: "DeepSeek", x: 12, y: 78 },
-    { n: "Gemini", x: 52, y: 40 },
-    { n: "Perplexity", x: 84, y: 58 },
+  const groups = [
+    { label: "Converser et créer", tools: ["ChatGPT", "Claude", "DeepSeek"] },
+    { label: "Les deux", tools: ["Gemini"] },
+    { label: "Chercher et vérifier", tools: ["Perplexity"] },
   ];
   return (
-    <div>
-      <div className="relative h-56 rounded-xl bg-sunk sm:h-64" role="img" aria-label="Claude, ChatGPT et DeepSeek côté converser et créer ; Gemini au milieu ; Perplexity côté chercher et vérifier.">
-        <div aria-hidden className="absolute inset-x-4 top-1/2 h-px bg-line" />
-        {tools.map((t) => (
-          <span
-            key={t.n}
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface px-3 py-1.5 text-sm font-semibold shadow-[0_3px_0_var(--edge)]"
-            style={{ left: `${t.x}%`, top: `${t.y}%` }}
-          >
-            {t.n}
-          </span>
+    <div className="grid gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        {groups.map((g) => (
+          <ul key={g.label} className="grid content-end gap-2 rounded-xl bg-sunk p-2.5 sm:p-4" aria-label={g.label}>
+            {g.tools.map((t) => (
+              <li key={t} className="truncate rounded-full bg-surface px-3 py-1.5 text-center text-sm font-semibold shadow-[0_3px_0_var(--edge)]" translate="no">{t}</li>
+            ))}
+          </ul>
         ))}
       </div>
-      <div className="mt-3 flex justify-between text-sm font-medium">
-        <span>← Converser et créer</span>
-        <span>Chercher et vérifier →</span>
+      <div className="grid grid-cols-3 gap-2 text-center text-sm font-medium sm:gap-4">
+        {groups.map((g) => <span key={g.label}>{g.label}</span>)}
       </div>
     </div>
   );

@@ -28,9 +28,8 @@ export default async function LearnPage() {
             <Avatar track={track.id} size={64} />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-muted">{track.animal} · {track.audience}</p>
             <h1 className="display display-m">{track.name}</h1>
-            <p className="tabular mt-1 text-ink-2">{doneCount} cours terminés sur {statuses.length}</p>
+            <p className="tabular mt-1 text-ink-2">{track.animal} · {track.audience} · {doneCount} cours terminés sur {statuses.length}</p>
           </div>
         </header>
 
@@ -54,7 +53,6 @@ export default async function LearnPage() {
         <ol className="grid gap-5" aria-label="Carte du parcours">
           {statuses.map(({ lesson, status }, i) => {
             const best = progress.get(lesson.id)?.best_score;
-            const shift = ["sm:ml-0", "sm:ml-10", "sm:ml-20", "sm:ml-10"][i % 4];
             const body = (
               <>
                 <span
@@ -65,20 +63,20 @@ export default async function LearnPage() {
                   {status === "completed" ? <Check className="size-7" strokeWidth={3} aria-hidden /> : status === "locked" ? <Lock className="size-6" aria-hidden /> : i + 1}
                 </span>
                 <span className="grid min-w-0 flex-1 gap-1">
-                  <span className="text-sm font-medium text-muted">
-                    {LEVEL_LABEL[lesson.level]} · {lesson.durationMin} min · {lesson.xp} XP
-                    {status === "completed" && best !== undefined && <> · meilleur score {best} %</>}
-                  </span>
                   <span className={`font-semibold leading-tight ${status === "current" ? "display text-[clamp(1.375rem,2.4vw,1.875rem)]" : "text-lg"}`}>{lesson.title}</span>
                   {status === "current" && <span className="text-[0.9375rem] text-ink-2">{lesson.objective}</span>}
-                  {status === "locked" && <span className="text-[0.9375rem] text-muted">Termine « {statuses[i - 1]?.lesson.title} » pour débloquer.</span>}
+                  {status === "locked" && <span className="text-[0.9375rem] text-muted">Termine «&nbsp;{statuses[i - 1]?.lesson.title}&nbsp;» pour débloquer.</span>}
+                  <span className="text-sm font-medium text-muted">
+                    {LEVEL_LABEL[lesson.level]} · {lesson.durationMin}&nbsp;min · {lesson.xp}&nbsp;XP
+                    {status === "completed" && best !== undefined && <> · {best}&nbsp;% du premier coup</>}
+                  </span>
                 </span>
                 {status === "current" && <span className="btn btn-primary hidden flex-none sm:inline-flex">{doneCount ? "Continuer" : "Commencer"}</span>}
               </>
             );
-            const cls = `flex items-center gap-4 p-4 sm:gap-5 sm:p-5 ${status === "locked" ? "tile tile-sunk" : "tile tile-press"} ${status === "current" ? "sm:p-6 outline-2 outline-ink" : ""}`;
+            const cls = `flex items-center gap-4 p-4 sm:gap-5 sm:p-5 ${status === "locked" ? "tile tile-sunk" : "tile tile-press"} ${status === "current" ? "sm:p-7 outline-2 outline-ink" : ""}`;
             return (
-              <li key={lesson.id} className={`relative ${shift}`}>
+              <li key={lesson.id} className={status === "current" ? "py-1" : undefined}>
                 {status === "locked" ? (
                   <div className={cls} aria-disabled="true">{body}</div>
                 ) : (

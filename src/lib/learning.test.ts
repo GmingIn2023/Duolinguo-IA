@@ -169,3 +169,15 @@ describe("streak", () => {
     expect(nextStreak(0, null, "2026-10-04")).toBe(1);
   });
 });
+
+import { frenchSpacing } from "./typo";
+describe("frenchSpacing", () => {
+  it("binds French punctuation to its word", () => {
+    expect(frenchSpacing("« Vrai ? » oui : non !")).toBe("« Vrai ? » oui : non !");
+  });
+});
+describe("frenchSpacing hyphens", () => {
+  it("keeps inversions together", () => {
+    expect(frenchSpacing("Qu'est-ce que c'est")).toBe("Qu'est‑ce que c'est");
+  });
+});

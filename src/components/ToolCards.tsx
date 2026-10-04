@@ -1,13 +1,14 @@
 import { TOOLS } from "@/content/tools";
 import type { ToolId } from "@/content/types";
+import { typesetContent } from "@/lib/typo";
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
 export function ToolCards({ toolIds }: { toolIds: ToolId[] }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 sm:grid-cols-2 [&>*:last-child:nth-child(odd)]:sm:col-span-2">
       {toolIds.map((id) => {
-        const t = TOOLS[id];
+        const t = typesetContent(TOOLS[id]);
         return (
           <article key={id} className="tile flex flex-col gap-4 p-5">
             <header>

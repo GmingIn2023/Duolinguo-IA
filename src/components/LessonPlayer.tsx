@@ -49,13 +49,13 @@ export function LessonPlayer({
 
   return (
     <div data-track={track} className="min-h-dvh">
-      <header className="sticky top-0 z-20 bg-paper/90 backdrop-blur">
+      <header className="sticky top-0 z-20 bg-paper">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-4 px-4">
           <Link href="/learn" className="grid size-10 place-items-center rounded-full hover:bg-sunk" aria-label="Quitter le cours">
             <X className="size-6" />
           </Link>
           <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-sunk" role="progressbar" aria-label="Avancement du cours" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[var(--ease-out)]" style={{ width: `${Math.max(progress * 100, 3)}%`, boxShadow: "inset 0 -3px 0 var(--accent-deep)" }} />
+            <div className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[var(--ease-out)]" style={{ width: `${progress * 100}%`, boxShadow: "inset 0 -3px 0 var(--accent-deep)" }} />
           </div>
           <span className="flex items-center gap-1 text-sm font-semibold"><Zap className="size-4 fill-bird" aria-hidden />{lesson.xp}</span>
         </div>
@@ -109,7 +109,7 @@ function Intro({ lesson, prerequisiteTitles, onStart }: { lesson: Lesson; prereq
         </section>
       </div>
       <div>
-        <button className="btn btn-primary btn-lg" onClick={onStart} autoFocus>Commencer le cours</button>
+        <button className="btn btn-primary btn-lg" onClick={onStart}>Commencer le cours</button>
       </div>
     </div>
   );

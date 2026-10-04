@@ -47,7 +47,9 @@ for (const [name, ctxOpts] of [["desktop", { viewport: { width: 1440, height: 90
   await p.getByRole("button", { name: "Continuer" }).click(); await shot("17-q-ranking", false);
   await p.getByRole("button", { name: "Vérifier" }).click(); await p.getByRole("button", { name: "Continuer" }).click();
   await shot("18-q-ai-analysis");
-  await p.getByRole("checkbox").first().click(); await p.getByRole("button", { name: "Vérifier" }).click(); await shot("19-q-right", false);
+  await p.getByRole("checkbox", { name: /probablement inventée/ }).click();
+  await p.getByRole("checkbox", { name: /fausse impression/ }).click();
+  await p.getByRole("button", { name: "Vérifier" }).click(); await shot("19-q-right", false);
   await ctx.close();
 }
 await b.close();

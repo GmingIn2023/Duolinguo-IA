@@ -28,18 +28,26 @@ function Bird() {
 }
 
 function Gecko() {
+  // gecko traits: flat wide head, side eyes with vertical slit pupils, spots, toe pads, curled tail
   return (
     <>
-      <ellipse cx="32" cy="39" rx="25" ry="18" fill="var(--gecko)" />
-      <circle cx="18" cy="23" r="10" fill="var(--gecko)" />
-      <circle cx="46" cy="23" r="10" fill="var(--gecko)" />
-      <circle cx="18" cy="23" r="6.4" fill="#fff" />
-      <circle cx="46" cy="23" r="6.4" fill="#fff" />
-      <rect x="16.4" y="18.5" width="3.2" height="9" rx="1.6" fill="var(--ink)" />
-      <rect x="44.4" y="18.5" width="3.2" height="9" rx="1.6" fill="var(--ink)" />
-      <path d="M21 44q11 7 22 0" stroke="var(--ink)" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-      <circle cx="13" cy="41" r="2.6" fill="var(--gecko-deep)" />
-      <circle cx="51" cy="41" r="2.6" fill="var(--gecko-deep)" />
+      <path d="M44 46q16 2 14 13-2 5-8 2" stroke="var(--gecko-deep)" strokeWidth="5" fill="none" strokeLinecap="round" />
+      <g fill="var(--gecko)">
+        <path d="M17 44l-6 9M19 46l0 11M21 44l6 9M43 44l-6 9M45 46l0 11M47 44l6 9" stroke="var(--gecko)" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="11" cy="53.5" r="2.6" /><circle cx="19" cy="57.5" r="2.6" /><circle cx="27" cy="53.5" r="2.6" />
+        <circle cx="37" cy="53.5" r="2.6" /><circle cx="45" cy="57.5" r="2.6" /><circle cx="53" cy="53.5" r="2.6" />
+        <ellipse cx="32" cy="31" rx="26" ry="16" />
+      </g>
+      <circle cx="24" cy="21" r="2.2" fill="var(--gecko-deep)" />
+      <circle cx="32" cy="18" r="2.2" fill="var(--gecko-deep)" />
+      <circle cx="40" cy="21" r="2.2" fill="var(--gecko-deep)" />
+      <circle cx="11" cy="27" r="6.6" fill="#fff" />
+      <circle cx="53" cy="27" r="6.6" fill="#fff" />
+      <rect x="10" y="22" width="2.4" height="10" rx="1.2" fill="var(--ink)" />
+      <rect x="51.6" y="22" width="2.4" height="10" rx="1.2" fill="var(--ink)" />
+      <circle cx="29" cy="27" r="1.1" fill="var(--ink)" />
+      <circle cx="35" cy="27" r="1.1" fill="var(--ink)" />
+      <path d="M15 36q17 7 34 0" stroke="var(--ink)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
     </>
   );
 }

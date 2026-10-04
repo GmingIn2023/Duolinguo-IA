@@ -23,6 +23,11 @@ function initialOrder(q: Question): string[] {
   }
 }
 
+function keyHint(q: Question): string {
+  const n = "options" in q ? q.options.length : q.type === "true_false" ? 2 : 0;
+  return n ? `Astuce : touches 1 à ${n} pour choisir, Entrée pour valider.` : "Astuce : flèches pour déplacer, Entrée pour valider.";
+}
+
 const initialDraft = (q: Question): Draft => (q.type === "ordering" || q.type === "ranking" ? initialOrder(q) : null);
 
 /**
@@ -51,6 +56,13 @@ export function QuizRunner({
   const order = useMemo(() => initialOrder(step.question), [step.question]);
 
   useEffect(() => onProgress?.(solved / questions.length), [solved, questions.length, onProgress]);
+
+  // keep the marked answers visible above the correction sheet
+  useEffect(() => {
+    if (!reveal) return;
+    const marked = document.querySelectorAll("[data-state]");
+    marked[marked.length - 1]?.scrollIntoView({ block: "end", behavior: "smooth" });
+  }, [reveal]);
 
   const check = useCallback(() => {
     if (reveal || !isDraftComplete(step.question, draft)) return;
@@ -103,7 +115,7 @@ export function QuizRunner({
         </span>
         <h2 className="display display-l">On reprend tes erreurs.</h2>
         <p className="lede">Les questions manquées reviennent maintenant. C&apos;est en corrigeant qu&apos;on retient le mieux.</p>
-        <button className="btn btn-primary btn-lg" onClick={() => setRetryNotice(false)} autoFocus>
+        <button className="btn btn-primary btn-lg" onClick={() => setRetryNotice(false)}>
           C&apos;est parti
         </button>
       </div>
@@ -114,8 +126,8 @@ export function QuizRunner({
   const feedback = reveal && !reveal.correct && draft !== null ? optionFeedback(q, draft as Answer) : undefined;
 
   return (
-    <div className="pb-48">
-      <div key={`${q.id}-${index}`} className={`fade-in mx-auto max-w-2xl ${reveal && !reveal.correct ? "shake" : ""}`}>
+    <div className={reveal ? "pb-[26rem] sm:pb-80" : "pb-48"}>
+      <div key={`${q.id}-${index}`} className={`fade-in ${reveal && !reveal.correct ? "shake" : ""}`}>
         {step.retry && <p className="mb-4 inline-flex rounded-full bg-sunk px-3 py-1 text-sm font-medium">Deuxième essai</p>}
         <QuestionView question={q} draft={draft} setDraft={setDraft} reveal={reveal} displayOrder={order} />
       </div>
@@ -127,7 +139,7 @@ export function QuizRunner({
         role={reveal ? "status" : undefined}
         aria-live="polite"
       >
-        <div className="mx-auto flex max-w-2xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-end sm:justify-between sm:px-0">
+        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-end sm:justify-between">
           {reveal ? (
             <div className="grid max-h-[40dvh] gap-1.5 overflow-y-auto">
               <p className={`flex items-center gap-2 text-lg font-bold ${reveal.correct ? "text-good" : "text-bad"}`}>
@@ -144,10 +156,10 @@ export function QuizRunner({
               <p className="text-[0.9375rem] text-ink-2">{q.explanation}</p>
             </div>
           ) : (
-            <p className="hidden text-sm text-muted sm:block">Astuce : touches 1 à 6 pour choisir, Entrée pour valider.</p>
+            <p className="hidden text-sm text-muted sm:block">{keyHint(q)}</p>
           )}
           {reveal ? (
-            <button className={`btn btn-lg flex-none sm:min-w-44 ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next} autoFocus>
+            <button className={`btn btn-lg flex-none sm:min-w-44 ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
               Continuer
             </button>
           ) : (

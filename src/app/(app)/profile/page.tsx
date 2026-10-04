@@ -53,7 +53,7 @@ export default async function ProfilePage() {
             {done.map((p) => (
               <li key={p.lesson_id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-4">
                 <Link href={`/lesson/${p.lesson_id}`} className="font-semibold hover:underline">{getLesson(p.lesson_id)?.title ?? p.lesson_id}</Link>
-                <span className="tabular text-sm text-ink-2">{p.best_score} % · {p.attempts} essai{p.attempts > 1 ? "s" : ""} · {new Date(p.last_completed_at).toLocaleDateString("fr-FR")}</span>
+                <span className="tabular text-sm text-ink-2">{p.best_score}&nbsp;% du premier coup · {p.attempts} essai{p.attempts > 1 ? "s" : ""} · {new Date(p.last_completed_at).toLocaleDateString("fr-FR")}</span>
               </li>
             ))}
           </ul>

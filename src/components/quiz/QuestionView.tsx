@@ -8,14 +8,6 @@ export type Reveal = null | { correct: boolean };
 
 const KEYS = ["1", "2", "3", "4", "5", "6"];
 
-const PROMPT_FOR: Record<Question["type"], string> = {
-  mcq: "Choisis la bonne réponse",
-  true_false: "Vrai ou faux ?",
-  ranking: "Classe",
-  ordering: "Remets dans l'ordre",
-  fill_choice: "Complète",
-  ai_analysis: "Analyse la réponse de l'IA",
-};
 
 export function QuestionView({
   question,
@@ -32,17 +24,16 @@ export function QuestionView({
   displayOrder: string[];
 }) {
   const locked = reveal !== null;
-  const heading = "prompt" in question ? question.prompt : "Cette affirmation est-elle vraie ?";
+  const heading = "prompt" in question ? question.prompt : `« ${question.statement} »`;
   return (
     <div className="grid gap-6">
       <div className="grid gap-2">
-        <p className="text-sm font-semibold text-muted">{PROMPT_FOR[question.type]}</p>
-        <h2 className={`display ${heading.length > 60 ? "display-s sm:text-[1.875rem]" : "display-m"}`}>{heading}</h2>
+        <h2 className={`display ${heading.length > 60 && question.type !== "true_false" ? "display-s sm:text-[1.875rem]" : "display-m"}`}>{heading}</h2>
+        {question.type === "true_false" && <p className="text-[1.0625rem] text-ink-2">Cette affirmation est-elle vraie ?</p>}
       </div>
 
       {question.type === "true_false" && (
         <>
-          <blockquote className="tile p-6 text-xl font-medium leading-snug sm:text-2xl">« {question.statement} »</blockquote>
           <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Vrai ou faux">
             {[true, false].map((v, i) => (
               <ChoiceButton

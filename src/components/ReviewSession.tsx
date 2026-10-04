@@ -29,11 +29,11 @@ export function ReviewSession({ mode, questions, track }: { mode: "daily" | "wee
 
   return (
     <div data-track={track ?? undefined} className="min-h-dvh">
-      <header className="sticky top-0 z-20 bg-paper/90 backdrop-blur">
+      <header className="sticky top-0 z-20 bg-paper">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-4 px-4">
           <Link href="/review" className="grid size-10 place-items-center rounded-full hover:bg-sunk" aria-label="Quitter la révision"><X className="size-6" /></Link>
           <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-sunk" role="progressbar" aria-label="Avancement de la révision" aria-valuenow={Math.round((answers ? 1 : progress) * 100)} aria-valuemin={0} aria-valuemax={100}>
-            <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${Math.max((answers ? 1 : progress) * 100, 3)}%`, boxShadow: "inset 0 -3px 0 var(--accent-deep)" }} />
+            <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${(answers ? 1 : progress) * 100}%`, boxShadow: "inset 0 -3px 0 var(--accent-deep)" }} />
           </div>
           <span className="text-sm font-semibold">{mode === "weekly" ? "Semaine" : "Jour"}</span>
         </div>

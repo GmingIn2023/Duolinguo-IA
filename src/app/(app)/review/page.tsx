@@ -14,7 +14,7 @@ export default async function ReviewPage() {
         <h1 className="display display-l">Révisions</h1>
         <p className="lede !max-w-[56ch]">Chaque question réussie revient de plus en plus tard : 1 jour, 2, 4, 7, 15, puis 30. Une erreur la fait revenir dès le lendemain.</p>
       </header>
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid items-start gap-5 md:grid-cols-2">
         <section className="tile flex flex-col gap-6 p-6 sm:p-8">
           <RotateCcw className="size-8" aria-hidden />
           <div className="grid gap-2">

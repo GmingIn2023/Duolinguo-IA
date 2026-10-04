@@ -44,7 +44,8 @@ test("core loop: map → lesson → quiz with corrections → XP saved → weekl
   const xpBefore = Number(await page.getByTitle("points d'expérience").first().locator(".tabular").innerText());
 
   // open the current lesson from the map
-  await page.getByRole("link", { name: /cours suivant/ }).first().click();
+  const next = page.getByRole("link", { name: /cours suivant/ });
+  await (await next.count() ? next.first() : page.getByRole("link", { name: /, terminé/ }).last()).click();
   await expect(page.getByRole("heading", { name: "Compétences" })).toBeVisible();
   await page.getByRole("button", { name: "Commencer le cours" }).click();
   await expect(page.locator("figure").first()).toBeVisible();

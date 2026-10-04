@@ -2,11 +2,12 @@ import type { Lesson, Question, Track, TrackId } from "./types";
 import { foundations } from "./lessons/foundations";
 import { studentLessons } from "./lessons/students";
 import { workLessons } from "./lessons/work";
+import { typesetContent } from "../lib/typo";
 
-export const LESSONS: Lesson[] = [...foundations, ...studentLessons, ...workLessons];
+export const LESSONS: Lesson[] = typesetContent([...foundations, ...studentLessons, ...workLessons]);
 const byId = new Map(LESSONS.map((l) => [l.id, l]));
 
-export const TRACKS: Record<TrackId, Track> = {
+export const TRACKS: Record<TrackId, Track> = typesetContent({
   bird: {
     id: "bird",
     animal: "Bird",
@@ -48,7 +49,7 @@ export const TRACKS: Record<TrackId, Track> = {
       "panorama-outils",
     ],
   },
-};
+});
 
 export const TRACK_IDS = Object.keys(TRACKS) as TrackId[];
 

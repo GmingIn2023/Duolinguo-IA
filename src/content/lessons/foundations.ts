@@ -405,7 +405,7 @@ export const foundations: Lesson[] = [
       {
         type: "illustration",
         id: "tool-landscape",
-        caption: "Cinq assistants placés selon deux usages : converser et créer, ou chercher et vérifier.",
+        caption: "Cinq assistants rangés selon leur usage principal : converser et créer, ou chercher et vérifier.",
       },
       { type: "tools", toolIds: ["chatgpt", "claude", "gemini", "deepseek", "perplexity"] },
       {

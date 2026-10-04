@@ -24,8 +24,8 @@ export default async function TracksPage() {
             <button key={id} name="track" value={id} data-track={id} className={`tile tile-press flex flex-col gap-6 p-6 text-left ${current ? "tile-accent" : ""}`} aria-current={current ? "true" : undefined}>
               <span className={`grid size-20 place-items-center rounded-3xl shadow-[0_4px_0_var(--accent-deep)] ${current ? "bg-surface" : "bg-accent-soft"}`}><Avatar track={id} size={64} /></span>
               <span className="grid gap-1">
-                <span className="text-sm font-semibold">{t.animal} · {t.audience}{current && " · Ton parcours"}</span>
                 <span className="display display-s">{t.name}</span>
+                <span className="text-sm font-semibold">{t.animal} · {t.audience}{current && " · Ton parcours"}</span>
                 <span className="text-[0.9375rem]">{t.pitch}</span>
               </span>
               <span className="mt-auto grid gap-2">
