@@ -13,7 +13,7 @@ export async function login(page: Page) {
 }
 
 /** Correct answers learned from the correction sheet, keyed by question heading. */
-type Memory = Map<string, string[]>;
+export type Memory = Map<string, string[]>;
 
 async function applyKnownAnswer(page: Page, lines: string[]) {
   const clean = lines.map((l) => l.replace(/^(\d+\.|•)\s*/, "").trim());
@@ -56,9 +56,8 @@ async function answerCurrent(page: Page, memory: Memory, tryWrong: boolean) {
   await page.getByRole("button", { name: "Continuer" }).click();
 }
 
-/** Runs a quiz to completion, whatever the mix of right and wrong answers. */
-export async function finishQuiz(page: Page, done: RegExp) {
-  const memory: Memory = new Map();
+/** Runs a quiz to completion, whatever the mix of right and wrong answers. Pass a shared memory to reuse corrections seen earlier. */
+export async function finishQuiz(page: Page, done: RegExp, memory: Memory = new Map()) {
   for (let i = 0; i < 40; i++) {
     if (await page.getByRole("heading", { name: done }).isVisible().catch(() => false)) return;
     const retry = page.getByRole("button", { name: "C'est parti" });

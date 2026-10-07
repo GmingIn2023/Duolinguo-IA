@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
-import { finishQuiz } from "./helpers";
+import { finishQuiz, type Memory } from "./helpers";
 
 // Final journey, on a brand-new account created through the real signup:
 // onboarding → signup → lesson → quiz → XP saved → daily review → XP still locked against the learner.
@@ -27,6 +27,8 @@ const created: string[] = [];
 
 test.beforeAll(async ({ playwright }) => {
   api = await playwright.request.newContext({
+    // Supabase rejects secret keys sent with a browser User-Agent (Playwright's default)
+    userAgent: "gusgus-e2e",
     proxy: process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY } : undefined,
     ignoreHTTPSErrors: true,
   });
@@ -73,7 +75,8 @@ test("new learner: signup → lesson → XP saved → daily review → XP locked
   await page.getByRole("link", { name: /cours suivant/ }).first().click();
   await page.getByRole("button", { name: "Commencer le cours" }).click();
   await page.getByRole("button", { name: "Passer au quiz" }).click();
-  await finishQuiz(page, /XP gagnés/);
+  const memory: Memory = new Map(); // corrections seen in the lesson, reused in the review like a real learner
+  await finishQuiz(page, /XP gagnés/, memory);
   const earned = Number((await page.getByRole("heading", { name: /XP gagnés/ }).getAttribute("aria-label"))!.match(/\d+/)![0]);
   expect(earned).toBeGreaterThan(0);
   await page.getByRole("link", { name: "Retour au parcours" }).click();
@@ -99,11 +102,13 @@ test("new learner: signup → lesson → XP saved → daily review → XP locked
   expect(due.ok(), await due.text()).toBeTruthy();
   await page.goto("/review");
   await page.getByRole("link", { name: "Réviser maintenant" }).click();
-  await finishQuiz(page, /XP gagnés/);
+  await finishQuiz(page, /XP gagnés/, memory);
   await expect(page.getByText(/reviendront plus tard/)).toBeVisible();
+  const reviewEarned = Number((await page.getByRole("heading", { name: /XP gagnés/ }).getAttribute("aria-label"))!.match(/\d+/)![0]);
+  expect(reviewEarned).toBeGreaterThan(0);
   await page.goto("/learn");
   const total = await xpOnScreen(page);
-  expect(total).toBeGreaterThan(earned);
+  expect(total).toBe(earned + reviewEarned);
 
   // 5. the learner still cannot change their own XP or streak
   const headers = { apikey: publishable, Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
