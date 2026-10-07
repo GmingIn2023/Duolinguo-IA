@@ -17,7 +17,7 @@ function env(name: string) {
   }
 }
 const url = env("NEXT_PUBLIC_SUPABASE_URL")!;
-const publishable = env("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")!;
+const publishable = (env("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY") ?? env("NEXT_PUBLIC_SUPABASE_ANON_KEY"))!;
 const secret = env("SUPABASE_SECRET_KEY");
 
 test.describe.configure({ mode: "serial" });
