@@ -1,0 +1,625 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-04T10:33:04+00:00",
+  "title": "Design System: Gusgus — Way of Learning AI",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "#f1f1ee",
+        "oklch": "oklch(95.7% 0.004 106.5)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242422",
+          "#40403d",
+          "#5e5e5b",
+          "#80807e",
+          "#a5a5a2",
+          "#cbcbc8",
+          "#efefec"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#808080",
+          "#a4a4a4",
+          "#cacaca",
+          "#eeeeee"
+        ]
+      },
+      "sunk": {
+        "role": "neutral",
+        "displayName": "Sunk Grey",
+        "canonical": "#e7e7e3",
+        "oklch": "oklch(92.7% 0.005 106.5)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5a",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ]
+      },
+      "ink": {
+        "role": "primary",
+        "displayName": "Ink Black",
+        "canonical": "#000000",
+        "oklch": "oklch(0.0% 0.000 0.0)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242424",
+          "#404040",
+          "#5d5d5d",
+          "#808080",
+          "#a4a4a4",
+          "#cacaca",
+          "#eeeeee"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#3a3a37",
+        "oklch": "oklch(34.7% 0.005 106.7)",
+        "tonalRamp": [
+          "#0b0b09",
+          "#242421",
+          "#40403d",
+          "#5e5e5b",
+          "#80807d",
+          "#a5a5a1",
+          "#cbcbc7",
+          "#efefeb"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Stone",
+        "canonical": "#66665f",
+        "oklch": "oklch(50.8% 0.011 106.8)",
+        "tonalRamp": [
+          "#0c0b07",
+          "#24241e",
+          "#40403a",
+          "#5e5e57",
+          "#818179",
+          "#a5a59d",
+          "#cbcbc3",
+          "#efefe7"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#dcdcd6",
+        "oklch": "oklch(89.3% 0.008 106.6)",
+        "tonalRamp": [
+          "#0b0b08",
+          "#242420",
+          "#40403b",
+          "#5e5e59",
+          "#81817b",
+          "#a5a59f",
+          "#cbcbc5",
+          "#efefe9"
+        ]
+      },
+      "edge": {
+        "role": "neutral",
+        "displayName": "Underside",
+        "canonical": "#d3d3cc",
+        "oklch": "oklch(86.5% 0.010 106.6)",
+        "tonalRamp": [
+          "#0c0b07",
+          "#24241f",
+          "#40403a",
+          "#5e5e58",
+          "#81817a",
+          "#a5a59e",
+          "#cbcbc4",
+          "#efefe8"
+        ]
+      },
+      "bird": {
+        "role": "secondary",
+        "displayName": "Canary",
+        "canonical": "#ffd43b",
+        "oklch": "oklch(88.3% 0.165 92.2)",
+        "tonalRamp": [
+          "#120a00",
+          "#2e2300",
+          "#4d3e07",
+          "#705b10",
+          "#997d12",
+          "#c4a120",
+          "#f1c624",
+          "#feeebd"
+        ]
+      },
+      "bird-deep": {
+        "role": "secondary",
+        "displayName": "Canary Edge",
+        "canonical": "#c99a00",
+        "oklch": "oklch(71.1% 0.145 86.6)",
+        "tonalRamp": [
+          "#130900",
+          "#2f2200",
+          "#513c02",
+          "#755906",
+          "#a07a00",
+          "#cc9d0b",
+          "#f4c34a",
+          "#feedc6"
+        ]
+      },
+      "bird-soft": {
+        "role": "secondary",
+        "displayName": "Canary Wash",
+        "canonical": "#fff5cc",
+        "oklch": "oklch(96.8% 0.054 95.9)",
+        "tonalRamp": [
+          "#110a00",
+          "#2c2300",
+          "#48401c",
+          "#675e3a",
+          "#8a805b",
+          "#aea57e",
+          "#d5cba3",
+          "#f9efc6"
+        ]
+      },
+      "gecko": {
+        "role": "secondary",
+        "displayName": "Leaf",
+        "canonical": "#3bd671",
+        "oklch": "oklch(77.4% 0.190 150.4)",
+        "tonalRamp": [
+          "#001102",
+          "#012d10",
+          "#054d22",
+          "#0e7035",
+          "#0b9a49",
+          "#1cc460",
+          "#57ec86",
+          "#c7ffd2"
+        ]
+      },
+      "gecko-deep": {
+        "role": "secondary",
+        "displayName": "Leaf Edge",
+        "canonical": "#189a47",
+        "oklch": "oklch(60.2% 0.161 149.4)",
+        "tonalRamp": [
+          "#001101",
+          "#002d0d",
+          "#094d21",
+          "#147033",
+          "#179946",
+          "#4bc06a",
+          "#75e790",
+          "#c8ffd1"
+        ]
+      },
+      "gecko-soft": {
+        "role": "secondary",
+        "displayName": "Leaf Wash",
+        "canonical": "#dcf7e5",
+        "oklch": "oklch(95.2% 0.037 156.4)",
+        "tonalRamp": [
+          "#001005",
+          "#14291d",
+          "#2f4638",
+          "#4d6455",
+          "#6f8777",
+          "#93ac9b",
+          "#b8d2c1",
+          "#dbf6e4"
+        ]
+      },
+      "fox": {
+        "role": "secondary",
+        "displayName": "Vermilion",
+        "canonical": "#ff6b2c",
+        "oklch": "oklch(70.4% 0.195 40.9)",
+        "tonalRamp": [
+          "#210000",
+          "#441000",
+          "#6d2605",
+          "#9b3a0e",
+          "#d4500f",
+          "#fe7641",
+          "#ffb79c",
+          "#ffe9e1"
+        ]
+      },
+      "fox-deep": {
+        "role": "secondary",
+        "displayName": "Vermilion Edge",
+        "canonical": "#c4470f",
+        "oklch": "oklch(56.4% 0.171 39.9)",
+        "tonalRamp": [
+          "#220000",
+          "#450f00",
+          "#6e2404",
+          "#9d380b",
+          "#d15320",
+          "#fb794a",
+          "#fdb8a0",
+          "#fee9e2"
+        ]
+      },
+      "fox-soft": {
+        "role": "secondary",
+        "displayName": "Vermilion Wash",
+        "canonical": "#ffe6d9",
+        "oklch": "oklch(94.2% 0.033 49.3)",
+        "tonalRamp": [
+          "#160702",
+          "#311f16",
+          "#4e3b30",
+          "#6d594e",
+          "#917b6f",
+          "#b69f93",
+          "#ddc5b8",
+          "#ffeadf"
+        ]
+      },
+      "good": {
+        "role": "tertiary",
+        "displayName": "Correct Green",
+        "canonical": "#137a3a",
+        "oklch": "oklch(50.9% 0.132 150.2)",
+        "tonalRamp": [
+          "#001101",
+          "#002d0f",
+          "#004e20",
+          "#007132",
+          "#389654",
+          "#60bc77",
+          "#87e39c",
+          "#c9fed3"
+        ]
+      },
+      "good-soft": {
+        "role": "tertiary",
+        "displayName": "Correct Wash",
+        "canonical": "#e2f5e8",
+        "oklch": "oklch(95.3% 0.026 156.0)",
+        "tonalRamp": [
+          "#030e07",
+          "#19281f",
+          "#35443a",
+          "#526257",
+          "#74857a",
+          "#98aa9e",
+          "#bed0c3",
+          "#e1f4e7"
+        ]
+      },
+      "bad": {
+        "role": "tertiary",
+        "displayName": "Error Red",
+        "canonical": "#c22a1b",
+        "oklch": "oklch(53.2% 0.190 30.1)",
+        "tonalRamp": [
+          "#230000",
+          "#4b0100",
+          "#7c0600",
+          "#b00f02",
+          "#da4432",
+          "#ff735f",
+          "#fcb7ab",
+          "#fee9e5"
+        ]
+      },
+      "bad-soft": {
+        "role": "tertiary",
+        "displayName": "Error Wash",
+        "canonical": "#fce8e5",
+        "oklch": "oklch(94.6% 0.022 27.8)",
+        "tonalRamp": [
+          "#130806",
+          "#2e201e",
+          "#4b3b39",
+          "#6a5957",
+          "#8d7b79",
+          "#b2a09d",
+          "#d9c5c3",
+          "#fde9e6"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing hero only, in masked reveal lines; the lesson-complete XP figure goes larger (clamp(4.5rem, 16vw, 11rem), line-height 0.85)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Landing section heads, lesson intro titles, retry interstitials."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "App page titles, quiz question headings, error states."
+      },
+      "title-small": {
+        "displayName": "Title Small",
+        "purpose": "Tile titles, lesson section heads, wordmark."
+      },
+      "lede": {
+        "displayName": "Lede",
+        "purpose": "One sentence under a headline; Graphite, max 38ch."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "UI and default text."
+      },
+      "body-reading": {
+        "displayName": "Reading",
+        "purpose": "Lesson prose; Graphite, max 66ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Metadata line below a title and stat labels; Stone, sentence case, never above a title."
+      }
+    },
+    "shadows": [
+      {
+        "name": "tile-edge",
+        "value": "0 5px 0 var(--edge)",
+        "purpose": "Every tile at rest; accent tile uses var(--accent-deep), ink tile #3a3a37."
+      },
+      {
+        "name": "tile-lift",
+        "value": "0 7px 0 var(--edge)",
+        "purpose": "Pressable tile hover with translateY(-2px), hover-capable devices only."
+      },
+      {
+        "name": "tile-press",
+        "value": "0 1px 0 var(--edge)",
+        "purpose": "Pressable tile :active with translateY(4px), 60ms; the edge collapses."
+      },
+      {
+        "name": "button-edge",
+        "value": "0 3px 0 #3a3a37",
+        "purpose": "Primary pill; accent pill uses 0 3px 0 var(--accent-deep)."
+      },
+      {
+        "name": "small-edge",
+        "value": "0 3px 0 var(--edge)",
+        "purpose": "Choices, active rail item, rail profile card."
+      },
+      {
+        "name": "inset-floor",
+        "value": "inset 0 -4px 0 var(--accent-deep)",
+        "purpose": "Current-lesson badge; progress fill uses inset 0 -3px."
+      },
+      {
+        "name": "hairline-ring",
+        "value": "inset 0 0 0 1.5px var(--line)",
+        "purpose": "Stroke for choices, fields and key badges at rest."
+      },
+      {
+        "name": "focus-ring",
+        "value": "outline: 2.5px solid var(--ink); outline-offset: 3px",
+        "purpose": "Global :focus-visible."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All state transitions and entrances."
+      },
+      {
+        "name": "tile-press",
+        "value": "160ms, 60ms on :active",
+        "purpose": "Tile lift and press."
+      },
+      {
+        "name": "button-press",
+        "value": "140ms",
+        "purpose": "Button press and hover."
+      },
+      {
+        "name": "choice-press",
+        "value": "120ms",
+        "purpose": "Choice hover, press and state change."
+      },
+      {
+        "name": "reveal-line",
+        "value": "900ms rise from translateY(105%), 90ms stagger",
+        "purpose": "Signature masked line reveal: landing headline and lesson-complete XP only."
+      },
+      {
+        "name": "fade-in",
+        "value": "420ms opacity with 6px rise",
+        "purpose": "Step and screen entrances."
+      },
+      {
+        "name": "sheet-in",
+        "value": "320ms slide up from 100%",
+        "purpose": "Quiz answer sheet."
+      },
+      {
+        "name": "shake",
+        "value": "360ms, 6/5/3/2px",
+        "purpose": "Once on a wrong answer."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "1ms for all animations and transitions",
+        "purpose": "prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink pill with a short Graphite edge; the one main action per view.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Commencer le cours</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:3.25rem;padding:0 1.5rem;border:0;border-radius:999px;font-family:var(--font-geist),Geist,system-ui,sans-serif;font-weight:600;font-size:1rem;cursor:pointer;transition:transform 140ms cubic-bezier(0.16, 1, 0.3, 1),background-color 140ms,box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1);}.ds-btn:active{transform:translateY(2px) scale(.985);}.ds-btn:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-btn-primary{background:var(--ink,#000);color:var(--paper,#f1f1ee);box-shadow:0 3px 0 #3a3a37;}.ds-btn-primary:hover{background:#262624;}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "White pill with an inset ink ring; the alternate action.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Se reconnecter</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:3.25rem;padding:0 1.5rem;border:0;border-radius:999px;font-family:var(--font-geist),Geist,system-ui,sans-serif;font-weight:600;font-size:1rem;cursor:pointer;transition:transform 140ms cubic-bezier(0.16, 1, 0.3, 1),background-color 140ms,box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1);}.ds-btn:active{transform:translateY(2px) scale(.985);}.ds-btn:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-btn-secondary{background:var(--surface,#fff);color:var(--ink,#000);box-shadow:inset 0 0 0 1.5px var(--ink,#000);}.ds-btn-secondary:hover{background:var(--paper,#f1f1ee);}"
+    },
+    {
+      "name": "Accent Button",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "Track-colour pill with ink text and its deep-step edge.",
+      "html": "<button class=\"ds-btn ds-btn-accent\">Réviser</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:3.25rem;padding:0 1.5rem;border:0;border-radius:999px;font-family:var(--font-geist),Geist,system-ui,sans-serif;font-weight:600;font-size:1rem;cursor:pointer;transition:transform 140ms cubic-bezier(0.16, 1, 0.3, 1),background-color 140ms,box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1);}.ds-btn:active{transform:translateY(2px) scale(.985);}.ds-btn:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-btn-accent{background:var(--accent,#ffd43b);color:var(--ink,#000);box-shadow:0 3px 0 var(--accent-deep,#c99a00);}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Transparent pill for low-emphasis navigation actions.",
+      "html": "<button class=\"ds-btn ds-btn-ghost\">Se connecter</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;height:3.25rem;padding:0 1.5rem;border:0;border-radius:999px;font-family:var(--font-geist),Geist,system-ui,sans-serif;font-weight:600;font-size:1rem;cursor:pointer;transition:transform 140ms cubic-bezier(0.16, 1, 0.3, 1),background-color 140ms,box-shadow 140ms cubic-bezier(0.16, 1, 0.3, 1);}.ds-btn:active{transform:translateY(2px) scale(.985);}.ds-btn:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-btn-ghost{background:transparent;color:var(--ink,#000);height:2.75rem;padding:0 1rem;}.ds-btn-ghost:hover{background:var(--sunk,#e7e7e3);}"
+    },
+    {
+      "name": "Lesson Tile",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "Pressable white slab with a 5px pressed edge that lifts on hover and collapses on press; metadata sits below the title.",
+      "html": "<a class=\"ds-tile\" href=\"#\"><span class=\"ds-tile-badge\">3</span><span class=\"ds-tile-text\"><span class=\"ds-tile-title\">Les hallucinations : quand l'IA invente</span><span class=\"ds-tile-meta\">Découverte · 6 min · 25 XP</span></span></a>",
+      "css": ".ds-tile{display:flex;align-items:center;gap:1.25rem;padding:1.25rem;background:var(--surface,#fff);border-radius:16px;box-shadow:0 5px 0 var(--edge,#d3d3cc);color:var(--ink,#000);text-decoration:none;font-family:var(--font-geist),Geist,system-ui,sans-serif;transition:transform 160ms cubic-bezier(0.16, 1, 0.3, 1),box-shadow 160ms cubic-bezier(0.16, 1, 0.3, 1);}.ds-tile:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--edge,#d3d3cc);}.ds-tile:active{transform:translateY(4px);box-shadow:0 1px 0 var(--edge,#d3d3cc);transition-duration:60ms;}.ds-tile:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-tile-badge{display:grid;place-items:center;width:3.5rem;height:3.5rem;flex:none;border-radius:16px;background:var(--accent,#ffd43b);box-shadow:inset 0 -4px 0 var(--accent-deep,#c99a00);font-family:var(--font-archivo),Archivo,sans-serif;font-weight:800;font-stretch:112%;font-size:1.5rem;}.ds-tile-text{display:grid;gap:.25rem;}.ds-tile-title{font-weight:600;font-size:1.125rem;line-height:1.2;}.ds-tile-meta{font-size:.875rem;font-weight:500;color:var(--muted,#66665f);}"
+    },
+    {
+      "name": "Accent Tile",
+      "kind": "card",
+      "refersTo": "tile-accent",
+      "description": "Flat track-colour slab with its deep-step edge; track tiles and the due-review panel.",
+      "html": "<div class=\"ds-tile-accent\"><p class=\"ds-tile-accent-title\">Premiers pas</p><p class=\"ds-tile-accent-meta\">Bird · Débutant complet · 6 cours</p></div>",
+      "css": ".ds-tile-accent{padding:1.5rem;background:var(--accent,#ffd43b);color:var(--ink,#000);border-radius:16px;box-shadow:0 5px 0 var(--accent-deep,#c99a00);font-family:var(--font-geist),Geist,system-ui,sans-serif;}.ds-tile-accent-title{margin:0;font-family:var(--font-archivo),Archivo,sans-serif;font-weight:800;font-stretch:112%;font-size:1.5rem;line-height:1.05;letter-spacing:-.02em;}.ds-tile-accent-meta{margin:.25rem 0 0;font-size:.875rem;font-weight:500;}"
+    },
+    {
+      "name": "Ink Tile",
+      "kind": "card",
+      "refersTo": "tile-ink",
+      "description": "Black milestone slab with a Graphite edge.",
+      "html": "<section class=\"ds-tile-ink\"><h2>Parcours terminé.</h2><p>Tes révisions continuent de t'envoyer les bonnes questions au bon moment.</p></section>",
+      "css": ".ds-tile-ink{padding:2rem;background:var(--ink,#000);color:var(--paper,#f1f1ee);border-radius:16px;box-shadow:0 5px 0 #3a3a37;font-family:var(--font-geist),Geist,system-ui,sans-serif;}.ds-tile-ink h2{margin:0 0 1rem;font-family:var(--font-archivo),Archivo,sans-serif;font-weight:800;font-stretch:112%;font-size:2.5rem;line-height:.98;letter-spacing:-.035em;}.ds-tile-ink p{margin:0;max-width:50ch;opacity:.8;}"
+    },
+    {
+      "name": "Answer Choice",
+      "kind": "custom",
+      "refersTo": "choice",
+      "description": "Quiz and onboarding option: white slab, key badge, small edge; selected, correct and wrong states.",
+      "html": "<div class=\"ds-choices\"><button class=\"ds-choice\"><span class=\"ds-key\">1</span>Vrai</button><button class=\"ds-choice\" aria-pressed=\"true\"><span class=\"ds-key\">2</span>Sélectionnée</button><button class=\"ds-choice\" data-state=\"correct\"><span class=\"ds-key\">3</span>Bonne réponse</button><button class=\"ds-choice\" data-state=\"wrong\"><span class=\"ds-key\">4</span>Mauvaise réponse</button></div>",
+      "css": ".ds-choices{display:grid;gap:.75rem;}.ds-choice{display:flex;align-items:center;gap:.875rem;width:100%;min-height:3.5rem;padding:.875rem 1.125rem;border:0;text-align:left;background:var(--surface,#fff);border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--line,#dcdcd6),0 3px 0 var(--edge,#d3d3cc);font-family:var(--font-geist),Geist,system-ui,sans-serif;font-size:1.0625rem;font-weight:500;color:var(--ink,#000);cursor:pointer;transition:transform 120ms cubic-bezier(0.16, 1, 0.3, 1),box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1),background-color 120ms;}.ds-choice:hover{box-shadow:inset 0 0 0 1.5px var(--ink-2,#3a3a37),0 3px 0 var(--edge,#d3d3cc);}.ds-choice:active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px var(--ink-2,#3a3a37),0 1px 0 var(--edge,#d3d3cc);}.ds-choice:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-choice[aria-pressed=true]{background:var(--accent-soft,#fff5cc);box-shadow:inset 0 0 0 2px var(--ink,#000),0 3px 0 var(--ink,#000);}.ds-choice[data-state=correct]{background:var(--good-soft,#e2f5e8);box-shadow:inset 0 0 0 2px var(--good,#137a3a),0 3px 0 var(--good,#137a3a);}.ds-choice[data-state=wrong]{background:var(--bad-soft,#fce8e5);box-shadow:inset 0 0 0 2px var(--bad,#c22a1b),0 3px 0 var(--bad,#c22a1b);}.ds-key{display:grid;place-items:center;width:1.75rem;height:1.75rem;flex:none;border-radius:8px;font-size:.8125rem;font-weight:600;color:var(--muted,#66665f);box-shadow:inset 0 0 0 1.5px var(--line,#dcdcd6);}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "White field with a hairline inset ring; 2px ink ring on focus, red on error.",
+      "html": "<input class=\"ds-field\" placeholder=\"ton@email.fr\" />",
+      "css": ".ds-field{width:100%;height:3.25rem;padding:0 1rem;border:0;border-radius:12px;background:var(--surface,#fff);box-shadow:inset 0 0 0 1.5px var(--line,#dcdcd6);font-family:var(--font-geist),Geist,system-ui,sans-serif;font-size:1rem;color:var(--ink,#000);transition:box-shadow 120ms;}.ds-field:focus,.ds-field:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--ink,#000);}.ds-field::placeholder{color:var(--muted,#66665f);}.ds-field[aria-invalid=true]{box-shadow:inset 0 0 0 2px var(--bad,#c22a1b);}"
+    },
+    {
+      "name": "Navigation Rail",
+      "kind": "nav",
+      "refersTo": "nav-rail-item-active",
+      "description": "Desktop left rail; the active item becomes a white mini-tile with a 3px edge.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item\" aria-current=\"page\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14.1 4.6a2 2 0 0 0-1.8 0l-3.6 1.8a2 2 0 0 1-1.8 0L3.4 4.6A1 1 0 0 0 2 5.5v12.8a1 1 0 0 0 .6.9l4.3 2.2a2 2 0 0 0 1.8 0l3.6-1.8a2 2 0 0 1 1.8 0l3.5 1.8a1 1 0 0 0 1.4-.9V7.7a1 1 0 0 0-.6-.9z\"/><path d=\"M15 5.8v15M9 3.2v15\"/></svg>Parcours</a><a class=\"ds-rail-item\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 9-9 9.8 9.8 0 0 0-6.7 2.7L3 8\"/><path d=\"M3 3v5h5\"/></svg>Révisions<span class=\"ds-rail-badge\">4</span></a></nav>",
+      "css": ".ds-rail{display:grid;gap:.25rem;width:13.5rem;font-family:var(--font-geist),Geist,system-ui,sans-serif;}.ds-rail-item{display:flex;align-items:center;gap:.75rem;height:3rem;padding:0 .875rem;border-radius:12px;color:var(--ink-2,#3a3a37);font-weight:500;text-decoration:none;transition:background-color 140ms;}.ds-rail-item:hover{background:var(--sunk,#e7e7e3);}.ds-rail-item:focus-visible{outline:2.5px solid var(--ink,#000);outline-offset:3px;}.ds-rail-item[aria-current=page]{background:var(--surface,#fff);color:var(--ink,#000);box-shadow:0 3px 0 var(--edge,#d3d3cc);}.ds-rail-badge{margin-left:auto;display:grid;place-items:center;min-width:1.5rem;height:1.5rem;padding:0 .375rem;border-radius:999px;background:var(--accent,#ffd43b);color:var(--ink,#000);font-size:.75rem;font-weight:600;font-variant-numeric:tabular-nums;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Tile Table",
+    "overview": "Learning AI is handled like physical objects on a cool grey table. Every lesson, panel and answer is a tile: a flat, opaque slab with a visible pressed underside that collapses when you push it. Progress is a column of tiles you work down, not a winding path of bubbles and not a SaaS card grid. The table is quiet (cool paper, white, true black); colour appears only as the flat field of the track you are in.\n\nType does the shouting. Archivo, set expanded and extra-bold, runs enormous on the landing and lesson-complete screens and at title scale everywhere else; Geist carries all UI and reading text calmly. Compositions are large and spare: one strong headline, one column of tiles, generous gaps. Motion is sober and physical: tiles lift 2px on hover and sink 4px on press, display lines rise out of a mask, wrong answers shake once.\n\nThe world refuses the category default of round lesson bubbles on a winding path, gradient fills, and blurred floating cards. Depth is a solid edge, never a glow.",
+    "keyCharacteristics": [
+      "Cool paper ground, white tiles, true black ink; one track colour per screen, used as flat fields.",
+      "Every interactive object has a crisp pressed edge (solid, unblurred, offset straight down) that collapses on `:active`.",
+      "Archivo expanded black for display, Geist for everything else; no uppercase labels.",
+      "Pills for actions, 16px-cornered tiles for objects.",
+      "Metadata sits below its title as a quiet muted line joined with middots."
+    ],
+    "rules": [
+      {
+        "name": "The One Track Rule",
+        "body": "A screen shows one track colour, set by `data-track`. The landing's three-track stack is the only place all three appear together, each on its own tile.",
+        "section": "colors"
+      },
+      {
+        "name": "The Edge Is Deeper Rule",
+        "body": "A pressed edge is always the darker step of its own tile colour: `edge` under white, `accent-deep` under accent, Graphite under ink, `good`/`bad` under feedback states. Never a neutral grey under a coloured tile.",
+        "section": "colors"
+      },
+      {
+        "name": "The Title-Then-Meta Rule",
+        "body": "Small metadata (\"Bird · Débutant complet · 6 cours\", \"Découverte · 5 min · 20 XP\") goes directly below its title, in Label style, joined with middots. Nothing small sits above a title: no kickers, no eyebrows, no category tags.",
+        "section": "typography"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Archivo is only ever display (800, expanded). Geist is everything else, at 400 to 700. No third face, no Archivo at body size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Pressed Edge Rule",
+        "body": "This world's material is the crisp pressed-edge tile (\"ombre portée nette\"), chosen explicitly by the user. Every raised object carries a 3 to 5px solid edge with zero blur, offset only on the y axis. No blurred shadows, no glows, no x offset, no elevation without an edge.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Edge Collapses Rule",
+        "body": "Anything with an edge that is pressable must physically press: on `:active` it moves down by the edge height minus 1px and the edge shrinks to match. A tile that keeps its edge when pressed is a picture of a button.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** give every raised, touchable object a solid pressed edge (`0 3px 0` to `0 5px 0`, zero blur) in the darker step of its own colour, and collapse it on `:active`.",
+      "**Do** set one track colour per screen through `data-track` and reference only `--accent`, `--accent-deep`, `--accent-soft` in components.",
+      "**Do** put text on accent fields in ink, and keep accent use to flat fields (tiles, badges, progress fill, selected wash).",
+      "**Do** place metadata directly below its title in Label style (14px, Stone, middot-separated).",
+      "**Do** use Archivo 800 at `wdth` 112% for display only, with `text-wrap: balance` and tight negative tracking (-0.035em, -0.02em at small sizes).",
+      "**Do** use pills for actions and 16px-cornered tiles for objects.",
+      "**Do** use tabular figures for XP, streaks, counts and scores."
+    ],
+    "donts": [
+      "**Don't** use blurred, coloured-glow or x-offset shadows; depth is a solid edge or nothing.",
+      "**Don't** put kickers, eyebrows or small labels above a title.",
+      "**Don't** set labels in uppercase or with wide letter-spacing.",
+      "**Don't** draw progress as a winding path of round lesson bubbles; the track is a column of tiles.",
+      "**Don't** use gradients on surfaces, buttons or text (the loading skeleton's grey shimmer is the only gradient).",
+      "**Don't** mix two track colours on one screen outside the landing's track stack.",
+      "**Don't** set text lighter than Stone (`muted`) on white or paper."
+    ]
+  }
+}
