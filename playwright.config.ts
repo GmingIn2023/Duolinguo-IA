@@ -6,6 +6,7 @@ const args = process.env.HTTPS_PROXY ? [`--proxy-server=${process.env.HTTPS_PROX
 
 export default defineConfig({
   testDir: "e2e",
+  globalSetup: "./e2e/global-setup.ts",
   timeout: 90_000,
   fullyParallel: false,
   workers: 1,
