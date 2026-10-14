@@ -2,21 +2,22 @@ import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { LandingDemo } from "@/components/LandingDemo";
 import { Wordmark } from "@/components/Wordmark";
-import { TRACKS, TRACK_IDS } from "@/content";
+import { LESSONS, THEMES, THEME_IDS, TRACKS, TRACK_IDS } from "@/content";
+import { ThemeGlyph } from "@/components/ThemeGlyph";
 import { getViewer } from "@/lib/data";
 
 const LOOP = [
-  { t: "Un cours de 5 minutes", d: "Une idée à la fois, des schémas, des exemples concrets." },
-  { t: "Un quiz qui corrige", d: "Tu sais tout de suite pourquoi c'est juste ou faux, et tes erreurs reviennent." },
-  { t: "Des XP et une série", d: "Ta progression est sauvegardée, cours après cours." },
-  { t: "Des révisions au bon moment", d: "Chaque jour ce qui est dû, et 10 minutes par semaine sur ce que tu viens d'apprendre." },
+  { t: "Une carte qui se ramifie", d: "Un test de niveau ouvre ce que tu sais déjà. Ensuite, tu choisis ta branche : étudier, travailler, construire." },
+  { t: "Des cours qui se manipulent", d: "Schémas à explorer, prompts annotés, exercices à faire dans ton assistant." },
+  { t: "Un quiz qui corrige", d: "Tu sais tout de suite pourquoi c'est juste ou faux, même pour une réponse rédigée." },
+  { t: "Des révisions qui changent de forme", d: "Une notion revient quand tu risques de l'oublier, sous une autre question. Et ton carnet garde le reste." },
 ];
 
 const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
 
 export default async function Home() {
   const viewer = await getViewer().catch(() => null);
-  const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Trouver mon parcours" };
+  const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Trouver mon niveau" };
 
   return (
     <div className="overflow-x-clip">
@@ -36,10 +37,10 @@ export default async function Home() {
             <span className="reveal-line"><span>comme une</span></span>
             <span className="reveal-line"><span>langue.</span></span>
           </h1>
-          <p className="lede">Des cours de 5 minutes, des quiz qui corrigent tes erreurs, des révisions qui reviennent au bon moment. Trois parcours, du tout premier pas jusqu&apos;à l&apos;usage pro.</p>
+          <p className="lede">{LESSONS.length} cours courts et sourcés, des quiz qui corrigent tes erreurs, des révisions qui reviennent au bon moment. Trois cartes, du tout premier prompt jusqu&apos;aux agents et au RAG.</p>
           <div className="flex flex-wrap items-center gap-3">
             <Link href={cta.href} className="btn btn-primary btn-lg">{cta.label}</Link>
-            <span className="text-sm text-muted">5 questions · 1 minute</span>
+            <span className="text-sm text-muted">Test de niveau · 3 minutes</span>
           </div>
         </div>
 
@@ -54,7 +55,7 @@ export default async function Home() {
                   </span>
                   <div className="min-w-0">
                     <p className="display display-s">{t.name}</p>
-                    <p className="text-sm font-medium">{t.animal} · {t.audience} · {t.lessonIds.length} cours</p>
+                    <p className="text-sm font-medium">{t.animal} · {t.audience} · {t.nodes.filter((n) => n.lessonId).length} cours</p>
                   </div>
                 </div>
               </li>
@@ -103,6 +104,22 @@ export default async function Home() {
         <ul className="grid grid-cols-2 gap-3 self-center sm:grid-cols-3 lg:col-span-6 lg:col-start-7" translate="no">
           {TOOLS.map((t, i) => (
             <li key={t} className={`tile px-5 py-6 text-xl font-semibold sm:text-2xl ${i === 4 ? "col-span-2" : ""}`}>{t}</li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Ten themes */}
+      <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-8 lg:pb-28">
+        <h2 className="display display-l mb-10 max-w-[18ch]">Dix thèmes, de la première question au projet complet.</h2>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {THEME_IDS.map((t) => (
+            <li key={t} data-theme={t} className="tile-th tile flex flex-col gap-6 p-5">
+              <ThemeGlyph theme={t} size={30} />
+              <div className="grid gap-1">
+                <p className="display display-xs">{THEMES[t].name}</p>
+                <p className="text-sm opacity-85">{THEMES[t].pitch}</p>
+              </div>
+            </li>
           ))}
         </ul>
       </section>

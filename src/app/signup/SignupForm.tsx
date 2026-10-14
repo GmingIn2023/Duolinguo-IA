@@ -11,7 +11,7 @@ import { signup, type AuthState } from "@/app/auth/actions";
 
 function readOnboarding() {
   try {
-    return JSON.stringify(JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}").answers ?? {});
+    return sessionStorage.getItem("gusgus.onboarding") ?? "{}";
   } catch {
     return "{}";
   }
@@ -20,7 +20,6 @@ function readOnboarding() {
 export function SignupForm() {
   const params = useSearchParams();
   const track = isTrackId(params.get("track")) ? (params.get("track") as keyof typeof TRACKS) : null;
-  const level = params.get("level") ?? "1";
   const [state, action, pending] = useActionState(signup, { error: null } as AuthState);
   const [retry, setRetry] = useState(0);
 
@@ -52,11 +51,10 @@ export function SignupForm() {
       {t ? (
         <p className="-mt-4 text-ink-2">Parcours choisi : <strong className="text-ink">{t.animal} · {t.name}</strong>. <Link href="/onboarding" className="underline">Changer</Link></p>
       ) : (
-        <p className="-mt-4 text-ink-2">Tu choisiras ton parcours juste après. <Link href="/onboarding" className="underline">Ou réponds à 4 questions</Link> pour qu&apos;on te le propose.</p>
+        <p className="-mt-4 text-ink-2">Tu choisiras ton parcours juste après. <Link href="/onboarding" className="underline">Ou fais le test de niveau</Link> (3 minutes) pour qu&apos;on te le conseille.</p>
       )}
       <form className="grid gap-4" action={(fd) => { fd.set("onboarding", readOnboarding()); setRetry(0); return action(fd); }}>
         <input type="hidden" name="track" value={track ?? ""} />
-        <input type="hidden" name="level" value={level} />
         <label className="grid gap-1.5">
           <span className="text-sm font-semibold">Prénom</span>
           <input name="name" required autoComplete="given-name" className="field" placeholder="Camille" defaultValue={state.values?.name} />

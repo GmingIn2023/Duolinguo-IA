@@ -6,6 +6,7 @@ import { isTrackId } from "@/content";
 import { authErrorMessage } from "@/lib/authErrors";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safeNext";
+import { gradePlacement, isGoal, legacyLevel, placementLevel } from "@/lib/placement";
 
 export type AuthState = { error: string | null; sentTo?: string; values?: { name?: string; email?: string } };
 
@@ -34,10 +35,13 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (password.length < 8) return { error: "Mot de passe trop court : 8 caractères minimum.", values };
 
   const track = form.get("track");
-  const level = Math.min(3, Math.max(1, Number(form.get("level")) || 1));
-  let onboarding = {};
+  // the placement answers are re-graded here: a level sent by the browser is never trusted
+  let level10: number | null = null;
+  let onboarding: Record<string, unknown> = {};
   try {
-    onboarding = JSON.parse(String(form.get("onboarding") || "{}"));
+    const raw = JSON.parse(String(form.get("onboarding") || "{}"));
+    if (Array.isArray(raw?.placement)) level10 = placementLevel(gradePlacement(raw.placement));
+    if (isGoal(raw?.goal)) onboarding = { goal: raw.goal };
   } catch {}
 
   const h = await headers();
@@ -50,7 +54,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
       password,
       options: {
         emailRedirectTo: `${origin}/auth/callback?next=/learn`,
-        data: { display_name: name, track_id: isTrackId(track) ? track : null, placement_level: level, onboarding },
+        data: { display_name: name, track_id: isTrackId(track) ? track : null, placement_level: legacyLevel(level10 ?? 0), level10, onboarding },
       },
     });
     if (error) return { error: authErrorMessage(error.message), values };

@@ -11,7 +11,7 @@ const files = (dir: string): string[] =>
     const p = path.join(dir, f);
     return statSync(p).isDirectory() ? files(p) : /\.(ts|tsx)$/.test(f) && !f.endsWith(".test.ts") ? [p] : [];
   });
-const sources = files(root).map((p) => ({ path: path.relative(root, p), code: readFileSync(p, "utf8") }));
+const sources = files(root).map((p) => ({ path: path.relative(root, p).split(path.sep).join("/"), code: readFileSync(p, "utf8") }));
 const ADMIN = "lib/supabase/admin.ts";
 
 describe("secret key stays on the server", () => {
@@ -42,7 +42,9 @@ describe("progress writes", () => {
   });
 
   it("never set xp, streak or activity date from the learner's client", () => {
-    const profileUpdates = [...code.matchAll(/\.from\("profiles"\)\s*\.update\(\{([^}]*)\}/g)].map((m) => m[1]);
+    // the learner's own client: anything but the admin client (which only runs server-side, scoped to the user)
+    const profileUpdates = [...code.matchAll(/(\S*?)\s*\.from\("profiles"\)\s*\.update\(\{([^}]*)\}/g)].filter((m) => m[1] !== "createAdminClient()").map((m) => m[2]);
+    expect(profileUpdates.length).toBeGreaterThan(0);
     for (const fields of profileUpdates) expect(fields).not.toMatch(/\b(xp|streak_days|last_active_date|placement_level)\b/);
   });
 

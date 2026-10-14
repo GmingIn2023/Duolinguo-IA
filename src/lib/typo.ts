@@ -10,7 +10,7 @@ export function frenchSpacing(text: string): string {
     .replace(/(\p{L})-(ce|elle|elles|il|ils|tu|moi|toi|le|la|les|nous|vous|on)\b/gu, "$1\u2011$2");
 }
 
-const SKIP = new Set(["id", "answer", "prerequisites", "lessonIds", "toolIds", "type", "sources", "lastVerified"]);
+const SKIP = new Set(["id", "answer", "prerequisites", "toolIds", "type", "sources", "lastVerified", "code", "lang", "anyOf", "concept", "theme", "format", "covers", "after", "unit", "lessonId", "kind"]);
 
 /** Applies frenchSpacing to every human-readable string of a content tree. */
 export function typesetContent<T>(value: T, key = ""): T {
