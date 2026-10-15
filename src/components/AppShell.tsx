@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Flame, Zap } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { AppNav } from "@/components/AppNav";
@@ -22,23 +23,26 @@ export function AppShell({ profile, dueCount, children }: { profile: Profile; du
       <aside className="sticky top-0 hidden h-dvh flex-col gap-10 border-r border-line px-5 py-7 lg:flex">
         <Wordmark href="/learn" small />
         <AppNav dueCount={dueCount} variant="rail" />
-        <div className="mt-auto flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-[0_3px_0_var(--edge)]">
+        <Link href="/profile" className="mt-auto flex items-center gap-3 rounded-2xl bg-surface p-3 shadow-[0_3px_0_var(--edge)] transition-transform hover:-translate-y-0.5">
           {profile.track_id && <Avatar track={profile.track_id} size={40} />}
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{profile.display_name ?? "Toi"}</p>
-            <div className="flex gap-3 text-sm">
+          <span className="grid min-w-0">
+            <span className="truncate text-sm font-semibold">{profile.display_name ?? "Toi"}</span>
+            <span className="flex gap-3 text-sm">
               <Stat icon="xp" value={profile.xp} label="points d'expérience" />
               <Stat icon="streak" value={profile.streak_days} label="jours de série" />
-            </div>
-          </div>
-        </div>
+            </span>
+          </span>
+        </Link>
       </aside>
 
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-line bg-paper/90 px-4 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-line bg-paper/90 px-4 backdrop-blur lg:hidden">
         <Wordmark href="/learn" small />
-        <div className="flex gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm">
           <Stat icon="streak" value={profile.streak_days} label="jours de série" />
           <Stat icon="xp" value={profile.xp} label="points d'expérience" />
+          <Link href="/profile" className="grid size-11 place-items-center rounded-full hover:bg-sunk" aria-label="Profil et réglages">
+            {profile.track_id ? <Avatar track={profile.track_id} size={30} /> : <span className="size-7 rounded-full bg-sunk" />}
+          </Link>
         </div>
       </header>
 

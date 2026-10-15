@@ -11,7 +11,7 @@ const files = (dir: string): string[] =>
     const p = path.join(dir, f);
     return statSync(p).isDirectory() ? files(p) : /\.(ts|tsx)$/.test(f) && !f.endsWith(".test.ts") ? [p] : [];
   });
-const sources = files(root).map((p) => ({ path: path.relative(root, p), code: readFileSync(p, "utf8") }));
+const sources = files(root).map((p) => ({ path: path.relative(root, p).split(path.sep).join("/"), code: readFileSync(p, "utf8") }));
 const ADMIN = "lib/supabase/admin.ts";
 
 describe("secret key stays on the server", () => {
@@ -42,8 +42,26 @@ describe("progress writes", () => {
   });
 
   it("never set xp, streak or activity date from the learner's client", () => {
-    const profileUpdates = [...code.matchAll(/\.from\("profiles"\)\s*\.update\(\{([^}]*)\}/g)].map((m) => m[1]);
+    // the learner's own client: anything but the admin client (which only runs server-side, scoped to the user)
+    const profileUpdates = [...code.matchAll(/(\S*?)\s*\.from\("profiles"\)\s*\.update\(\{([^}]*)\}/g)].filter((m) => m[1] !== "createAdminClient()").map((m) => m[2]);
+    expect(profileUpdates.length).toBeGreaterThan(0);
     for (const fields of profileUpdates) expect(fields).not.toMatch(/\b(xp|streak_days|last_active_date|placement_level)\b/);
+  });
+
+  it("pays one-off bonuses through sources the database makes unique", () => {
+    const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
+    expect(actions).toMatch(/awardXp\(viewer, CHECKPOINT_BONUS_XP, "checkpoint"/);
+    expect(actions).toMatch(/awardXp\(viewer, WEEKLY_BONUS_XP, "weekly"/);
+    const dir = path.resolve(root, "../supabase/migrations");
+    const migrations = readdirSync(dir).map((f) => readFileSync(path.join(dir, f), "utf8")).join("\n");
+    expect(migrations).toMatch(/unique index xp_events_weekly_once on public\.xp_events \(user_id, ref\) where source = 'weekly'/);
+    expect(migrations).toMatch(/unique index if not exists xp_events_checkpoint_once on public\.xp_events \(user_id, ref\) where source = 'checkpoint'/);
+  });
+
+  it("caps replay XP so a scripted loop cannot farm it", () => {
+    const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
+    expect(actions).toMatch(/recentlyCredited\(viewer, "lesson", lessonId\)/);
+    expect(actions).toMatch(/recentlyCredited\(viewer, "review", mode\)/);
   });
 
   it("credits XP only through the award_xp function", () => {

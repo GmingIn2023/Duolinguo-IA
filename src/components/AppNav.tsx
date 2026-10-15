@@ -2,22 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Map, RotateCcw, Shapes, User } from "lucide-react";
+import { BookOpen, Home, Map, NotebookPen, RotateCcw, User } from "lucide-react";
 
 const ITEMS = [
-  { href: "/learn", label: "Parcours", icon: Map },
-  { href: "/review", label: "Révisions", icon: RotateCcw },
-  { href: "/tracks", label: "Changer", icon: Shapes },
-  { href: "/profile", label: "Profil", icon: User },
+  { href: "/learn", label: "Accueil", icon: Home, bar: true },
+  { href: "/map", label: "Carte", icon: Map, bar: true },
+  { href: "/courses", label: "Cours", icon: BookOpen, bar: true },
+  { href: "/review", label: "Révisions", icon: RotateCcw, bar: true },
+  { href: "/notes", label: "Carnet", icon: NotebookPen, bar: true },
+  { href: "/profile", label: "Profil", icon: User, bar: false },
 ];
 
 export function AppNav({ dueCount, variant }: { dueCount: number; variant: "rail" | "bar" }) {
   const path = usePathname();
+  const items = variant === "bar" ? ITEMS.filter((i) => i.bar) : ITEMS;
   return (
-    <nav aria-label="Navigation principale" className={variant === "rail" ? "grid gap-1" : "grid grid-cols-4"}>
-      {ITEMS.map(({ href, label, icon: Icon }) => {
+    <nav aria-label="Navigation principale" className={variant === "rail" ? "grid gap-1" : "grid grid-cols-5"}>
+      {items.map(({ href, label, icon: Icon }) => {
         const active = path === href || path.startsWith(`${href}/`);
-        const badge = href === "/review" && dueCount > 0 ? dueCount : null;
+        const badge = href === "/review" && dueCount > 0 ? Math.min(dueCount, 99) : null;
         return variant === "rail" ? (
           <Link
             key={href}
@@ -27,18 +30,18 @@ export function AppNav({ dueCount, variant }: { dueCount: number; variant: "rail
           >
             <Icon className="size-5" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
             {label}
-            {badge && <span className="tabular ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-xs font-semibold text-ink">{badge}</span>}
+            {badge && <span className="tabular ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-accent px-1.5 text-xs font-semibold text-ink">{badge}<span className="sr-only"> à revoir</span></span>}
           </Link>
         ) : (
           <Link
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`relative flex flex-col items-center gap-1 py-2.5 text-[0.75rem] font-medium ${active ? "text-ink" : "text-muted"}`}
+            className={`relative flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-[0.75rem] font-medium ${active ? "text-ink" : "text-muted"}`}
           >
             <Icon className="size-[1.375rem]" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
             {label}
-            {badge && <span className="tabular absolute left-1/2 top-1.5 ml-2 grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-accent px-1 text-[0.6875rem] font-semibold text-ink">{badge}</span>}
+            {badge && <span className="tabular absolute left-1/2 top-1.5 ml-2 grid h-[1.125rem] min-w-[1.125rem] place-items-center rounded-full bg-accent px-1 text-[0.6875rem] font-semibold text-ink">{badge}<span className="sr-only"> à revoir</span></span>}
           </Link>
         );
       })}

@@ -9,3 +9,6 @@ export const reviewXp = (correct: number) => correct * 2;
 
 /** One-off bonus for finishing the weekly review. */
 export const WEEKLY_BONUS_XP = 30;
+
+/** One-off bonus the first time a unit checkpoint is passed. */
+export const CHECKPOINT_BONUS_XP = 20;
