@@ -60,8 +60,9 @@ test("signed-in learner: course → quiz → XP → map → notebook → setting
   await expect(page.getByRole("heading", { name: "Révision de la semaine" })).toBeVisible();
   await page.getByRole("link", { name: "Lancer la révision" }).click();
   await finishQuiz(page, /XP gagnés/);
+  // a weekly review replayed within 20 h earns nothing more (anti-farming), so only "not less"
   await page.goto("/learn");
-  expect(await xpOnScreen(page)).toBeGreaterThan(xpBefore + earned);
+  expect(await xpOnScreen(page)).toBeGreaterThanOrEqual(xpBefore + earned);
 });
 
 test("signed-in learner: daily review when notions are due", async ({ page }, info) => {
