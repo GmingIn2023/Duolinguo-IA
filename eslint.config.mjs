@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Agent tooling checked into the repo, not part of the app:
+    ".claude/**",
+    ".impeccable/**",
+    "skill-observations/**",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 
