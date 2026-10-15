@@ -43,6 +43,10 @@ export const workflowsLessons: Lesson[] = [
             ],
           },
           {
+            type: "text",
+            body: "Nuance utile : les assistants récents savent mener seuls beaucoup de tâches à plusieurs étapes, et une demande unique donne parfois un résultat honnête. Découper n'est donc pas une obligation technique. C'est ce qui te permet de **voir les résultats intermédiaires** et de **décider toi-même** aux endroits qui comptent, ce qu'une demande unique ne te laisse pas faire.",
+          },
+          {
             type: "mistake",
             title: "Corriger un gros bloc message après message",
             why: "Tu sais déjà améliorer une réponse en disant précisément ce qui ne va pas. Ça marche très bien sur un résultat court. Sur quatre pages qui mélangent plan, faits et style, chaque correction en déplace une autre, et tu passes plus de temps à réparer qu'à produire.",
@@ -353,15 +357,15 @@ export const workflowsLessons: Lesson[] = [
     sources: [
       {
         title: "Building effective agents (section « Workflow: Prompt chaining »)",
-        publisher: "Anthropic",
+        publisher: "Anthropic, Engineering",
         url: "https://www.anthropic.com/engineering/building-effective-agents",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Prompting best practices (section « Chain complex prompts »)",
         publisher: "Anthropic, documentation Claude",
         url: "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -419,7 +423,7 @@ export const workflowsLessons: Lesson[] = [
               ["Ce qui lance la chaîne", "Trigger", "Trigger (module déclencheur)", "Trigger node"],
               ["Ce que la chaîne fait ensuite", "Action", "Action (module d'action)", "Nœuds suivants"],
             ],
-            caption: "Vocabulaire relevé dans la documentation officielle de chaque plateforme le 13 octobre 2026. Les fonctions, limites et tarifs ne sont volontairement pas décrits ici : vérifie-les à la source.",
+            caption: "Vocabulaire relevé dans la documentation officielle de chaque plateforme le 14 octobre 2026. Les fonctions, limites et tarifs ne sont volontairement pas décrits ici : vérifie-les à la source.",
           },
           {
             type: "check",
@@ -508,7 +512,7 @@ export const workflowsLessons: Lesson[] = [
           {
             type: "text",
             title: "Le point données, concrètement",
-            body: "Chaque bloc de la chaîne est un service. Quand un e-mail traverse une étape IA, son contenu est transmis au fournisseur du modèle, en plus de la plateforme d'automatisation elle-même. Avant d'y faire passer des données personnelles ou confidentielles, il faut savoir où elles vont, qui y a accès, et si tu as le droit de les y envoyer. Si tu ne sais pas répondre, la réponse provisoire est non.",
+            body: "Chaque bloc de la chaîne est un service. Quand un e-mail traverse une étape IA, son contenu est transmis au fournisseur du modèle, en plus de la plateforme d'automatisation elle-même. Avant d'y faire passer des données personnelles ou confidentielles, il faut savoir où elles vont, qui y a accès, et si tu as le droit de les y envoyer (en Europe, le RGPD encadre les données personnelles). Si tu ne sais pas répondre, la réponse provisoire est non.",
           },
           {
             type: "mistake",
@@ -827,19 +831,19 @@ export const workflowsLessons: Lesson[] = [
         title: "Learn key concepts in Zap workflows",
         publisher: "Zapier, centre d'aide",
         url: "https://help.zapier.com/hc/en-us/articles/8496181725453",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Types of modules",
         publisher: "Make, centre d'aide",
         url: "https://help.make.com/types-of-modules",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Key concept glossary",
         publisher: "n8n, documentation",
         url: "https://docs.n8n.io/glossary/",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },

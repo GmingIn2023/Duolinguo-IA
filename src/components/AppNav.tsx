@@ -37,7 +37,7 @@ export function AppNav({ dueCount, variant }: { dueCount: number; variant: "rail
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`relative flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-[0.6875rem] font-medium ${active ? "text-ink" : "text-muted"}`}
+            className={`relative flex min-h-14 flex-col items-center justify-center gap-1 py-2 text-[0.75rem] font-medium ${active ? "text-ink" : "text-muted"}`}
           >
             <Icon className="size-[1.375rem]" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
             {label}

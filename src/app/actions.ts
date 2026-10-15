@@ -57,8 +57,31 @@ async function scheduleReviews(viewer: Viewer, graded: Graded[]) {
   if (upsertError) throw new Error(upsertError.message);
 }
 
-/** Credits XP atomically (event + total + streak). `awarded` is false if this weekly bonus was already paid. */
-async function awardXp(viewer: Viewer, amount: number, source: "lesson" | "review" | "weekly", ref: string) {
+const isRecord = (v: unknown): v is Record<string, unknown> => Boolean(v) && typeof v === "object" && !Array.isArray(v);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Replays of the same lesson or session pay XP at most once per this window (anti-farming). */
+const REPLAY_WINDOW_MS = 20 * 3_600_000;
+
+/** Whether this learner was already paid XP for this source and ref within the replay window. */
+async function recentlyCredited(viewer: Viewer, source: "lesson" | "review", ref: string): Promise<boolean> {
+  const { data, error } = await viewer.supabase
+    .from("xp_events")
+    .select("id")
+    .eq("user_id", viewer.user.id)
+    .eq("source", source)
+    .eq("ref", ref)
+    .gt("amount", 0)
+    .gte("created_at", new Date(Date.now() - REPLAY_WINDOW_MS).toISOString())
+    .limit(1);
+  if (error) throw new Error(error.message);
+  return Boolean(data?.length);
+}
+
+/**
+ * Credits XP atomically (event + total + streak). `awarded` is false when a one-off bonus
+ * (weekly, checkpoint) was already paid: the database's unique indexes refuse the second claim.
+ */
+async function awardXp(viewer: Viewer, amount: number, source: "lesson" | "review" | "weekly" | "checkpoint", ref: string) {
   const { user, profile } = viewer;
   const today = todayKey();
   const { data, error } = await createAdminClient()
@@ -84,8 +107,9 @@ function revalidateApp() {
 }
 
 export async function completeLesson(lessonId: string, firstAnswers: Record<string, Answer>): Promise<LessonResult> {
-  const lesson = getLesson(lessonId);
+  const lesson = typeof lessonId === "string" ? getLesson(lessonId) : undefined;
   if (!lesson) throw new Error("Cours introuvable.");
+  if (!isRecord(firstAnswers)) throw new Error("Réponses invalides.");
   const viewer = await viewerOrThrow();
   const { supabase, user } = viewer;
 
@@ -96,7 +120,7 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
   const graded = lesson.questions.map((q) => ({
     questionId: q.id,
     lessonId,
-    correct: q.id in firstAnswers && gradeAnswer(q, firstAnswers[q.id]),
+    correct: Object.hasOwn(firstAnswers, q.id) && gradeAnswer(q, firstAnswers[q.id]),
   }));
   const correct = graded.filter((g) => g.correct).length;
   const total = graded.length;
@@ -110,7 +134,9 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
     .maybeSingle();
   if (error) throw new Error(error.message);
 
-  const xpEarned = lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: Boolean(prev) });
+  // a replay pays its small reward once per window, so a scripted loop cannot farm XP
+  const farming = Boolean(prev) && (await recentlyCredited(viewer, "lesson", lessonId));
+  const xpEarned = farming ? 0 : lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: Boolean(prev) });
   const now = new Date().toISOString();
   const { error: upsertError } = await createAdminClient().from("lesson_progress").upsert({
     user_id: user.id,
@@ -143,8 +169,10 @@ function scheduledFor(servedId: string): { questionId: string; lessonId: string 
 
 /** The served question ids this learner is allowed to be graded on right now, for the given mode. */
 async function allowedQuestions(mode: ReviewMode): Promise<Set<string>> {
+  if (typeof mode !== "string") throw new Error("Révision inconnue.");
   if (mode === "daily") return new Set(serveItems((await getDueItems()).slice(0, DAILY_LIMIT)).map((s) => s.question.id));
   if (mode === "weekly") return new Set(serveItems((await getWeeklyPlan()).items).map((s) => s.question.id));
+  if (!mode.startsWith("checkpoint:")) throw new Error("Révision inconnue.");
   const checkpoint = findCheckpoint(mode.slice("checkpoint:".length));
   if (!checkpoint) throw new Error("Bilan introuvable.");
   const { knowledge } = await getKnowledge();
@@ -154,6 +182,7 @@ async function allowedQuestions(mode: ReviewMode): Promise<Set<string>> {
 }
 
 export async function submitReview(mode: ReviewMode, firstAnswers: Record<string, Answer>): Promise<ReviewResult> {
+  if (!isRecord(firstAnswers)) throw new Error("Réponses invalides.");
   const viewer = await viewerOrThrow();
   const allowed = await allowedQuestions(mode);
   // one verdict per scheduled notion: missed if any of its forms was missed
@@ -173,23 +202,24 @@ export async function submitReview(mode: ReviewMode, firstAnswers: Record<string
   if (!total) throw new Error("Aucune réponse à enregistrer.");
 
   await scheduleReviews(viewer, [...verdicts.values()]);
-  const xpEarned = reviewXp(correct);
+  // daily items leave the due list once answered, so they cannot be replayed; the weekly plan and
+  // checkpoints can be, and pay their review XP once per window
+  const replayable = mode !== "daily";
+  const xpEarned = replayable && (await recentlyCredited(viewer, "review", mode)) ? 0 : reviewXp(correct);
   let bonus = 0;
-  let totals: { totalXp: number; streak: number };
+  // the review event is always written: it marks a checkpoint as passed and counts for the streak
+  let totals: { totalXp: number; streak: number } = await awardXp(viewer, xpEarned, "review", mode);
 
-  if (mode === "daily") {
-    totals = await awardXp(viewer, xpEarned, "review", "daily");
-  } else if (mode === "weekly") {
-    totals = await awardXp(viewer, xpEarned, "review", "weekly");
+  if (mode === "weekly") {
     // paid once per ISO week: the database refuses a second claim
     const paid = await awardXp(viewer, WEEKLY_BONUS_XP, "weekly", isoWeekKey(new Date()));
     if (paid.awarded) bonus = WEEKLY_BONUS_XP;
     totals = paid;
-  } else {
-    const { data: before, error } = await viewer.supabase.from("xp_events").select("id").eq("user_id", viewer.user.id).eq("source", "review").eq("ref", mode).limit(1);
-    if (error) throw new Error(error.message);
-    if (!before?.length) bonus = CHECKPOINT_BONUS_XP;
-    totals = await awardXp(viewer, xpEarned + bonus, "review", mode);
+  } else if (mode !== "daily") {
+    // paid once per checkpoint: a unique index makes concurrent submissions unable to claim it twice
+    const paid = await awardXp(viewer, CHECKPOINT_BONUS_XP, "checkpoint", mode);
+    if (paid.awarded) bonus = CHECKPOINT_BONUS_XP;
+    totals = paid;
   }
   revalidateApp();
   return { correct, total, xpEarned, bonus, totalXp: totals.totalXp, streak: totals.streak };
@@ -215,8 +245,8 @@ export async function savePreferences(raw: unknown): Promise<void> {
 
 /** Placement test taken while signed in: answers are re-graded here and the level is computed on the server. */
 export async function savePlacement(answers: { id: string; answer: Answer | null }[]): Promise<{ level10: number }> {
-  const { user } = await viewerOrThrow();
   if (!Array.isArray(answers)) throw new Error("Test invalide.");
+  const { user } = await viewerOrThrow();
   const level10 = placementLevel(gradePlacement(answers));
   const { error } = await createAdminClient()
     .from("profiles")
@@ -228,7 +258,7 @@ export async function savePlacement(answers: { id: string; answer: Answer | null
 }
 
 export async function saveResume(lessonId: string, sectionIndex: number): Promise<void> {
-  const lesson = getLesson(lessonId);
+  const lesson = typeof lessonId === "string" ? getLesson(lessonId) : undefined;
   if (!lesson || !Number.isInteger(sectionIndex) || sectionIndex < 0 || sectionIndex >= lesson.sections.length) return;
   const { user } = await viewerOrThrow();
   const { error } = await createAdminClient()
@@ -245,10 +275,11 @@ const isNoteColor = (v: unknown): v is NoteColor => (NOTE_COLORS as readonly unk
 const cleanBody = (v: unknown) => (typeof v === "string" ? v.trim().slice(0, NOTE_MAX) : "");
 
 export async function addNote(input: { body: string; color?: string; lessonId?: string | null; sectionId?: string | null }): Promise<Note> {
+  if (!isRecord(input)) throw new Error("Note invalide.");
   const { supabase, user } = await viewerOrThrow();
   const body = cleanBody(input.body);
   if (!body) throw new Error("Écris quelque chose avant d'enregistrer.");
-  const lesson = input.lessonId ? getLesson(input.lessonId) : undefined;
+  const lesson = typeof input.lessonId === "string" ? getLesson(input.lessonId) : undefined;
   const section = lesson?.sections.find((s) => s.id === input.sectionId);
   const { count, error: countError } = await supabase.from("notes").select("id", { count: "exact", head: true }).eq("user_id", user.id);
   if (countError) throw new Error(countError.message);
@@ -264,6 +295,7 @@ export async function addNote(input: { body: string; color?: string; lessonId?: 
 }
 
 export async function updateNote(id: string, patch: { body?: string; color?: string; pinned?: boolean }): Promise<Note> {
+  if (typeof id !== "string" || !UUID.test(id) || !isRecord(patch)) throw new Error("Note introuvable.");
   const { user } = await viewerOrThrow();
   const change: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (patch.body !== undefined) {
@@ -273,15 +305,16 @@ export async function updateNote(id: string, patch: { body?: string; color?: str
   }
   if (isNoteColor(patch.color)) change.color = patch.color;
   if (typeof patch.pinned === "boolean") change.pinned = patch.pinned;
-  const { data, error } = await createAdminClient().from("notes").update(change).eq("id", String(id)).eq("user_id", user.id).select(NOTE_COLUMNS).single<Note>();
+  const { data, error } = await createAdminClient().from("notes").update(change).eq("id", id).eq("user_id", user.id).select(NOTE_COLUMNS).single<Note>();
   if (error) throw new Error(error.message);
   revalidatePath("/notes");
   return data;
 }
 
 export async function deleteNote(id: string): Promise<void> {
+  if (typeof id !== "string" || !UUID.test(id)) throw new Error("Note introuvable.");
   const { user } = await viewerOrThrow();
-  const { error } = await createAdminClient().from("notes").delete().eq("id", String(id)).eq("user_id", user.id);
+  const { error } = await createAdminClient().from("notes").delete().eq("id", id).eq("user_id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/notes");
 }

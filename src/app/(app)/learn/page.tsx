@@ -155,8 +155,10 @@ function NextCard({ label, title, detail, theme, href, cta, minutes }: { label: 
   return (
     <Link href={href} data-theme={theme} className="tile-th tile tile-press group grid gap-5 overflow-hidden p-6 sm:grid-cols-[1fr_auto] sm:items-end sm:p-8">
       <div className="grid gap-3">
-        <p className="text-sm font-semibold uppercase tracking-[0.06em] opacity-80">{label}{minutes ? ` · ${formatMinutes(minutes)}` : ""}</p>
-        <h2 className="display display-l">{title}</h2>
+        <div className="grid gap-1.5">
+          <h2 className="display display-l">{title}</h2>
+          <p className="text-sm font-semibold opacity-80">{label}{minutes ? ` · ${formatMinutes(minutes)}` : ""}</p>
+        </div>
         <p className="max-w-[48ch] text-[1.0625rem] opacity-90">{detail}</p>
       </div>
       <span className={`btn btn-lg w-fit ${theme === "projets" ? "bg-paper text-ink" : "btn-primary"}`}>{cta}<ArrowRight className="size-5 transition-transform group-hover:translate-x-0.5" aria-hidden /></span>

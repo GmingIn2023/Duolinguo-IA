@@ -66,6 +66,8 @@ test("anonymous visitor cannot write XP or progress", async () => {
   denied(await call(`/rest/v1/profiles?id=eq.${id}`, { method: "PATCH", body: { xp: 999999 } }));
   denied(await call("/rest/v1/xp_events", { method: "POST", body: { user_id: id, amount: 999, source: "lesson" } }));
   denied(await call("/rest/v1/lesson_progress", { method: "POST", body: { user_id: id, lesson_id: "x" } }));
+  denied(await call("/rest/v1/notes", { method: "POST", body: { user_id: id, body: "x" } }));
+  denied(await call("/rest/v1/lesson_resume", { method: "POST", body: { user_id: id, lesson_id: "x", section_index: 0 } }));
   denied(await call("/rest/v1/rpc/award_xp", { method: "POST", body: { p_user: id, p_amount: 100, p_source: "lesson", p_ref: "x", p_streak: 1, p_today: "2026-01-01" } }));
 });
 

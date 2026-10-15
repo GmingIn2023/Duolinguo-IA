@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { LESSONS, getLesson, reviewVariant } from "@/content";
+import { LESSONS, getLesson, getQuestion, reviewVariant } from "@/content";
 import type { Question } from "@/content/types";
 import type { Knowledge } from "@/lib/board";
 import { fromLegacyLevel } from "@/lib/placement";
@@ -40,7 +40,8 @@ export const getProgress = cache(async (): Promise<Map<string, LessonProgressRow
     .select("lesson_id, best_score, attempts, xp_earned, first_completed_at, last_completed_at")
     .eq("user_id", user.id);
   if (error) throw new Error(error.message);
-  return new Map((data ?? []).map((r) => [r.lesson_id, r as LessonProgressRow]));
+  // rows of lessons removed from the curriculum (older versions) are ignored, never rendered
+  return new Map((data ?? []).filter((r) => getLesson(r.lesson_id)).map((r) => [r.lesson_id, r as LessonProgressRow]));
 });
 
 export const getReviewItems = cache(async (): Promise<ReviewItemRow[]> => {
@@ -51,7 +52,9 @@ export const getReviewItems = cache(async (): Promise<ReviewItemRow[]> => {
     .eq("user_id", user.id)
     .order("due_at");
   if (error) throw new Error(error.message);
-  return (data ?? []) as ReviewItemRow[];
+  // notions whose question no longer exists (older curriculum) can never be served: dropping them
+  // keeps them from filling the daily slots and the "due" badge forever
+  return ((data ?? []) as ReviewItemRow[]).filter((i) => getQuestion(i.question_id));
 });
 
 /** Checkpoints already passed, read from the XP ledger. */
@@ -105,7 +108,8 @@ export const getWeeklyPlan = cache(async () => {
   if (error) throw new Error(error.message);
   const since = weekAgo();
   const lessonIds = [...progress.values()].filter((p) => Date.parse(p.last_completed_at) >= since).map((p) => p.lesson_id);
-  const inWeek = items.filter((i) => lessonIds.includes(i.lesson_id));
+  const recent = new Set(lessonIds);
+  const inWeek = items.filter((i) => recent.has(i.lesson_id));
   const picked = pickWeeklyReview(
     inWeek.map((i) => ({ questionId: i.question_id, lessonId: i.lesson_id, box: i.box, lapses: i.lapses }) as WeeklyCandidate),
     WEEKLY_TARGET,

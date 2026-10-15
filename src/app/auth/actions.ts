@@ -45,7 +45,9 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   } catch {}
 
   const h = await headers();
-  const origin = h.get("origin") ?? `https://${h.get("host")}`;
+  // the confirmation link must point back to this site: prefer the configured URL over request
+  // headers (Supabase's redirect allow-list is the second guard)
+  const origin = process.env.SITE_URL?.replace(/\/$/, "") || (h.get("origin") ?? `https://${h.get("host")}`);
   let hasSession = false;
   try {
     const supabase = await createClient();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Clock, Copy, Lightbulb, Repeat, TriangleAlert, X } from "lucide-react";
 import type { Block, TrackId } from "@/content/types";
 import { Rich, renderInline } from "@/components/Rich";
@@ -11,6 +11,9 @@ import { QuestionCheck } from "@/components/quiz/QuizRunner";
 /** Text colour that stays readable on the theme colour ("projets" is ink-coloured). */
 const ON_TH = "text-ink [[data-theme=projets]_&]:text-paper";
 const TOUCH = "min-h-11";
+
+/** The block's own "touch…" hint, unless its caption already says what to do. */
+const needsHint = (caption?: string) => !caption || !/touche/i.test(caption);
 
 function Caption({ children }: { children: string }) {
   return (
@@ -196,9 +199,14 @@ export function BlockView({ block, track, onCheckDone }: { block: Block; track: 
       );
     case "table":
       return (
-        <section>
-          <div className="overflow-x-auto rounded-xl border border-line">
-            <table className="w-full min-w-[28rem] border-collapse text-left text-[0.9375rem]">
+        <section className="min-w-0">
+          <div
+            className="overflow-x-auto rounded-xl border border-line"
+            tabIndex={block.headers.length > 2 ? 0 : undefined}
+            role={block.headers.length > 2 ? "region" : undefined}
+            aria-label={block.headers.length > 2 ? (block.caption ?? "Tableau") : undefined}
+          >
+            <table className={`w-full border-collapse text-left text-[0.9375rem] ${block.headers.length > 2 ? "min-w-[30rem]" : ""}`}>
               {block.caption && <caption className="meta px-3 py-2 text-left">{renderInline(block.caption)}</caption>}
               <thead>
                 <tr>
@@ -255,8 +263,13 @@ export function BlockView({ block, track, onCheckDone }: { block: Block; track: 
   }
 }
 
+/** Prose-like "code" (prompts, plain text) wraps instead of scrolling sideways. */
+const WRAPPED_LANGS = new Set(["text", "txt", "prompt", "markdown", "md", ""]);
+const LANG_LABEL: Record<string, string> = { text: "Texte", txt: "Texte", prompt: "Prompt", markdown: "Markdown", md: "Markdown" };
+
 function CodeView({ lang, code, caption }: { lang: string; code: string; caption?: string }) {
   const [copied, setCopied] = useState(false);
+  const wrap = WRAPPED_LANGS.has(lang.toLowerCase());
   async function copy() {
     try {
       await navigator.clipboard.writeText(code);
@@ -267,15 +280,16 @@ function CodeView({ lang, code, caption }: { lang: string; code: string; caption
     }
   }
   return (
-    <figure>
+    <figure className="min-w-0">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="meta font-mono uppercase tracking-wide">{lang}</span>
-        <button type="button" onClick={copy} className={`btn btn-ghost ${TOUCH} gap-1.5`} aria-live="polite">
+        <span className="meta font-mono">{LANG_LABEL[lang.toLowerCase()] ?? lang}</span>
+        <button type="button" onClick={copy} className={`btn btn-ghost ${TOUCH} gap-1.5`}>
           {copied ? <Check aria-hidden className="size-4" /> : <Copy aria-hidden className="size-4" />}
           {copied ? "Copié" : "Copier"}
         </button>
+        <span className="sr-only" aria-live="polite">{copied ? "Copié dans le presse-papiers" : ""}</span>
       </div>
-      <pre className="codeblock font-mono" tabIndex={0}>
+      <pre className={`codeblock font-mono ${wrap ? "whitespace-pre-wrap [overflow-wrap:anywhere]" : ""}`} tabIndex={wrap ? undefined : 0}>
         <code>{code}</code>
       </pre>
       {caption && <Caption>{caption}</Caption>}
@@ -285,6 +299,7 @@ function CodeView({ lang, code, caption }: { lang: string; code: string; caption
 
 function FlowView({ title, nodes, loop, caption }: Extract<Block, { type: "flow" }>) {
   const [open, setOpen] = useState<number | null>(null);
+  const uid = useId();
   return (
     <section>
       <Heading>{title}</Heading>
@@ -294,7 +309,7 @@ function FlowView({ title, nodes, loop, caption }: Extract<Block, { type: "flow"
             <button
               type="button"
               aria-expanded={open === i}
-              aria-controls={`flow-detail-${i}`}
+              aria-controls={open === i ? `${uid}-detail` : undefined}
               onClick={() => setOpen(open === i ? null : i)}
               className={`tile ${TOUCH} flex w-full items-center gap-2.5 px-3.5 py-3 text-left text-[0.9375rem] font-semibold ${
                 open === i ? `tile-th ${ON_TH}` : ""
@@ -321,9 +336,9 @@ function FlowView({ title, nodes, loop, caption }: Extract<Block, { type: "flow"
         </p>
       )}
       {open === null ? (
-        <p className="meta mt-3">Touche une étape pour voir le détail.</p>
+        needsHint(caption) && <p className="meta mt-3">Touche une étape pour voir le détail.</p>
       ) : (
-        <div id={`flow-detail-${open}`}>
+        <div id={`${uid}-detail`}>
           <Detail title={nodes[open].label}>{nodes[open].detail}</Detail>
         </div>
       )}
@@ -334,6 +349,7 @@ function FlowView({ title, nodes, loop, caption }: Extract<Block, { type: "flow"
 
 function LayersView({ title, layers, caption }: Extract<Block, { type: "layers" }>) {
   const [open, setOpen] = useState<number | null>(null);
+  const uid = useId();
   return (
     <section>
       <Heading>{title}</Heading>
@@ -343,7 +359,7 @@ function LayersView({ title, layers, caption }: Extract<Block, { type: "layers" 
             <button
               type="button"
               aria-expanded={open === i}
-              aria-controls={`layer-${i}`}
+              aria-controls={open === i ? `${uid}-${i}` : undefined}
               onClick={() => setOpen(open === i ? null : i)}
               className={`${TOUCH} flex w-full items-center gap-3 border-l-[10px] border-th px-3.5 py-3 text-left font-semibold`}
             >
@@ -351,7 +367,7 @@ function LayersView({ title, layers, caption }: Extract<Block, { type: "layers" 
               <ChevronDown aria-hidden className={`size-5 flex-none transition-transform ${open === i ? "rotate-180" : ""}`} />
             </button>
             {open === i && (
-              <div id={`layer-${i}`} className="pop-in bg-sunk px-4 py-3">
+              <div id={`${uid}-${i}`} className="pop-in bg-sunk px-4 py-3">
                 <Rich text={l.detail} as="p" className="text-[0.9375rem] leading-relaxed text-ink-2" />
               </div>
             )}
@@ -392,13 +408,15 @@ function AnatomyView({ title, segments, caption }: Extract<Block, { type: "anato
         {labelled.map(({ s, i }) => (
           <button key={i} type="button" className={`chip ${TOUCH}`} aria-pressed={sel === i} onClick={() => toggle(i)}>
             {s.label}
+            {/* the same label on several parts: say which part */}
+            {labelled.filter((x) => x.s.label === s.label).length > 1 && <span className="font-mono opacity-70">« {s.text.trim()} »</span>}
           </button>
         ))}
       </div>
       {current?.label ? (
         <Detail title={current.label}>{current.detail ?? ""}</Detail>
       ) : (
-        <p className="meta mt-3">Touche une partie surlignée pour la comprendre.</p>
+        needsHint(caption) && <p className="meta mt-3">Touche une partie surlignée pour la comprendre.</p>
       )}
       {caption && <Caption>{caption}</Caption>}
     </section>
@@ -468,7 +486,7 @@ function SpectrumView({ title, poles, items, caption }: Extract<Block, { type: "
       {current?.detail ? (
         <Detail title={current.label}>{current.detail}</Detail>
       ) : (
-        items.some((x) => x.detail) && <p className="meta mt-3">Touche un point pour voir le détail.</p>
+        items.some((x) => x.detail) && needsHint(caption) && <p className="meta mt-3">Touche un point pour voir le détail.</p>
       )}
       {caption && <Caption>{caption}</Caption>}
     </section>
@@ -481,7 +499,7 @@ function ExerciseView({ title, prompt, hints = [], solution, minutes }: Extract<
   return (
     <section className="tile border-t-[6px] border-th p-4 sm:p-5">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-        <p className="meta font-semibold uppercase tracking-wide">À toi de jouer</p>
+        <p className="meta font-semibold">À toi de jouer</p>
         {minutes != null && (
           <span className="chip chip-th">
             <Clock aria-hidden className="size-4" />

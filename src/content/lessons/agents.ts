@@ -430,13 +430,13 @@ export const agentsLessons: Lesson[] = [
         title: "Building effective agents",
         publisher: "Anthropic",
         url: "https://www.anthropic.com/engineering/building-effective-agents",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "LLM01:2025 Prompt Injection",
         publisher: "OWASP Gen AI Security Project",
         url: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -659,7 +659,7 @@ def executer_agent(but, outils, modele):
     }
   }
 ]`,
-            caption: "Définitions plausibles au format JSON Schema. Le nom du champ qui porte le schéma et les options de validation stricte varient selon le fournisseur : vérifie sa documentation.",
+            caption: "Définitions plausibles au format JSON Schema. Le nom du champ qui porte le schéma et les options de validation stricte varient selon le fournisseur : vérifie sa documentation. Attention, certains mots-clés (`minimum`, `maxLength`…) ne sont pas appliqués par les modes stricts de certaines API : ton code doit aussi les contrôler.",
           },
           {
             type: "text",
@@ -1032,19 +1032,19 @@ def executer_agent(but, outils, modele):
         title: "Building effective agents",
         publisher: "Anthropic",
         url: "https://www.anthropic.com/engineering/building-effective-agents",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Writing effective tools for agents — with agents",
         publisher: "Anthropic",
         url: "https://www.anthropic.com/engineering/writing-tools-for-agents",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "LLM01:2025 Prompt Injection",
         publisher: "OWASP Gen AI Security Project",
         url: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },

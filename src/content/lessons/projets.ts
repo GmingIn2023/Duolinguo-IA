@@ -455,7 +455,7 @@ Je ne confie pas : prénoms, adresse, détails médicaux
     theme: "projets",
     difficulty: 3,
     format: "atelier",
-    durationMin: 12,
+    durationMin: 15,
     xp: 45,
     skills: [
       "Formuler un problème et son bénéficiaire avant de parler de solution",
@@ -844,7 +844,7 @@ Je ne confie pas : prénoms, adresse, détails médicaux
         title: "Define success criteria and build evaluations",
         publisher: "Anthropic, documentation Claude",
         url: "https://platform.claude.com/docs/en/test-and-evaluate/define-success",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Les questions-réponses de la CNIL sur l'utilisation d'un système d'IA générative",
@@ -861,7 +861,7 @@ Je ne confie pas : prénoms, adresse, détails médicaux
     theme: "projets",
     difficulty: 3,
     format: "projet",
-    durationMin: 25,
+    durationMin: 40,
     xp: 70,
     skills: [
       "Rédiger un prompt système structuré avec rôle, règles, format, exemples et refus",
@@ -1407,13 +1407,13 @@ QUAND LE METTRE À JOUR
         title: "What are projects?",
         publisher: "Anthropic, centre d'aide Claude",
         url: "https://support.claude.com/en/articles/9517075-what-are-projects",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Prompt engineering overview",
         publisher: "Anthropic, documentation Claude",
         url: "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/overview",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
     volatile: { toolIds: ["chatgpt", "claude", "gemini"] },
@@ -1425,7 +1425,7 @@ QUAND LE METTRE À JOUR
     theme: "projets",
     difficulty: 5,
     format: "projet",
-    durationMin: 30,
+    durationMin: 75,
     xp: 80,
     skills: [
       "Spécifier une chaîne d'ingestion et de recherche hybride filtrée par droits d'accès",
@@ -1610,7 +1610,7 @@ def on_source_deleted(doc_id):
             title: "Le trajet d'une question dans la recherche",
             nodes: [
               { label: "Identifier", detail: "L'orchestrateur lit les groupes de l'utilisateur dans sa session authentifiée. Cette valeur ne transite jamais par le modèle." },
-              { label: "Filtrer", detail: "Le filtre `allowed_groups` contient au moins un groupe de l'utilisateur est appliqué DANS la requête des deux index, avant tout classement." },
+              { label: "Filtrer", detail: "Le filtre « `allowed_groups` contient au moins un groupe de l'utilisateur » est appliqué DANS la requête des deux index, avant tout classement." },
               { label: "Chercher deux fois", detail: "Recherche vectorielle sur l'embedding de la question, et recherche lexicale sur ses mots. Chacune renvoie un nombre large de candidats." },
               { label: "Fusionner", detail: "Fusion par rangs réciproques : un passage bien classé dans les deux listes passe devant un passage excellent dans une seule." },
               { label: "Reclasser (option)", detail: "Un modèle de reclassement note chaque couple question-passage. Plus précis, plus lent : à garder seulement s'il améliore tes métriques." },
@@ -1771,6 +1771,8 @@ def answer(question, user):
                            tools=TOOLS)
         if not out.tool_calls:
             return finalize(out.text, seen, user)
+        messages.append(out.as_message())            # l'API exige de rejouer
+                                                     # la demande d'outil
 
         for call in out.tool_calls:
             if call.name == "search":
@@ -2208,19 +2210,19 @@ def diagnose(case, result):
         title: "Introducing Contextual Retrieval",
         publisher: "Anthropic",
         url: "https://www.anthropic.com/news/contextual-retrieval",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "LLM01:2025 Prompt Injection",
         publisher: "OWASP Gen AI Security Project",
         url: "https://genai.owasp.org/llmrisk/llm01-prompt-injection/",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Define success criteria and build evaluations",
         publisher: "Anthropic, documentation Claude",
         url: "https://platform.claude.com/docs/en/test-and-evaluate/define-success",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },

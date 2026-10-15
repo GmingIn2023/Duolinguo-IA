@@ -1,13 +1,15 @@
 -- Security test: learners cannot write their own XP, streak or progress; the server (service_role) can.
 -- Runs inside a transaction that is rolled back: no data changes.
 -- Run it with the Supabase SQL editor, `psql`, or the Supabase MCP `execute_sql`.
--- Creates two throwaway users inside the transaction. Raises an exception on the first failed check.
+-- Requires every migration, including 20261013210000_refonte_levels_prefs_notes.
+-- Creates three throwaway users inside the transaction. Raises an exception on the first failed check.
 begin;
 
 do $$
 declare
   me uuid;
   other uuid;
+  forged uuid;
   n int;
   r record;
   before_xp int;
@@ -18,6 +20,8 @@ declare
     'update public.profiles set streak_days = 999 where id = %1$L',
     'update public.profiles set last_active_date = current_date + 1 where id = %1$L',
     'update public.profiles set placement_level = 3 where id = %1$L',
+    'update public.profiles set level10 = 10 where id = %1$L',
+    'update public.profiles set preferences = ''{}''::jsonb where id = %1$L',
     'insert into public.profiles (id) values (gen_random_uuid())',
     'delete from public.profiles where id = %1$L',
     'insert into public.xp_events (user_id, amount, source) values (%1$L, 1000, ''lesson'')',
@@ -27,6 +31,12 @@ declare
     'update public.lesson_progress set xp_earned = 1000 where user_id = %1$L',
     'insert into public.review_items (user_id, question_id, lesson_id, due_at) values (%1$L, ''x'', ''x'', now())',
     'update public.review_items set box = 6 where user_id = %1$L',
+    'insert into public.notes (user_id, body) values (%1$L, ''x'')',
+    'update public.notes set body = ''x'' where user_id = %1$L',
+    'delete from public.notes where user_id = %1$L',
+    'insert into public.lesson_resume (user_id, lesson_id, section_index) values (%1$L, ''x'', 0)',
+    'update public.lesson_resume set section_index = 1 where user_id = %1$L',
+    'delete from public.lesson_resume where user_id = %1$L',
     'select public.award_xp(%1$L, 100, ''lesson'', ''hack'', 1, current_date)'
   ];
   stmt text;
@@ -53,6 +63,15 @@ begin
     end loop;
     reset role;
   end loop;
+
+  -- forged signup metadata (direct Auth API call) is clamped, never fails the signup
+  forged := gen_random_uuid();
+  insert into auth.users (id, aud, role, email, raw_user_meta_data)
+  values (forged, 'authenticated', 'authenticated', forged || '@lock.test',
+          '{"level10": "99", "placement_level": "abc", "track_id": "evil", "onboarding": [1, 2]}'::jsonb);
+  select count(*) into n from public.profiles
+   where id = forged and level10 = 10 and placement_level = 1 and track_id is null and onboarding = '{}'::jsonb;
+  if n <> 1 then raise exception 'FAIL: forged signup metadata not clamped'; end if;
 
   -- 2. authenticated may still change its own track and name, and only its own
   perform set_config('request.jwt.claims', json_build_object('sub', me, 'role', 'authenticated')::text, true);
@@ -81,6 +100,12 @@ begin
   if not r.awarded or r.total_xp <> before_xp + 50 then raise exception 'FAIL: first weekly bonus %', r; end if;
   select * into r from public.award_xp(me, 30, 'weekly', '2099-W01', 3, current_date);
   if r.awarded or r.total_xp <> before_xp + 50 then raise exception 'FAIL: weekly bonus paid twice %', r; end if;
+
+  -- checkpoint bonus: once per checkpoint, enforced by the unique index
+  select * into r from public.award_xp(me, 20, 'checkpoint', 'checkpoint:test', 3, current_date);
+  if not r.awarded then raise exception 'FAIL: first checkpoint bonus %', r; end if;
+  select * into r from public.award_xp(me, 20, 'checkpoint', 'checkpoint:test', 3, current_date);
+  if r.awarded or r.total_xp <> before_xp + 70 then raise exception 'FAIL: checkpoint bonus paid twice %', r; end if;
 
   -- out-of-range amounts are refused
   begin

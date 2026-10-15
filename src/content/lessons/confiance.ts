@@ -55,7 +55,7 @@ export const confianceLessons: Lesson[] = [
           },
           {
             type: "text",
-            body: "L'autorité française de protection des données, la **CNIL**, le constate : de plus en plus d'entreprises utilisent les données personnelles de leurs utilisateurs pour entraîner des modèles d'IA. Elle publie d'ailleurs un guide pour s'y opposer, outil par outil. Retiens le principe, qui ne vieillit pas : **ce que tu envoies sort de chez toi, et tu ne décides plus seul de ce qu'il devient**.",
+            body: "Les éditeurs publient eux-mêmes ces règles dans leurs pages d'aide et leurs politiques de confidentialité, et elles changent. Retiens le principe, qui ne vieillit pas : **ce que tu envoies sort de chez toi, et tu ne décides plus seul de ce qu'il devient**.",
           },
           {
             type: "check",
@@ -82,12 +82,12 @@ export const confianceLessons: Lesson[] = [
           {
             type: "definition",
             term: "Donnée personnelle",
-            body: "Selon la CNIL : toute information se rapportant à une personne physique identifiée ou identifiable. L'identification peut être **directe** (nom, prénom) ou **indirecte** (numéro de téléphone, plaque d'immatriculation, adresse, voix, photo).",
+            body: "Selon le RGPD (article 4) : toute information se rapportant à une personne physique identifiée ou identifiable. L'identification peut être **directe** (nom, prénom) ou **indirecte** (numéro de téléphone, plaque d'immatriculation, adresse, voix, photo).",
           },
           {
             type: "definition",
             term: "Donnée sensible",
-            body: "Une catégorie particulière de données personnelles, que la loi protège davantage : santé, opinions politiques, convictions religieuses, appartenance syndicale, orientation sexuelle, origine, données génétiques et biométriques.",
+            body: "Une catégorie particulière de données personnelles, que le RGPD (article 9) protège davantage : santé, opinions politiques, convictions religieuses, appartenance syndicale, orientation sexuelle, origine, données génétiques et biométriques.",
           },
           {
             type: "spectrum",
@@ -180,7 +180,7 @@ export const confianceLessons: Lesson[] = [
           {
             type: "mistake",
             title: "« J'ai enlevé le nom, donc c'est anonyme »",
-            why: "On peut identifier quelqu'un sans son nom, par recoupement. La CNIL donne cet exemple : une femme vivant à telle adresse, née tel jour et membre de telle association. Aucun nom, et pourtant une seule personne correspond.",
+            why: "On peut identifier quelqu'un sans son nom, par recoupement. Exemple : une femme vivant à telle adresse, née tel jour et membre de telle association. Aucun nom, et pourtant une seule personne correspond.",
             fix: "Relis ta version en te demandant : quelqu'un qui connaît un peu le contexte reconnaîtrait-il la personne ? Si oui, généralise encore (lieu, date, métier, montant exact).",
           },
           {
@@ -216,6 +216,11 @@ export const confianceLessons: Lesson[] = [
             ],
           },
           { type: "tools", toolIds: ["chatgpt", "claude", "gemini"] },
+          {
+            type: "text",
+            title: "Deux exemples lus dans les pages d'aide (octobre 2026)",
+            body: "Pour les offres grand public de **Claude**, la page d'aide d'Anthropic indique que tes conversations peuvent servir à l'entraînement si tu actives le réglage d'amélioration du modèle, ou si une conversation est signalée pour examen de sécurité ; les conversations en mode incognito en sont exclues. Pour **Gemini**, la page d'aide de Google indique qu'avec l'option d'activité activée, un sous-ensemble de conversations peut être relu par des personnes ; même option désactivée, les conversations restent enregistrées 72 heures. Ces règles évoluent et diffèrent selon l'offre (personnelle, professionnelle, éducation) et le pays : ouvre la page d'aide de ton propre outil plutôt que de te fier à cette leçon.",
+          },
           {
             type: "mistake",
             title: "« J'ai coupé l'entraînement, je peux tout envoyer »",
@@ -391,22 +396,22 @@ export const confianceLessons: Lesson[] = [
     ],
     sources: [
       {
-        title: "Donnée personnelle (définition)",
-        publisher: "CNIL",
-        url: "https://www.cnil.fr/fr/definition/donnee-personnelle",
-        verified: "2026-10-13",
+        title: "Règlement général sur la protection des données (UE) 2016/679, articles 4 (définitions) et 9 (catégories particulières)",
+        publisher: "EUR-Lex, Journal officiel de l'Union européenne",
+        url: "https://eur-lex.europa.eu/legal-content/FR/TXT/HTML/?uri=CELEX:32016R0679",
+        verified: "2026-10-14",
       },
       {
-        title: "Donnée sensible (définition)",
-        publisher: "CNIL",
-        url: "https://www.cnil.fr/fr/definition/donnee-sensible",
-        verified: "2026-10-13",
+        title: "Is my data used for model training?",
+        publisher: "Anthropic (centre d'aide)",
+        url: "https://privacy.claude.com/en/articles/10023580-is-my-data-used-for-model-training",
+        verified: "2026-10-14",
       },
       {
-        title: "IA et vie privée : comment s'opposer à la réutilisation de ses données personnelles pour l'entraînement d'agents conversationnels ?",
-        publisher: "CNIL",
-        url: "https://www.cnil.fr/fr/ia-comment-sopposer-la-reutilisation-de-ses-donnees-personnelles-entrainement-agent-conversationnel",
-        verified: "2026-10-13",
+        title: "Gemini Apps Privacy Hub : activité et relecture humaine",
+        publisher: "Google (aide Gemini)",
+        url: "https://support.google.com/gemini/answer/13594961",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -593,7 +598,7 @@ export const confianceLessons: Lesson[] = [
         blocks: [
           {
             type: "text",
-            body: "Certains assistants lancent une recherche web et joignent des liens numérotés à leur réponse. Le risque de lien inventé diminue fortement, puisque les liens viennent de vraies pages. Un autre risque prend sa place : **le lien existe, mais la page ne dit pas ce que le résumé lui fait dire**.",
+            body: "Certains assistants lancent une recherche web et joignent des liens numérotés à leur réponse. Le risque de lien inventé diminue, puisque les liens viennent de vraies pages (sans disparaître : certains liens ne mènent pas à la page citée). Un autre risque prend sa place : **le lien existe, mais la page ne dit pas ce que le résumé lui fait dire**.",
           },
           { type: "tools", toolIds: ["perplexity"] },
           {
@@ -839,13 +844,13 @@ export const confianceLessons: Lesson[] = [
         title: "Teaching Lateral Reading",
         publisher: "Digital Inquiry Group, Civic Online Reasoning",
         url: "https://cor.inquirygroup.org/curriculum/collections/teaching-lateral-reading/",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
-        title: "Comment déployer une IA générative ? La CNIL apporte de premières précisions",
-        publisher: "CNIL",
-        url: "https://cnil.fr/fr/comment-deployer-une-ia-generative-la-cnil-apporte-de-premieres-precisions",
-        verified: "2026-10-13",
+        title: "Reduce hallucinations",
+        publisher: "Anthropic (documentation)",
+        url: "https://platform.claude.com/docs/en/test-and-evaluate/strengthen-guardrails/reduce-hallucinations",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -872,7 +877,7 @@ export const confianceLessons: Lesson[] = [
         blocks: [
           {
             type: "text",
-            body: "Au printemps 2023, les assistants IA viennent d'arriver dans les bureaux. Chez Samsung Electronics, des employés s'en servent pour aller plus vite. En avril, des données internes sensibles se retrouvent dans ChatGPT : d'après une note interne rapportée par l'agence Bloomberg, des ingénieurs y avaient envoyé du code source de l'entreprise. Personne n'a été piraté. Personne n'a voulu nuire. Des salariés ont simplement collé leur travail dans un outil pratique.",
+            body: "Au printemps 2023, les assistants IA viennent d'arriver dans les bureaux. Chez Samsung Electronics, des employés s'en servent pour aller plus vite. En avril, des données internes sensibles se retrouvent dans ChatGPT, selon la presse de l'époque. La fuite est accidentelle : pas d'attaque, pas de volonté de nuire. Des salariés se sont simplement servis d'un outil pratique avec des informations de l'entreprise.",
           },
           {
             type: "flow",
@@ -892,7 +897,7 @@ export const confianceLessons: Lesson[] = [
           },
           {
             type: "keypoint",
-            body: "Dans ce cas, aucune malveillance et aucune panne. Le risque est venu d'un geste banal : coller. C'est pour cela qu'il concerne tout le monde, stagiaire comme ingénieur.",
+            body: "Dans ce cas, une fuite accidentelle, sans attaque ni panne. Le risque est venu d'un geste banal : envoyer des informations de travail à un outil externe. C'est pour cela qu'il concerne tout le monde, stagiaire comme ingénieur.",
           },
           {
             type: "check",
@@ -904,7 +909,7 @@ export const confianceLessons: Lesson[] = [
               options: [
                 { id: "a", text: "Elles étaient sur des serveurs externes, difficiles à récupérer ou à supprimer" },
                 { id: "b", text: "L'assistant avait donné de mauvaises réponses", feedback: "La qualité des réponses n'était pas en cause." },
-                { id: "c", text: "Les employés avaient été piratés", feedback: "Aucun piratage : les données ont été envoyées volontairement." },
+                { id: "c", text: "Les employés avaient été piratés", feedback: "Il ne s'agissait pas d'une attaque : la fuite était accidentelle." },
               ],
               answer: "a",
               explanation: "Une fois parties, les données échappent à l'organisation : c'est l'irréversibilité qui rend le geste grave, pas l'intention.",
@@ -934,7 +939,7 @@ export const confianceLessons: Lesson[] = [
           {
             type: "definition",
             term: "RGPD",
-            body: "Le Règlement général sur la protection des données, texte européen qui encadre l'utilisation des données personnelles. Il s'applique à toute organisation qui traite de telles données, quel que soit l'outil. Rappel : une donnée personnelle est toute information se rapportant à une personne physique identifiée ou identifiable (définition de la CNIL).",
+            body: "Le Règlement général sur la protection des données, texte européen qui encadre l'utilisation des données personnelles. Il s'applique aux organisations qui traitent de telles données, quel que soit l'outil. Rappel : une donnée personnelle est toute information se rapportant à une personne physique identifiée ou identifiable (article 4).",
           },
           {
             type: "definition",
@@ -1002,7 +1007,7 @@ export const confianceLessons: Lesson[] = [
           },
           {
             type: "text",
-            body: "Ce tableau décrit un principe, pas un produit : les engagements précis varient d'un éditeur et d'une offre à l'autre, et changent dans le temps. La CNIL recommande justement aux organisations qui déploient une IA générative de **déterminer dans quelle mesure le prestataire peut réutiliser les données fournies**, d'**encadrer les usages** par une liste d'utilisations autorisées et interdites (par exemple ne pas fournir de données personnelles au système), et de **former les utilisateurs**. Ta part du travail : connaître la règle de ton organisation.",
+            body: "Ce tableau décrit un principe, pas un produit : les engagements précis varient d'un éditeur et d'une offre à l'autre, et changent dans le temps. Une organisation qui déploie une IA générative gagne à **vérifier ce que le prestataire peut faire des données fournies**, à **encadrer les usages** par une liste d'utilisations autorisées et interdites (par exemple ne pas fournir de données personnelles au système) et à **former les utilisateurs**. Ta part du travail : connaître la règle de ton organisation.",
           },
           {
             type: "steps",
@@ -1046,7 +1051,7 @@ export const confianceLessons: Lesson[] = [
           {
             type: "definition",
             term: "Pseudonymisation",
-            body: "Remplacer les identifiants directs (nom, prénom) par des alias ou des numéros. Selon la CNIL, des données pseudonymisées **restent des données personnelles** : avec des informations supplémentaires, on peut retrouver les personnes. L'**anonymisation**, elle, rend l'identification impossible en pratique et de façon irréversible ; elle est beaucoup plus difficile à atteindre.",
+            body: "Remplacer les identifiants directs (nom, prénom) par des alias ou des numéros. Selon le RGPD (article 4 et considérant 26), des données pseudonymisées **restent des données personnelles** : avec des informations supplémentaires, on peut retrouver les personnes. Des données vraiment **anonymes** ne se rapportent à personne d'identifiable par aucun moyen raisonnablement envisageable ; c'est beaucoup plus difficile à atteindre qu'un simple remplacement de noms.",
           },
           {
             type: "text",
@@ -1087,7 +1092,7 @@ export const confianceLessons: Lesson[] = [
         blocks: [
           {
             type: "text",
-            body: "Reprends le cas du début avec ce que tu sais maintenant. Du code source non public : un secret de l'organisation. Un assistant grand public utilisé sans cadre précis pour ce type de contenu. Un envoi irréversible. Et une réponse de l'entreprise en deux temps : restreindre, puis construire un environnement où l'usage devient possible.",
+            body: "Reprends le cas du début avec ce que tu sais maintenant. Des données internes sensibles : un secret de l'organisation. Un assistant grand public utilisé sans cadre précis pour ce type de contenu. Un envoi irréversible. Et une réponse de l'entreprise en deux temps : restreindre, puis construire un environnement où l'usage devient possible.",
           },
           {
             type: "table",
@@ -1192,7 +1197,7 @@ export const confianceLessons: Lesson[] = [
         concept: "pseudonymisation",
         statement: "Un fichier où les noms ont été remplacés par « Client A », « Client B » n'est plus une donnée personnelle.",
         answer: false,
-        explanation: "C'est une pseudonymisation : avec d'autres informations (ou la table de correspondance), on peut retrouver les personnes. Selon la CNIL, ces données conservent un caractère personnel.",
+        explanation: "C'est une pseudonymisation : avec d'autres informations (ou la table de correspondance), on peut retrouver les personnes. Selon le RGPD, ces données conservent un caractère personnel.",
       },
       {
         id: "donnees-confidentielles:q7",
@@ -1211,7 +1216,7 @@ export const confianceLessons: Lesson[] = [
         id: "donnees-confidentielles:q8",
         type: "written",
         concept: "cas",
-        prompt: "Dans le cas Samsung, personne n'a été piraté et personne ne voulait nuire. Explique en deux phrases pourquoi l'envoi posait quand même un problème sérieux.",
+        prompt: "Dans le cas Samsung, la fuite était accidentelle et personne ne voulait nuire. Explique en deux phrases pourquoi l'envoi posait quand même un problème sérieux.",
         placeholder: "Parce que les données envoyées…",
         criteria: [
           { id: "exterieur", label: "Les données sont parties chez un tiers", anyOf: ["serveur", "extern", "tiers", "éditeur", "editeur", "autre entreprise", "hors de", "sorti", "quitt", "dehors"] },
@@ -1285,25 +1290,13 @@ export const confianceLessons: Lesson[] = [
         title: "Samsung bans use of generative AI tools like ChatGPT after April internal data leak",
         publisher: "TechCrunch (2 mai 2023)",
         url: "https://techcrunch.com/2023/05/02/samsung-bans-use-of-generative-ai-tools-like-chatgpt-after-april-internal-data-leak/",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
-        title: "Comment déployer une IA générative ? La CNIL apporte de premières précisions",
-        publisher: "CNIL",
-        url: "https://cnil.fr/fr/comment-deployer-une-ia-generative-la-cnil-apporte-de-premieres-precisions",
-        verified: "2026-10-13",
-      },
-      {
-        title: "L'anonymisation de données personnelles",
-        publisher: "CNIL",
-        url: "https://www.cnil.fr/fr/technologies/lanonymisation-de-donnees-personnelles",
-        verified: "2026-10-13",
-      },
-      {
-        title: "Donnée personnelle (définition)",
-        publisher: "CNIL",
-        url: "https://www.cnil.fr/fr/definition/donnee-personnelle",
-        verified: "2026-10-13",
+        title: "Règlement général sur la protection des données (UE) 2016/679, article 4 (pseudonymisation) et considérant 26 (données anonymes)",
+        publisher: "EUR-Lex, Journal officiel de l'Union européenne",
+        url: "https://eur-lex.europa.eu/legal-content/FR/TXT/HTML/?uri=CELEX:32016R0679",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -1626,7 +1619,7 @@ export const confianceLessons: Lesson[] = [
         prompt: "Pourquoi une erreur d'un assistant est-elle difficile à repérer à la simple lecture ?",
         options: [
           { id: "a", text: "Elle est écrite avec le même ton assuré et la même fluidité qu'une information vraie" },
-          { id: "b", text: "Les modèles signalent toujours leurs doutes, mais en petits caractères", feedback: "Ils n'ont aucun mécanisme fiable pour signaler leurs doutes." },
+          { id: "b", text: "Les modèles signalent toujours leurs doutes, mais en petits caractères", feedback: "Ils ne signalent pas leurs doutes de façon fiable." },
           { id: "c", text: "Les erreurs sont toujours rares et grossières", feedback: "Elles peuvent être subtiles et très plausibles." },
         ],
         answer: "a",

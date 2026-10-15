@@ -23,9 +23,9 @@ export default async function Home() {
     <div className="overflow-x-clip">
       <header className="mx-auto flex h-20 max-w-[90rem] items-center justify-between px-4 sm:px-8">
         <Wordmark />
-        <nav className="flex items-center gap-2">
-          {!viewer && <Link href="/login" className="btn btn-ghost">Se connecter</Link>}
-          <Link href={cta.href} className="btn btn-primary !h-11 !px-5">{viewer ? "Mon parcours" : "Commencer"}</Link>
+        <nav className="flex items-center gap-1 sm:gap-2">
+          {!viewer && <Link href="/login" className="btn btn-ghost max-sm:!px-2.5 max-sm:text-[0.9375rem]"><span className="sm:hidden">Connexion</span><span className="max-sm:hidden">Se connecter</span></Link>}
+          <Link href={cta.href} className="btn btn-primary !h-11 !px-5 max-sm:!px-3.5 max-sm:text-[0.9375rem]">{viewer ? "Mon parcours" : "Commencer"}</Link>
         </nav>
       </header>
 

@@ -135,11 +135,13 @@ function Intro({ lesson, track, resumeAt, completedBefore, onStart }: { lesson: 
   return (
     <div className="fade-in grid gap-8">
       <div className="grid gap-4">
-        <p className="meta flex flex-wrap items-center gap-x-2">
-          <span className="chip chip-th !min-h-7 !px-2.5 text-[0.8125rem] text-ink">{FORMAT_LABEL[lesson.format]}</span>
-          {DIFFICULTY_LABEL[lesson.difficulty]} · <Clock className="size-3.5" aria-hidden /> {formatMinutes(lesson.durationMin)}
-        </p>
-        <h1 className="display display-l">{lesson.title}</h1>
+        <div className="grid gap-3">
+          <h1 className="display display-l">{lesson.title}</h1>
+          <p className="meta flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="chip chip-th !min-h-7 !px-2.5 text-[0.8125rem] text-ink">{FORMAT_LABEL[lesson.format]}</span>
+            {DIFFICULTY_LABEL[lesson.difficulty]} · <Clock className="size-3.5" aria-hidden /> {formatMinutes(lesson.durationMin)}
+          </p>
+        </div>
         <p className="lede !max-w-[52ch] flex gap-2"><Target className="mt-1 size-5 flex-none" aria-hidden /><span>{lesson.objective}</span></p>
       </div>
 
@@ -181,8 +183,8 @@ function SectionView({ lesson, index, track, onPrev, onNext }: { lesson: Lesson;
   return (
     <article className="page-in grid gap-8" aria-labelledby="section-title">
       <header className="grid gap-2">
-        <p className="meta">Partie {index + 1} sur {lesson.sections.length}</p>
         <h1 id="section-title" className="display display-m">{section.title}</h1>
+        <p className="meta">Partie {index + 1} sur {lesson.sections.length} · {lesson.title}</p>
       </header>
       <div className="flex flex-col gap-8">
         {section.blocks.map((b, i) => (
@@ -218,8 +220,8 @@ function Summary({ lesson, onPrev, onQuiz }: { lesson: Lesson; onPrev: () => voi
   return (
     <div className="page-in grid gap-8">
       <header className="grid gap-2">
-        <p className="meta">Fiche à retenir</p>
         <h1 className="display display-m">L&apos;essentiel de « {lesson.title} »</h1>
+        <p className="meta">Fiche à retenir · {lesson.summary.length} points</p>
       </header>
       <ol className="note grid gap-4 p-6 sm:p-8" data-note="canary">
         {lesson.summary.map((s, i) => (
@@ -278,7 +280,7 @@ function NotesDrawer({ lesson, sectionId, notes, onAdded, onChange, onDelete, on
   return (
     <div className="fixed inset-0 z-40 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="notes-title">
       <button className="absolute inset-0 bg-ink/30" aria-label="Fermer le carnet" onClick={onClose} tabIndex={-1} />
-      <aside className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-paper p-5 shadow-2xl sm:p-6" style={{ animation: "fadeIn 240ms var(--ease-out) both" }}>
+      <aside className="relative flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto bg-paper p-5 shadow-[-1.5px_0_0_var(--line)] sm:p-6" style={{ animation: "fadeIn 240ms var(--ease-out) both" }}>
         <div className="flex items-center justify-between gap-3">
           <h2 id="notes-title" className="display display-s">Mes notes</h2>
           <button className="icon-btn" onClick={onClose} aria-label="Fermer"><X className="size-5" aria-hidden /></button>

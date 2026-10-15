@@ -155,10 +155,13 @@ export function Onboarding({ signedIn, currentTrack }: { signedIn: boolean; curr
         {stage === "result" && (
           <div className="fade-in grid gap-10">
             <div className="grid gap-4">
-              <p className="meta">Ton niveau estimé</p>
-              <h1 className="display text-[clamp(4rem,14vw,8rem)] leading-[0.85]">
-                <span className="reveal-line"><span>{level10}<span className="text-muted">/10</span></span></span>
-              </h1>
+              <div className="grid gap-2">
+                <h1 className="display text-[clamp(4rem,14vw,8rem)] leading-[0.85]">
+                  <span className="sr-only">Ton niveau estimé : </span>
+                  <span className="reveal-line"><span>{level10}<span className="text-muted">/10</span></span></span>
+                </h1>
+                <p className="meta" aria-hidden>Ton niveau estimé</p>
+              </div>
               <p className="lede !max-w-[54ch]">
                 <strong className="text-ink">{levelName(level10)}.</strong>{" "}
                 {history.length === 0

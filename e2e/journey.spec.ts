@@ -1,12 +1,13 @@
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
-import { finishQuiz, type Memory } from "./helpers";
+import { answerSectionChecks, finishQuiz } from "./quiz";
 
-// Final journey, on a brand-new account created through the real signup:
-// onboarding → signup → lesson → quiz → XP saved → daily review → XP still locked against the learner.
-// Needs SUPABASE_SECRET_KEY (server-side env) to backdate due reviews and delete the account afterwards.
-// Requires "Confirm email" to be off in Supabase Auth.
+// The real journey of a brand-new learner, on a real account created through the signup form:
+// placement test → signup → home → course (sections, in-lesson checks, notebook, summary) → quiz with a miss
+// → XP saved → map → notebook → settings → daily review → XP still locked against the learner.
+// Needs SUPABASE_SECRET_KEY (to backdate due reviews and delete the account afterwards)
+// and "Confirm email" turned off in Supabase Auth (otherwise the signup waits for an email).
 
 function env(name: string) {
   if (process.env[name]) return process.env[name];
@@ -35,7 +36,6 @@ test.beforeAll(async ({ playwright }) => {
 });
 
 test.afterAll(async () => {
-  // the journey's accounts never outlive the run
   for (const id of created) {
     const res = await api.delete(`${url}/auth/v1/admin/users/${id}`, { headers: { apikey: secret!, Authorization: `Bearer ${secret}` } });
     expect(res.ok(), `delete user ${id}: ${res.status()}`).toBeTruthy();
@@ -44,20 +44,21 @@ test.afterAll(async () => {
 });
 
 const xpOnScreen = async (page: Page) => Number(await page.getByTitle("points d'expérience").first().locator(".tabular").innerText());
+const earnedOnScreen = async (page: Page) => Number((await page.getByRole("heading", { name: /XP gagnés/ }).getAttribute("aria-label"))!.match(/\d+/)![0]);
 
-test("new learner: signup → lesson → XP saved → daily review → XP locked", async ({ page }, info) => {
+test("new learner: placement → signup → course → quiz → XP → notes → settings → review", async ({ page }, info) => {
   test.skip(!secret, "SUPABASE_SECRET_KEY not set");
+  test.setTimeout(240_000);
   const email = `journey-${info.project.name}-${Date.now()}@gusgus.test`;
   const password = randomBytes(12).toString("hex");
 
-  // 1. onboarding + real signup
+  // 1. placement test (beginner) + real signup
   await page.goto("/onboarding");
-  await page.getByRole("radio", { name: /Je veux l'utiliser au travail/ }).click();
-  await page.getByRole("radio", { name: "Régulièrement" }).click();
-  await page.getByRole("radio", { name: /prédit la suite/ }).click();
-  await page.getByRole("radio", { name: /invente une information/ }).click();
+  await page.getByRole("radio", { name: /M'en servir pour étudier ou travailler/ }).click();
+  await page.getByRole("button", { name: "Commencer le test" }).click();
+  for (let i = 0; i < 10; i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
   await page.getByRole("button", { name: "Créer mon compte et commencer" }).click();
-  await expect(page).toHaveURL(/\/signup/);
+  await expect(page).toHaveURL(/\/signup\?track=gecko/);
   await page.getByLabel("Prénom").fill("Journey");
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Mot de passe").fill(password);
@@ -68,33 +69,56 @@ test("new learner: signup → lesson → XP saved → daily review → XP locked
   expect(auth.ok()).toBeTruthy();
   const { access_token: token, user } = await auth.json();
   created.push(user.id);
+  const asLearner = { apikey: publishable, Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const profile = await (await api.get(`${url}/rest/v1/profiles?id=eq.${user.id}&select=track_id,level10,xp`, { headers: asLearner })).json();
+  expect(profile).toEqual([{ track_id: "gecko", level10: 0, xp: 0 }]);
+
+  // 2. home → next step
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Journey");
   expect(await xpOnScreen(page)).toBe(0);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("L'IA au travail"); // Fox, recommended by onboarding
+  await page.getByRole("link", { name: /Commencer/ }).first().click();
+  await expect(page).toHaveURL(/\/lesson\//);
+  await page.getByRole("button", { name: "Commencer", exact: true }).click();
 
-  // 2. map → lesson → quiz → XP
-  await page.getByRole("link", { name: /cours suivant/ }).first().click();
-  await page.getByRole("button", { name: "Commencer le cours" }).click();
-  await page.getByRole("button", { name: "Passer au quiz" }).click();
-  const memory: Memory = new Map(); // corrections seen in the lesson, reused in the review like a real learner
-  await finishQuiz(page, /XP gagnés/, memory);
-  const earned = Number((await page.getByRole("heading", { name: /XP gagnés/ }).getAttribute("aria-label"))!.match(/\d+/)![0]);
+  // 3. sections: in-lesson checks unlock "Suivant"; a note goes into the notebook from the first section
+  await page.getByRole("button", { name: /Carnet du cours/ }).click();
+  await page.getByRole("textbox", { name: "Nouvelle note" }).fill("Note de test E2E");
+  await page.getByRole("button", { name: "Ajouter" }).click();
+  await expect(page.getByText("Note de test E2E")).toBeVisible();
+  await page.getByRole("button", { name: "Fermer", exact: true }).first().click();
+  for (let s = 0; s < 8; s++) {
+    await answerSectionChecks(page);
+    const next = page.getByRole("button", { name: /^(Suivant|Fiche à retenir)/ });
+    const label = await next.innerText();
+    await next.click();
+    if (label.includes("Fiche")) break;
+  }
+  await page.getByRole("button", { name: "Garder dans mon carnet" }).click();
+  await expect(page.getByRole("button", { name: "Ajoutée à ton carnet" })).toBeVisible();
+  await page.getByRole("button", { name: /Passer au quiz/ }).click();
+
+  // 4. quiz with one deliberate miss: it comes back at the end, XP is saved
+  await finishQuiz(page, /XP gagnés/, { missOne: true });
+  const earned = await earnedOnScreen(page);
   expect(earned).toBeGreaterThan(0);
-  await page.getByRole("link", { name: "Retour au parcours" }).click();
-  await expect(page.getByRole("link", { name: /, terminé/ }).first()).toBeVisible();
+  await page.getByRole("link", { name: "Voir la carte" }).click();
+  await expect(page).toHaveURL(/\/map/);
+  await expect(page.getByRole("button", { name: /\. Terminé$/ }).first()).toBeVisible();
   expect(await xpOnScreen(page)).toBe(earned);
 
-  // 3. saved: survives sign-out / sign-in
+  // 5. notebook: the free note and the saved summary
+  await page.goto("/notes");
+  await expect(page.getByText("Note de test E2E")).toBeVisible();
+  await expect(page.locator("article.note")).toHaveCount(2);
+
+  // 6. settings persist
   await page.goto("/profile");
-  await page.getByRole("button", { name: /Se déconnecter/ }).click();
-  await expect(page).toHaveURL(/\/$/);
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Mot de passe").fill(password);
-  await page.getByRole("button", { name: "Se connecter" }).click();
-  await expect(page).toHaveURL(/\/learn/, { timeout: 20_000 });
-  expect(await xpOnScreen(page)).toBe(earned);
+  await page.getByRole("radio", { name: "5 min" }).click();
+  await expect(page.getByText("Enregistré")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("radio", { name: "5 min" })).toHaveAttribute("aria-checked", "true");
 
-  // 4. daily review: make the lesson's questions due now (as if a day had passed)
+  // 7. daily review: make the lesson's notions due now (as if a day had passed)
   const due = await api.patch(`${url}/rest/v1/review_items?user_id=eq.${user.id}`, {
     headers: { apikey: secret!, Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
     data: { due_at: new Date(Date.now() - 60_000).toISOString() },
@@ -102,26 +126,26 @@ test("new learner: signup → lesson → XP saved → daily review → XP locked
   expect(due.ok(), await due.text()).toBeTruthy();
   await page.goto("/review");
   await page.getByRole("link", { name: "Réviser maintenant" }).click();
-  await finishQuiz(page, /XP gagnés/, memory);
-  await expect(page.getByText(/reviendront plus tard/)).toBeVisible();
-  const reviewEarned = Number((await page.getByRole("heading", { name: /XP gagnés/ }).getAttribute("aria-label"))!.match(/\d+/)![0]);
+  await finishQuiz(page, /XP gagnés/);
+  const reviewEarned = await earnedOnScreen(page);
   expect(reviewEarned).toBeGreaterThan(0);
   await page.goto("/learn");
   const total = await xpOnScreen(page);
   expect(total).toBe(earned + reviewEarned);
 
-  // 5. the learner still cannot change their own XP or streak
-  const headers = { apikey: publishable, Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-  for (const body of [{ xp: total + 1_000_000 }, { streak_days: 365 }, { last_active_date: "2099-01-01" }]) {
-    const res = await api.patch(`${url}/rest/v1/profiles?id=eq.${user.id}`, { headers, data: body });
-    expect(res.status(), JSON.stringify(body)).toBeGreaterThanOrEqual(401);
-    expect((await res.json()).code).toBe("42501");
+  // 8. the learner still cannot write XP, level, preferences, notes or progress directly
+  for (const body of [{ xp: total + 1_000_000 }, { streak_days: 365 }, { level10: 10 }, { preferences: { pace: 1 } }]) {
+    const res = await api.patch(`${url}/rest/v1/profiles?id=eq.${user.id}`, { headers: asLearner, data: body });
+    expect((await res.json()).code, JSON.stringify(body)).toBe("42501");
   }
-  const rpc = await api.post(`${url}/rest/v1/rpc/award_xp`, {
-    headers,
-    data: { p_user: user.id, p_amount: 500, p_source: "lesson", p_ref: "hack", p_streak: 1, p_today: "2099-01-01" },
-  });
-  expect((await rpc.json()).code).toBe("42501");
+  for (const [table, body] of [
+    ["notes", { user_id: user.id, body: "x" }],
+    ["lesson_resume", { user_id: user.id, lesson_id: "x", section_index: 0 }],
+    ["xp_events", { user_id: user.id, amount: 500, source: "checkpoint", ref: "checkpoint:x" }],
+  ] as const) {
+    const res = await api.post(`${url}/rest/v1/${table}`, { headers: asLearner, data: body });
+    expect((await res.json()).code, table).toBe("42501");
+  }
   await page.reload();
   expect(await xpOnScreen(page)).toBe(total);
 });

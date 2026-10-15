@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { HAS_E2E_USER, finishQuiz, login } from "./helpers";
+import { answerCorrectly } from "./quiz";
+
+// Public flows: no account needed.
 
 test("landing: thesis, tracks and a playable question", async ({ page }) => {
   await page.goto("/");
@@ -9,20 +11,28 @@ test("landing: thesis, tracks and a playable question", async ({ page }) => {
   await expect(page.getByText("Juste !")).toBeVisible();
 });
 
-test("onboarding estimates a level, proposes a track, and lets you change it", async ({ page }) => {
+test("placement test adapts, scores 10/10 when everything is right, and leads to signup", async ({ page }) => {
   await page.goto("/onboarding");
-  await page.getByRole("radio", { name: /Je veux l'utiliser au travail/ }).click();
-  await page.getByRole("radio", { name: "Régulièrement" }).click();
-  await page.getByRole("radio", { name: /prédit la suite/ }).click();
-  await page.getByRole("radio", { name: /invente une information/ }).click();
-  await expect(page.getByText("Ton niveau estimé : Déjà à l'aise")).toBeVisible();
-  await expect(page.getByRole("radio", { name: /Fox.*Recommandé/ })).toHaveAttribute("aria-checked", "true");
-  await page.getByRole("radio", { name: /Gecko/ }).click();
-  await expect(page.getByRole("radio", { name: /Gecko/ })).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("radio", { name: /Construire avec l'IA/ }).click();
+  await page.getByRole("button", { name: "Commencer le test" }).click();
+  const main = page.locator("main");
+  for (let i = 1; i <= 10; i++) {
+    await expect(page.getByText(`${i}/10`, { exact: true })).toBeVisible();
+    await answerCorrectly(main);
+    await page.getByRole("button", { name: "Valider" }).click();
+  }
+  await expect(page.getByText("Ton niveau estimé", { exact: true })).toBeVisible();
+  await expect(main.getByRole("heading", { level: 1 })).toContainText("10");
+  const fox = page.getByRole("radio", { name: /Construire/ });
+  await expect(fox).toHaveAttribute("aria-checked", "true");
+  await expect(fox).toContainText("Conseillé pour toi");
+  await page.getByRole("radio", { name: /Pratiquer/ }).click();
   await page.getByRole("button", { name: "Créer mon compte et commencer" }).click();
-  await expect(page).toHaveURL(/\/signup\?track=gecko&level=3/);
-  await expect(page.getByText("Parcours choisi")).toContainText("Gecko");
-  // client-side validation, without sending a real email
+  await expect(page).toHaveURL(/\/signup\?track=gecko/);
+  await expect(page.getByText("Parcours choisi")).toContainText("Pratiquer");
+  // the answers travel with the form and are graded again on the server
+  const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
+  expect(stored.placement).toHaveLength(10);
   await page.getByLabel("Prénom").fill("Test");
   await page.getByLabel("Email").fill("someone@gusgus.test");
   await page.getByLabel("Mot de passe").fill("short");
@@ -30,66 +40,33 @@ test("onboarding estimates a level, proposes a track, and lets you change it", a
   await expect(page.getByRole("alert").filter({ hasText: "8 caractères" })).toBeVisible();
 });
 
+test("« Je ne sais pas » everywhere gives 0/10 and the beginner map", async ({ page }) => {
+  await page.goto("/onboarding");
+  await page.getByRole("radio", { name: /Comprendre ce qu'est l'IA/ }).click();
+  await page.getByRole("button", { name: "Commencer le test" }).click();
+  for (let i = 0; i < 10; i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
+  await expect(page.getByText("Ton niveau estimé", { exact: true })).toBeVisible();
+  await expect(page.locator("main").getByRole("heading", { level: 1 })).toContainText("0");
+  await expect(page.getByRole("radio", { name: /Découvrir/ })).toHaveAttribute("aria-checked", "true");
+});
+
 test("protected pages redirect to login; bad credentials show a clear error", async ({ page }) => {
-  await page.goto("/learn");
-  await expect(page).toHaveURL(/\/login\?next=%2Flearn/);
+  for (const path of ["/learn", "/map", "/courses", "/review", "/notes", "/profile", "/lesson/premier-prompt"]) {
+    await page.goto(path);
+    await expect(page, path).toHaveURL((url) => url.pathname === "/login" && url.searchParams.get("next") === path);
+  }
   await page.getByLabel("Email").fill("nobody@gusgus.test");
   await page.getByLabel("Mot de passe").fill("wrong-password");
   await page.getByRole("button", { name: "Se connecter" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "Email ou mot de passe incorrect" })).toBeVisible();
 });
 
-test("core loop: map → lesson → quiz with corrections → XP saved → weekly review", async ({ page }) => {
-  test.skip(!HAS_E2E_USER, "set E2E_EMAIL and E2E_PASSWORD to a confirmed test account");
-  await login(page);
-  const xpBefore = Number(await page.getByTitle("points d'expérience").first().locator(".tabular").innerText());
-
-  // open the current lesson from the map
-  const next = page.getByRole("link", { name: /cours suivant/ });
-  await (await next.count() ? next.first() : page.getByRole("link", { name: /, terminé/ }).last()).click();
-  await expect(page.getByRole("heading", { name: "Compétences" })).toBeVisible();
-  await page.getByRole("button", { name: "Commencer le cours" }).click();
-  await expect(page.locator("figure").first()).toBeVisible();
-  await page.getByRole("button", { name: "Passer au quiz" }).click();
-
-  await finishQuiz(page, /XP gagnés/);
-  await expect(page.getByText("Du premier coup")).toBeVisible();
-
-  await page.getByRole("link", { name: "Retour au parcours" }).click();
-  await expect(page).toHaveURL(/\/learn/);
-  const xpAfter = Number(await page.getByTitle("points d'expérience").first().locator(".tabular").innerText());
-  expect(xpAfter).toBeGreaterThan(xpBefore);
-  await expect(page.getByRole("link", { name: /, terminé/ }).first()).toBeVisible();
-
-  // weekly review is now available and runs end to end
-  await page.goto("/review");
-  await page.getByRole("link", { name: "Lancer la révision" }).click();
-  await finishQuiz(page, /XP gagnés/);
-  await expect(page.getByText(/du premier coup/)).toBeVisible();
-});
-
-test("tracks can be switched and progress persists", async ({ page }) => {
-  test.skip(!HAS_E2E_USER, "set E2E_EMAIL and E2E_PASSWORD to a confirmed test account");
-  await login(page);
-  await page.goto("/tracks");
-  await page.getByRole("button", { name: /Fox/ }).click();
-  await expect(page).toHaveURL(/\/learn/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("L'IA au travail");
-  await page.goto("/tracks");
-  await page.getByRole("button", { name: /Bird/ }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Premiers pas");
-  await page.goto("/profile");
-  await expect(page.getByRole("heading", { name: "Historique" })).toBeVisible();
-});
-
-test("daily review runs when questions are due", async ({ page }) => {
-  test.skip(!HAS_E2E_USER, "set E2E_EMAIL and E2E_PASSWORD to a confirmed test account");
-  await login(page);
-  await page.goto("/review");
-  await expect(page.getByRole("heading", { name: "Révision du jour" })).toBeVisible();
-  const start = page.getByRole("link", { name: "Réviser maintenant" });
-  test.skip(!(await start.isVisible()), "no question due for the test account today");
-  await start.click();
-  await finishQuiz(page, /XP gagnés/);
-  await expect(page.getByText(/reviendront plus tard/)).toBeVisible();
+test("unknown pages answer 404; the dev preview is not exposed in production", async ({ page }) => {
+  const res = await page.goto("/nope");
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  if (process.env.E2E_PRODUCTION) {
+    const preview = await page.goto("/dev/preview?view=gallery");
+    expect(preview?.status()).toBe(404);
+  }
 });

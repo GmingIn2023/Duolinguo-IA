@@ -289,6 +289,9 @@ button.chip, a.chip { cursor: pointer; }
 .board-edge-dots[data-state="done"] { stroke: var(--accent); }
 .board-edge[data-state="next"] { stroke: var(--accent-deep); }
 .board-edge-dots[data-state="next"] { animation: march 1.1s linear infinite; }
+/* a link that jumps over several columns: a quiet hint, so forks stay readable */
+.board-edge[data-long] { stroke-width: 4; stroke: var(--edge); }
+.board-edge[data-long][data-state="done"] { stroke: var(--ink-2); }
 @keyframes march { to { stroke-dashoffset: -13.1; } }
 
 .token { position: absolute; display: grid; place-items: center; border-radius: 999px; translate: -50% -50%; transition: transform 160ms var(--ease-out); }

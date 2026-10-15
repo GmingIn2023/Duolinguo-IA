@@ -65,7 +65,7 @@ export function NoteComposer({ lessonId, sectionId, onAdded, placeholder = "Ce q
         rows={3}
         autoFocus={autoFocus}
         placeholder={placeholder}
-        className="w-full resize-y bg-transparent text-[1rem] leading-relaxed outline-none placeholder:text-ink-2/70"
+        className="-m-1 w-[calc(100%+0.5rem)] resize-y rounded-lg bg-transparent p-1 text-[1rem] leading-relaxed outline-none placeholder:text-muted focus:shadow-[inset_0_0_0_2px_var(--ink)]"
       />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <ColorPicker value={color} onChange={setColor} />
@@ -113,7 +113,7 @@ export function NoteCard({ note, context, onChange, onDelete }: { note: Note; co
         ) : (
           <>
             <button type="button" className="btn btn-ghost !h-11 !px-3 text-sm" onClick={() => setEditing(true)}>Modifier</button>
-            <button type="button" className="icon-btn ml-auto" aria-pressed={note.pinned} aria-label={note.pinned ? "Détacher" : "Épingler en haut"} onClick={() => run(async () => onChange(await updateNote(note.id, { pinned: !note.pinned })))}>
+            <button type="button" className="icon-btn ml-auto" aria-pressed={note.pinned} aria-label={note.pinned ? "Ne plus épingler" : "Épingler en haut"} onClick={() => run(async () => onChange(await updateNote(note.id, { pinned: !note.pinned })))}>
               {note.pinned ? <PinOff className="size-[1.125rem]" aria-hidden /> : <Pin className="size-[1.125rem]" aria-hidden />}
             </button>
             <button

@@ -279,8 +279,12 @@ export function placementLevel(history: PlacementStep[]): number {
 
 /** Re-grades submitted answers on the server: the client's own verdicts are never trusted. */
 export function gradePlacement(answers: { id: string; answer: Answer | null }[]): PlacementStep[] {
+  if (!Array.isArray(answers)) return [];
   const seen = new Set<string>();
-  return answers.slice(0, PLACEMENT_LENGTH).flatMap(({ id, answer }) => {
+  return answers.slice(0, PLACEMENT_LENGTH).flatMap((entry) => {
+    // forged payloads: skip anything that is not an { id, answer } object
+    if (!entry || typeof entry !== "object" || typeof entry.id !== "string") return [];
+    const { id, answer } = entry;
     const question = poolById.get(id);
     if (!question || seen.has(id)) return [];
     seen.add(id);

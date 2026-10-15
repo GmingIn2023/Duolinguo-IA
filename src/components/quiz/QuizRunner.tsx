@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CircleCheck, CircleX, RotateCcw } from "lucide-react";
 import type { Answer, Question, TrackId } from "@/content/types";
 import { gradeAnswer } from "@/lib/grading";
@@ -79,17 +79,29 @@ export function QuizRunner({
   const [streak, setStreak] = useState(0);
   const [line, setLine] = useState("");
   const [retryNotice, setRetryNotice] = useState(false);
+  const sheet = useRef<HTMLDivElement>(null);
+  const [sheetHeight, setSheetHeight] = useState(0);
 
   const step = queue[index];
   const order = useMemo(() => initialOrder(step.question), [step.question]);
 
   useEffect(() => onProgress?.(solved / questions.length), [solved, questions.length, onProgress]);
 
-  // keep the marked answers visible above the correction sheet
+  // keep the marked answers visible just above the correction sheet, whatever its height
   useEffect(() => {
     if (!reveal || compact) return;
+    const h = sheet.current?.offsetHeight ?? 0;
+    setSheetHeight(h);
     const marked = document.querySelectorAll("[data-state]");
-    marked[marked.length - 1]?.scrollIntoView({ block: "end", behavior: "smooth" });
+    const last = marked[marked.length - 1];
+    if (!last) return;
+    const bottom = last.getBoundingClientRect().bottom;
+    const room = window.innerHeight - h - 16;
+    if (bottom > room) {
+      const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      // requestAnimationFrame: the extra bottom padding must be laid out before scrolling into it
+      requestAnimationFrame(() => window.scrollBy({ top: bottom - room, behavior: smooth ? "smooth" : "auto" }));
+    }
   }, [reveal, compact]);
 
   const check = useCallback(() => {
@@ -172,7 +184,7 @@ export function QuizRunner({
   const panel = (
     <div className={compact ? "grid gap-4" : "mx-auto flex max-w-3xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-end sm:justify-between"}>
       {reveal ? (
-        <div className={`grid gap-2 ${compact ? "" : "max-h-[45dvh] overflow-y-auto"}`}>
+        <div className={`grid gap-2 ${compact ? "" : "max-h-[38dvh] overflow-y-auto sm:max-h-[45dvh]"}`}>
           <MascotSays track={track} mood={reveal.correct ? "cheer" : "oops"} line={line} size={44} />
           <p className={`flex items-center gap-2 text-lg font-bold ${reveal.correct ? "text-good" : "text-bad"}`}>
             {reveal.correct ? <CircleCheck className="size-6" aria-hidden /> : <CircleX className="size-6" aria-hidden />}
@@ -203,7 +215,10 @@ export function QuizRunner({
   );
 
   return (
-    <div className={compact ? "grid gap-6" : reveal ? "pb-[26rem] sm:pb-80" : "pb-48"}>
+    <div
+      className={compact ? "grid gap-6" : reveal ? "pb-[26rem] sm:pb-80" : "pb-48"}
+      style={!compact && reveal && sheetHeight ? { paddingBottom: sheetHeight + 32 } : undefined}
+    >
       <div key={`${q.id}-${index}`} className={`fade-in ${reveal && !reveal.correct ? "shake" : ""}`}>
         <QuestionView question={q} draft={draft} setDraft={setDraft} reveal={reveal} displayOrder={order} />
         {step.retry && <p className="mt-5 text-sm font-medium text-ink-2">Deuxième essai. {mascotLine(track, "retry", index)}</p>}
@@ -214,7 +229,7 @@ export function QuizRunner({
           {panel}
         </div>
       ) : (
-        <div className={`fixed inset-x-0 bottom-0 z-30 border-t pb-[env(safe-area-inset-bottom)] ${tone}`} role={reveal ? "status" : undefined} aria-live="polite">
+        <div ref={sheet} className={`fixed inset-x-0 bottom-0 z-30 border-t pb-[env(safe-area-inset-bottom)] ${tone}`} role={reveal ? "status" : undefined} aria-live="polite">
           {panel}
         </div>
       )}

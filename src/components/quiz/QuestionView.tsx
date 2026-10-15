@@ -55,7 +55,11 @@ export function QuestionView({
 
       {(question.type === "mcq" || question.type === "fill_choice") && (
         <>
-          {question.type === "fill_choice" && <FillSentence sentence={question.sentence} filled={question.options.find((o) => o.id === draft)?.text} />}
+          {question.type === "fill_choice" && <FillSentence
+              sentence={question.sentence}
+              filled={question.options.find((o) => o.id === draft)?.text}
+              state={reveal ? (draft === question.answer ? "correct" : "wrong") : undefined}
+            />}
           <div className="grid gap-3" role="radiogroup" aria-label="Réponses">
             {order(question.options, displayOrder).map((o, i) => (
               <ChoiceButton
@@ -104,6 +108,7 @@ export function QuestionView({
                   }}
                   label={o.text}
                   checkbox
+                  note={reveal && !selected && question.answer.includes(o.id) ? "Il fallait aussi cocher celle-ci." : undefined}
                 />
               );
             })}
@@ -149,8 +154,10 @@ function ChoiceButton({
   onClick,
   radio,
   checkbox,
+  note,
 }: {
   k: string;
+  note?: string;
   label: string;
   selected: boolean;
   state?: "correct" | "wrong";
@@ -173,18 +180,28 @@ function ChoiceButton({
       <span className="key" aria-hidden>
         {checkbox && selected ? <Check className="size-4" strokeWidth={3} /> : k}
       </span>
-      <span className="text-[1.0625rem] font-medium leading-snug">{renderInline(label)}</span>
+      <span className="grid gap-0.5">
+        <span className="text-[1.0625rem] font-medium leading-snug">{renderInline(label)}</span>
+        {note && <span className="text-sm font-semibold text-good">{note}</span>}
+      </span>
     </button>
   );
 }
 
-function FillSentence({ sentence, filled }: { sentence: string; filled?: string }) {
+function FillSentence({ sentence, filled, state }: { sentence: string; filled?: string; state?: "correct" | "wrong" }) {
   const [before, after] = sentence.split("___");
+  const tone = !filled
+    ? "bg-sunk text-transparent"
+    : state === "correct"
+      ? "bg-good-soft shadow-[inset_0_0_0_2px_var(--good)]"
+      : state === "wrong"
+        ? "bg-bad-soft text-bad line-through decoration-2 shadow-[inset_0_0_0_2px_var(--bad)]"
+        : "bg-accent";
   return (
     <p className="tile p-6 text-xl font-medium leading-relaxed sm:text-2xl">
       {renderInline(before)}
       <span
-        className={`mx-1 inline-block min-w-24 rounded-lg px-2 text-center align-baseline transition-colors ${filled ? "bg-accent" : "bg-sunk text-transparent"}`}
+        className={`mx-1 inline-block min-w-24 rounded-lg px-2 text-center align-baseline transition-colors ${tone}`}
         aria-label={filled ? undefined : "case vide"}
       >
         {filled ? renderInline(filled) : "______"}

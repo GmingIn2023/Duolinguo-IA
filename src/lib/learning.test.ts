@@ -163,6 +163,11 @@ describe("placement", () => {
     ]);
     expect(steps).toEqual([{ id: "p1b", correct: true }, { id: "p1a", correct: false }]);
   });
+  it("ignores forged entries instead of crashing", () => {
+    const forged = [null, 42, "p1b", { id: 7, answer: true }, { id: "p1b" }] as unknown as { id: string; answer: null }[];
+    expect(gradePlacement(forged)).toEqual([{ id: "p1b", correct: false }]);
+    expect(gradePlacement("nope" as unknown as [])).toEqual([]);
+  });
 });
 
 describe("board", () => {
@@ -265,5 +270,10 @@ describe("safeNext", () => {
   it("keeps internal paths and rejects external redirects", () => {
     expect(safeNext("/review")).toBe("/review");
     for (const bad of ["//evil.com", "/\\evil.com", "https://evil.com", "", null]) expect(safeNext(bad)).toBe("/learn");
+  });
+  it("rejects control characters browsers would strip into a protocol-relative URL", () => {
+    for (const bad of ["/\t/evil.com", "/\n/evil.com", "/\r//evil.com", "/\u0000x"]) expect(safeNext(bad)).toBe("/learn");
+    expect(safeNext("/review/checkpoint:u1?x=1#a")).toBe("/review/checkpoint:u1?x=1#a");
+    expect(safeNext("/" + "a".repeat(600))).toBe("/learn");
   });
 });

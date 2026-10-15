@@ -431,7 +431,7 @@ export const outilsLessons: Lesson[] = [
           {
             type: "text",
             title: "Le cas des données sensibles",
-            body: "C'est la seule exigence où une erreur ne se rattrape pas : une fois envoyée, une donnée ne revient pas. La CNIL recommande de ne saisir que ce que tu es autorisé à partager et d'éviter les données confidentielles, notamment personnelles, dans un service grand public. Trois sorties possibles : retirer ou remplacer les éléments sensibles avant d'envoyer, utiliser l'offre que ton organisation a choisie et encadrée, ou faire tourner un modèle en local.",
+            body: "C'est la seule exigence où une erreur ne se rattrape pas : une fois envoyée, une donnée ne revient pas. La CNIL recommande d'éviter autant que possible de saisir des données personnelles dans un système d'IA générative et d'encadrer l'usage de données confidentielles par des règles claires. Trois sorties possibles : retirer ou remplacer les éléments sensibles avant d'envoyer, utiliser l'offre que ton organisation a choisie et encadrée, ou faire tourner un modèle en local.",
           },
           {
             type: "check",
@@ -1128,19 +1128,19 @@ export const outilsLessons: Lesson[] = [
         title: "Generative AI without guardrails can harm learning: Evidence from high school mathematics (Bastani et al., PNAS, 2025) — notice et résumé",
         publisher: "Europe PMC",
         url: "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:40560616&resultType=core&format=json",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Test-enhanced learning: taking memory tests improves long-term retention (Roediger & Karpicke, Psychological Science, 2006) — notice et résumé",
         publisher: "Europe PMC",
         url: "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:16507066&resultType=core&format=json",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Guidance for generative AI in education and research",
         publisher: "UNESCO",
         url: "https://www.unesco.org/en/articles/guidance-generative-ai-education-and-research",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -1573,19 +1573,19 @@ export const outilsLessons: Lesson[] = [
         title: "Improving Students' Learning With Effective Learning Techniques (Dunlosky, Rawson, Marsh, Nathan & Willingham, Psychological Science in the Public Interest, 2013) — notice et résumé",
         publisher: "Europe PMC",
         url: "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:26173288&resultType=core&format=json",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Test-enhanced learning: taking memory tests improves long-term retention (Roediger & Karpicke, Psychological Science, 2006) — notice et résumé",
         publisher: "Europe PMC",
         url: "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:16507066&resultType=core&format=json",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Organizing Instruction and Study to Improve Student Learning (guide de pratique, 2007)",
         publisher: "Institute of Education Sciences, What Works Clearinghouse (États-Unis)",
         url: "https://ies.ed.gov/ncee/wwc/PracticeGuide/1",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
     ],
   },
@@ -1806,7 +1806,7 @@ export const outilsLessons: Lesson[] = [
           {
             type: "text",
             title: "Relire avant d'envoyer",
-            body: "Le texte part sous ton nom. La CNIL le formule sans détour : ne jamais reproduire telles quelles les sorties de ces systèmes. Avant d'envoyer ou de rendre, quatre questions.",
+            body: "Le texte part sous ton nom. La CNIL met en garde contre la confiance excessive dans les résultats d'un système d'IA générative : ils se vérifient avant d'être utilisés. Avant d'envoyer ou de rendre, quatre questions.",
           },
           {
             type: "steps",
@@ -2025,7 +2025,7 @@ export const outilsLessons: Lesson[] = [
         title: "Prompting best practices (Be clear and direct, Use examples effectively, Long context prompting)",
         publisher: "Anthropic, documentation Claude",
         url: "https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices",
-        verified: "2026-10-13",
+        verified: "2026-10-14",
       },
       {
         title: "Les questions-réponses de la CNIL sur l'utilisation d'un système d'IA générative",

@@ -11,7 +11,13 @@ import type { ReviewMode } from "@/lib/types";
 export const metadata: Metadata = { title: "Révision" };
 
 export default async function ReviewModePage(props: PageProps<"/review/[mode]">) {
-  const mode = decodeURIComponent((await props.params).mode) as ReviewMode;
+  const raw = (await props.params).mode;
+  let mode: ReviewMode;
+  try {
+    mode = decodeURIComponent(raw) as ReviewMode;
+  } catch {
+    notFound(); // malformed escape in the URL
+  }
   const { profile } = await requireViewer();
   const track = profile.track_id ?? "bird";
   let questions: Question[];
