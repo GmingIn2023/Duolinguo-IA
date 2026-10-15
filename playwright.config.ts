@@ -13,6 +13,8 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: process.env.BASE_URL ?? "http://localhost:3000",
+    // protected Vercel previews: a storage state holding the share-link cookie
+    storageState: process.env.E2E_STORAGE_STATE || undefined,
     ignoreHTTPSErrors: true,
     screenshot: "only-on-failure",
     launchOptions: { args, executablePath: process.env.PW_CHROMIUM || undefined },
