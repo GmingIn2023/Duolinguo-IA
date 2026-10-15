@@ -113,10 +113,10 @@ test("new learner: placement → signup → course → quiz → XP → notes →
 
   // 6. settings persist
   await page.goto("/profile");
-  await page.getByRole("radio", { name: "5 min" }).click();
+  await page.getByRole("radio", { name: "5 min", exact: true }).click();
   await expect(page.getByText("Enregistré")).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("radio", { name: "5 min" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: "5 min", exact: true })).toHaveAttribute("aria-checked", "true");
 
   // 7. daily review: make the lesson's notions due now (as if a day had passed)
   const due = await api.patch(`${url}/rest/v1/review_items?user_id=eq.${user.id}`, {
