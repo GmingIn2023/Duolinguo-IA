@@ -7,7 +7,7 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "sw
 
 export const metadata: Metadata = {
   title: { default: "Gusgus — Way of Learning AI", template: "%s · Gusgus" },
-  description: "Apprends l'IA en cours de 5 minutes : des quiz qui corrigent tes erreurs et des révisions qui reviennent au bon moment.",
+  description: "Apprends l'IA en français : des cours à pratiquer, des quiz qui t'expliquent tes erreurs et des révisions qui reviennent avant que tu oublies.",
 };
 
 export const viewport: Viewport = { themeColor: "#f1f1ee" };

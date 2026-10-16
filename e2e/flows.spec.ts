@@ -3,12 +3,13 @@ import { answerCorrectly } from "./quiz";
 
 // Public flows: no account needed.
 
-test("landing: thesis, tracks and a playable question", async ({ page }) => {
+test("landing: thesis and the three guides lead into the level test", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Apprends l'IA");
-  await expect(page.getByRole("list", { name: "Les trois parcours" }).getByRole("listitem")).toHaveCount(3);
-  await page.getByRole("button", { name: "Faux" }).click();
-  await expect(page.getByText("Juste !")).toBeVisible();
+  const guides = page.getByRole("list", { name: "Les trois parcours" }).getByRole("listitem");
+  await expect(guides).toHaveCount(3);
+  await guides.first().getByRole("link").click();
+  await expect(page).toHaveURL(/\/onboarding/);
 });
 
 test("placement test adapts, scores 10/10 when everything is right, and leads to signup", async ({ page }) => {

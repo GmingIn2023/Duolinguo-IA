@@ -1,7 +1,7 @@
 import type { TrackId } from "@/content/types";
 
-/** happy: default · cheer: a right answer, a finished lesson · oops: a miss · think: waiting for an answer */
-export type Mood = "happy" | "cheer" | "oops" | "think";
+/** happy: default · cheer: a right answer, a finished lesson · oops: a miss · think: waiting for an answer · sleep: eyes closed, for quiet moments */
+export type Mood = "happy" | "cheer" | "oops" | "think" | "sleep";
 
 /** Geometric mascots, one per track, with a few expressions. Built from exact shapes so they scale crisply. */
 export function Avatar({ track, size = 56, mood = "happy", className = "" }: { track: TrackId; size?: number; mood?: Mood; className?: string }) {
@@ -17,6 +17,18 @@ export function Avatar({ track, size = 56, mood = "happy", className = "" }: { t
 
 const LABEL: Record<TrackId, string> = { bird: "Bird, la mascotte Découvrir", gecko: "Gecko, la mascotte Pratiquer", fox: "Fox, la mascotte Construire" };
 
+/** A closed eye at rest (sleep): a short downward curve. */
+const Closed = ({ x, y, w }: { x: number; y: number; w: number }) => (
+  <path d={`M${x} ${y}q${w / 2} 3 ${w} 0`} stroke="var(--ink)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+);
+
+/** Open eyes follow the pointer when a parent sets --gx / --gy (see landing HeroScene); blinking stays on the inner group. */
+const Eyes = ({ children }: { children: React.ReactNode }) => (
+  <g className="mascot-look">
+    <g className="mascot-blink">{children}</g>
+  </g>
+);
+
 /** A closed, smiling eye (cheer) drawn as an arc. */
 const Arc = ({ cx, cy, r }: { cx: number; cy: number; r: number }) => (
   <path d={`M${cx - r},${cy + 1} Q${cx},${cy - r * 1.4} ${cx + r},${cy + 1}`} stroke="var(--ink)" strokeWidth="2.4" fill="none" strokeLinecap="round" />
@@ -31,11 +43,13 @@ function Bird({ mood }: { mood: Mood }) {
       <path d={mood === "oops" ? "M50 33l10 6-10 3z" : "M50 30l11 5-11 5z"} fill="var(--ink)" />
       {mood === "cheer" ? (
         <Arc cx={39} cy={28} r={4} />
+      ) : mood === "sleep" ? (
+        <Closed x={35} y={29} w={8} />
       ) : (
-        <g className="mascot-blink">
+        <Eyes>
           <circle cx="39" cy={mood === "oops" ? 30 : 28} r="4.2" fill="var(--ink)" />
           <circle cx={mood === "think" ? 41.4 : 40.4} cy={mood === "think" ? 25.8 : mood === "oops" ? 28.6 : 26.6} r="1.4" fill="#fff" />
-        </g>
+        </Eyes>
       )}
       {mood === "oops" && <path d="M34 22l8-2" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" />}
       <path d="M24 55v6M34 55v6" stroke="var(--ink)" strokeWidth="2.6" strokeLinecap="round" />
@@ -64,11 +78,16 @@ function Gecko({ mood }: { mood: Mood }) {
           <Arc cx={11} cy={28} r={3.6} />
           <Arc cx={53} cy={28} r={3.6} />
         </>
+      ) : mood === "sleep" ? (
+        <>
+          <Closed x={7} y={28} w={8} />
+          <Closed x={49} y={28} w={8} />
+        </>
       ) : (
-        <g className="mascot-blink">
+        <Eyes>
           <rect x={mood === "think" ? 12 : 10} y={mood === "oops" ? 24 : 22} width="2.4" height={mood === "oops" ? 8 : 10} rx="1.2" fill="var(--ink)" />
           <rect x={mood === "think" ? 53.6 : 51.6} y={mood === "oops" ? 24 : 22} width="2.4" height={mood === "oops" ? 8 : 10} rx="1.2" fill="var(--ink)" />
-        </g>
+        </Eyes>
       )}
       <circle cx="29" cy="27" r="1.1" fill="var(--ink)" />
       <circle cx="35" cy="27" r="1.1" fill="var(--ink)" />
@@ -92,16 +111,21 @@ function Fox({ mood }: { mood: Mood }) {
           <Arc cx={23} cy={32} r={3.4} />
           <Arc cx={41} cy={32} r={3.4} />
         </>
+      ) : mood === "sleep" ? (
+        <>
+          <Closed x={19} y={32} w={8} />
+          <Closed x={37} y={32} w={8} />
+        </>
       ) : mood === "think" ? (
-        <g className="mascot-blink">
+        <Eyes>
           <circle cx="23" cy="31" r="3" fill="var(--ink)" />
           <path d="M38 31h6" stroke="var(--ink)" strokeWidth="2.6" strokeLinecap="round" />
-        </g>
+        </Eyes>
       ) : (
-        <g className="mascot-blink">
+        <Eyes>
           <circle cx="23" cy={mood === "oops" ? 32 : 31} r="3" fill="var(--ink)" />
           <circle cx="41" cy={mood === "oops" ? 32 : 31} r="3" fill="var(--ink)" />
-        </g>
+        </Eyes>
       )}
       {mood === "oops" && <path d="M18 25l8 2M46 25l-8 2" stroke="var(--ink)" strokeWidth="2" strokeLinecap="round" />}
       <path d="M28.5 52h7L32 58z" fill="var(--ink)" />

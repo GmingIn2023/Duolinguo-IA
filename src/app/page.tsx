@@ -1,10 +1,15 @@
 import Link from "next/link";
-import { Avatar } from "@/components/Avatar";
-import { LandingDemo } from "@/components/LandingDemo";
+import { Caveat } from "next/font/google";
+import { HeroScene } from "@/components/landing/HeroScene";
 import { Wordmark } from "@/components/Wordmark";
 import { LESSONS, THEMES, THEME_IDS, TRACKS, TRACK_IDS } from "@/content";
 import { ThemeGlyph } from "@/components/ThemeGlyph";
 import { getViewer } from "@/lib/data";
+import { PLACEMENT_LENGTH } from "@/lib/placement";
+import "./landing.css";
+
+// handwriting for rare annotations only (arrows, "clique sur ton guide")
+const hand = Caveat({ subsets: ["latin"], weight: "600", variable: "--font-hand", display: "swap" });
 
 const LOOP = [
   { t: "Une carte qui se ramifie", d: "Un test de niveau ouvre ce que tu sais déjà. Ensuite, tu choisis ta branche : étudier, travailler, construire." },
@@ -17,10 +22,17 @@ const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
 
 export default async function Home() {
   const viewer = await getViewer().catch(() => null);
-  const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Trouver mon niveau" };
+  const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Dis-moi où j'en suis" };
+  const guides = TRACK_IDS.map((id) => ({
+    id,
+    name: TRACKS[id].name,
+    animal: TRACKS[id].animal,
+    audience: TRACKS[id].audience,
+    lessons: TRACKS[id].nodes.filter((n) => n.lessonId).length,
+  }));
 
   return (
-    <div className="overflow-x-clip">
+    <div className={`landing overflow-x-clip ${hand.variable}`}>
       <header className="mx-auto flex h-20 max-w-[90rem] items-center justify-between px-4 sm:px-8">
         <Wordmark />
         <nav className="flex items-center gap-1 sm:gap-2">
@@ -29,49 +41,22 @@ export default async function Home() {
         </nav>
       </header>
 
-      {/* First viewport: the thesis, three ways in */}
-      <section className="mx-auto grid max-w-[90rem] gap-12 px-4 pb-20 pt-8 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pb-28 lg:pt-16">
-        <div className="flex flex-col gap-8 lg:col-span-7">
-          <h1 className="display display-xl">
+      {/* First viewport: the thesis, and three guides that are three ways in */}
+      <section className="mx-auto grid max-w-[90rem] items-center gap-12 px-4 pb-20 pt-6 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pb-28 lg:pt-10">
+        <div className="flex flex-col gap-7 lg:col-span-7">
+          <h1 className="display display-xl hero-title">
             <span className="reveal-line"><span>Apprends l&apos;IA</span></span>
             <span className="reveal-line"><span>comme une</span></span>
-            <span className="reveal-line"><span>langue.</span></span>
+            <span className="reveal-line"><span><span className="hl">langue</span>.</span></span>
           </h1>
-          <p className="lede">{LESSONS.length} cours courts et sourcés, des quiz qui corrigent tes erreurs, des révisions qui reviennent au bon moment. Trois cartes, du tout premier prompt jusqu&apos;aux agents et au RAG.</p>
+          <p className="lede">{LESSONS.length} cours, des quiz qui t&apos;expliquent tes erreurs, des révisions qui reviennent avant que tu oublies. Du tout premier prompt jusqu&apos;aux agents et au RAG.</p>
           <div className="flex flex-wrap items-center gap-3">
             <Link href={cta.href} className="btn btn-primary btn-lg">{cta.label}</Link>
-            <span className="text-sm text-muted">Test de niveau · 3 minutes</span>
           </div>
+          {!viewer && <p className="text-sm text-muted">{PLACEMENT_LENGTH} questions qui s&apos;adaptent à toi, un niveau sur 10, aucun compte pour commencer.</p>}
         </div>
-
-        <ul className="grid gap-4 self-end lg:col-span-5" aria-label="Les trois parcours">
-          {TRACK_IDS.map((id, i) => {
-            const t = TRACKS[id];
-            return (
-              <li key={id} data-track={id} style={{ marginLeft: `${[0, 2.5, 5][i]}rem` }} className="max-sm:!ml-0">
-                <div className="tile-accent tile flex items-center gap-5 p-5 sm:p-6">
-                  <span className="grid size-16 flex-none place-items-center rounded-2xl bg-surface sm:size-20">
-                    <Avatar track={id} size={56} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="display display-s">{t.name}</p>
-                    <p className="text-sm font-medium">{t.animal} · {t.audience} · {t.nodes.filter((n) => n.lessonId).length} cours</p>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      {/* Proof: a real question */}
-      <section className="mx-auto grid max-w-[90rem] items-center gap-10 px-4 pb-20 sm:px-8 lg:grid-cols-12 lg:pb-28">
-        <div className="grid gap-5 lg:col-span-5">
-          <h2 className="display display-l">Essaie, là, maintenant.</h2>
-          <p className="lede">Voici une vraie question d&apos;un cours Gusgus. Réponds&nbsp;: la correction arrive tout de suite, avec l&apos;explication.</p>
-        </div>
-        <div className="lg:col-span-6 lg:col-start-7">
-          <LandingDemo />
+        <div className="lg:col-span-5">
+          <HeroScene guides={guides} href={cta.href} />
         </div>
       </section>
 
