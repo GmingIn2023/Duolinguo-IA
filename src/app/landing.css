@@ -92,3 +92,12 @@ html:has(.landing) { background: #fbf6ec; }
   .landing-scene .blob-main, .landing-scene .guide-body { animation: none; }
   .mascot-look { transition: none; }
 }
+
+/* ───────── Plan des parcours ───────── */
+.landing .stop { cursor: pointer; outline: none; transform-box: fill-box; transform-origin: center; animation: landing-stop-in 500ms var(--ease-out) backwards; animation-delay: calc(var(--k, 0) * 18ms); transition: opacity 250ms; }
+@keyframes landing-stop-in { from { transform: scale(0.6); } }
+.landing .stop .stop-body { transition: transform var(--dur-hover) var(--ease-out); transform-box: fill-box; transform-origin: center; }
+.landing .stop:hover .stop-body, .landing .stop:focus-visible .stop-body { transform: scale(1.12); }
+.landing .stop-halo { fill: none; stroke: transparent; stroke-width: 2.4; }
+.landing .stop:focus-visible .stop-halo { stroke: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .landing .stop { animation: none; } }

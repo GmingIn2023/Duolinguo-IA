@@ -3,6 +3,44 @@ import { answerCorrectly } from "./quiz";
 
 // The landing page: public, no account needed.
 
+test.describe("themes and plan, drawn from the real curriculum", () => {
+  test("ten theme tiles, the real number of lessons, and a tile filters the plan", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("list", { name: "Les dix thèmes" }).getByRole("button")).toHaveCount(10);
+    await expect(page.getByText("34 cours au total")).toBeVisible();
+    // Découvrir has no "Agents IA" lesson: the plan moves to the first track that does
+    await expect(page.getByRole("tab", { name: "Découvrir" })).toHaveAttribute("aria-selected", "true");
+    await page.getByRole("button", { name: /Agents IA/ }).click();
+    await expect(page.getByRole("tab", { name: "Pratiquer" })).toHaveAttribute("aria-selected", "true");
+    const chip = page.getByRole("button", { name: /Agents IA : \d+ cours ici/ });
+    await expect(chip).toBeVisible();
+    await chip.click();
+    await expect(chip).toBeHidden();
+  });
+
+  test("each stop can be reached and read with the keyboard", async ({ page }) => {
+    await page.goto("/");
+    const plan = page.locator("#plan-panel");
+    await plan.scrollIntoViewIfNeeded();
+    const stops = plan.getByRole("button", { name: /^Cours : / });
+    await stops.first().focus();
+    await expect(plan.getByText("Cours · Comprendre")).toBeVisible();
+    await page.keyboard.press("ArrowRight");
+    await expect(plan.getByText("Comment un chatbot écrit ses réponses")).toBeVisible();
+  });
+
+  test("the three tracks each draw their own map", async ({ page }) => {
+    await page.goto("/");
+    const counts: number[] = [];
+    for (const name of ["Découvrir", "Pratiquer", "Construire"]) {
+      await page.getByRole("tab", { name }).click();
+      counts.push(await page.locator("#plan-panel").getByRole("button", { name: /^(Cours : )?/ }).count());
+    }
+    expect(counts[0]).toBeLessThan(counts[1]);
+    expect(counts[1]).toBeLessThan(counts[2]);
+  });
+});
+
 test.describe("level test inside the landing page", () => {
   test("everything right: 10/10, the stated goal decides the suggested track, answers travel to signup", async ({ page }) => {
     await page.goto("/");

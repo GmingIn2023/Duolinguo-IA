@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Caveat } from "next/font/google";
 import { HeroScene } from "@/components/landing/HeroScene";
 import { LandingPlacement } from "@/components/landing/LandingPlacement";
+import { ThemePlan } from "@/components/landing/ThemePlan";
 import { Wordmark } from "@/components/Wordmark";
-import { LESSONS, THEMES, THEME_IDS, TRACKS, TRACK_IDS } from "@/content";
-import { ThemeGlyph } from "@/components/ThemeGlyph";
+import { LESSONS, TRACKS, TRACK_IDS } from "@/content";
 import { getViewer } from "@/lib/data";
+import { buildLandingPlan } from "@/lib/landingBoard";
 import { PLACEMENT_LENGTH } from "@/lib/placement";
 import "./landing.css";
 
@@ -24,6 +25,7 @@ const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
 export default async function Home() {
   const viewer = await getViewer().catch(() => null);
   const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Dis-moi où j'en suis" };
+  const plan = buildLandingPlan();
   const guides = TRACK_IDS.map((id) => ({
     id,
     name: TRACKS[id].name,
@@ -105,21 +107,8 @@ export default async function Home() {
         </ul>
       </section>
 
-      {/* Ten themes */}
-      <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-8 lg:pb-28">
-        <h2 className="display display-l mb-10 max-w-[18ch]">Dix thèmes, de la première question au projet complet.</h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {THEME_IDS.map((t) => (
-            <li key={t} data-theme={t} className="tile-th tile flex flex-col gap-6 p-5">
-              <ThemeGlyph theme={t} size={30} />
-              <div className="grid gap-1">
-                <p className="display display-xs">{THEMES[t].name}</p>
-                <p className="text-sm opacity-85">{THEMES[t].pitch}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Ten themes and the plan of the three tracks, from the real curriculum */}
+      <ThemePlan plan={plan} />
 
       <footer className="bg-ink text-paper">
         <div className="mx-auto flex max-w-[90rem] flex-col gap-10 px-4 py-16 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
