@@ -3,6 +3,91 @@ import { answerCorrectly } from "./quiz";
 
 // The landing page: public, no account needed.
 
+test.describe("whole page", () => {
+  test("every visible text keeps WCAG AA contrast on its real background", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForTimeout(2500); // entrance motion
+    const fails = await page.evaluate(() => {
+      // any CSS colour (rgb, oklab, color-mix…) is resolved to RGBA through a canvas pixel
+      const ctx = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
+      const parse = (c: string) => {
+        ctx.clearRect(0, 0, 1, 1);
+        ctx.fillStyle = "#000";
+        ctx.fillStyle = c;
+        ctx.fillRect(0, 0, 1, 1);
+        const d = ctx.getImageData(0, 0, 1, 1).data;
+        return { r: d[0], g: d[1], b: d[2], a: d[3] / 255 };
+      };
+      const lum = (c: { r: number; g: number; b: number }) => {
+        const f = (v: number) => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        };
+        return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+      };
+      const backgroundOf = (el: Element | null) => {
+        const layers: { r: number; g: number; b: number; a: number }[] = [];
+        for (let e = el; e; e = e.parentElement) {
+          const c = parse(getComputedStyle(e).backgroundColor);
+          if (c && c.a > 0) {
+            layers.push(c);
+            if (c.a >= 1) break;
+          }
+        }
+        let base = { r: 251, g: 246, b: 236 };
+        for (const l of layers.reverse()) base = { r: l.r * l.a + base.r * (1 - l.a), g: l.g * l.a + base.g * (1 - l.a), b: l.b * l.a + base.b * (1 - l.a) };
+        return base;
+      };
+      const out: string[] = [];
+      let checked = 0;
+      document.querySelectorAll("body *").forEach((el) => {
+        if (el.closest("svg") && el.tagName !== "text") return;
+        if (["SCRIPT", "STYLE"].includes(el.tagName) || el.closest(".sr-only") || el.closest("[data-nextjs-toast], nextjs-portal")) return;
+        const own = [...el.childNodes].some((n) => n.nodeType === 3 && (n.textContent ?? "").trim().length > 1);
+        if (!own) return;
+        const rect = el.getBoundingClientRect();
+        const style = getComputedStyle(el);
+        if (!rect.width || !rect.height || style.display === "none") return;
+        let opacity = 1;
+        for (let e: Element | null = el; e; e = e.parentElement) opacity *= parseFloat(getComputedStyle(e).opacity);
+        if (opacity < 0.05) return; // a bubble waiting its turn is not on screen
+        const fg = parse(style.color);
+        const bg = backgroundOf(el);
+        const a = fg.a * opacity;
+        const mixed = { r: fg.r * a + bg.r * (1 - a), g: fg.g * a + bg.g * (1 - a), b: fg.b * a + bg.b * (1 - a) };
+        const [hi, lo] = [lum(mixed), lum(bg)].sort((x, y) => y - x);
+        const ratio = (hi + 0.05) / (lo + 0.05);
+        checked++;
+        const size = parseFloat(style.fontSize);
+        const large = size >= 24 || (size >= 18.66 && parseInt(style.fontWeight) >= 700);
+        if (ratio < (large ? 3 : 4.5)) out.push(`${(el.textContent ?? "").trim().slice(0, 40)} (${ratio.toFixed(2)})`);
+      });
+      return { out, checked };
+    });
+    expect(fails.checked, "the audit must actually look at the page").toBeGreaterThan(80);
+    expect(fails.out, fails.out.join("\n")).toEqual([]);
+  });
+
+  test("the token demo starts complete and each draw changes the sentence", async ({ page }) => {
+    await page.goto("/");
+    const demo = page.locator("section", { has: page.getByRole("heading", { name: "Regarde-le choisir ses mots." }) });
+    await expect(demo.getByText("Pour réussir une mayonnaise, commence par")).toBeVisible();
+    await expect(demo.getByRole("list", { name: /probabilité/ }).getByRole("listitem")).toHaveCount(5);
+    const seen = new Set<string>();
+    for (let i = 0; i < 25; i++) {
+      await demo.getByRole("button", { name: "Relancer" }).click();
+      seen.add((await demo.locator("p[aria-live=\"polite\"]").first().textContent()) ?? "");
+    }
+    expect(seen.size).toBeGreaterThan(1);
+  });
+
+  test("the footer mascots wake up when the page ends", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await expect(page.locator("footer").getByText("zzz")).toHaveCSS("opacity", "0", { timeout: 8000 });
+  });
+});
+
 test.describe("how it works: the thread and its four stops", () => {
   test("the thread passes through every numbered stop, at desktop and phone widths", async ({ page }) => {
     await page.goto("/");
