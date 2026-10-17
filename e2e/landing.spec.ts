@@ -151,13 +151,14 @@ test.describe("themes and plan, drawn from the real curriculum", () => {
 
   test("each stop can be reached and read with the keyboard", async ({ page }) => {
     await page.goto("/");
+    await page.waitForLoadState("networkidle"); // the plan reacts to focus only once the page is hydrated
     const plan = page.locator("#plan-panel");
     await plan.scrollIntoViewIfNeeded();
     const stops = plan.getByRole("button", { name: /^Cours : / });
     await stops.first().focus();
-    await expect(plan.getByText("Cours · Comprendre")).toBeVisible();
+    await expect(plan.getByText("Cours · Comprendre", { exact: true })).toBeVisible();
     await page.keyboard.press("ArrowRight");
-    await expect(plan.getByText("Comment un chatbot écrit ses réponses")).toBeVisible();
+    await expect(plan.getByText("Comment un chatbot écrit ses réponses", { exact: true })).toBeVisible();
   });
 
   test("the three tracks each draw their own map", async ({ page }) => {
