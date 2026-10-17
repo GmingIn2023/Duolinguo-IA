@@ -1,24 +1,20 @@
 import Link from "next/link";
 import { Caveat } from "next/font/google";
 import { HeroScene } from "@/components/landing/HeroScene";
+import { HowItWorks } from "@/components/landing/HowItWorks";
 import { LandingPlacement } from "@/components/landing/LandingPlacement";
 import { ThemePlan } from "@/components/landing/ThemePlan";
 import { Wordmark } from "@/components/Wordmark";
 import { LESSONS, TRACKS, TRACK_IDS } from "@/content";
 import { getViewer } from "@/lib/data";
 import { buildLandingPlan } from "@/lib/landingBoard";
+import { buildPreviews } from "@/lib/landingPreview";
 import { PLACEMENT_LENGTH } from "@/lib/placement";
 import "./landing.css";
+import "./landing-how.css";
 
 // handwriting for rare annotations only (arrows, "clique sur ton guide")
 const hand = Caveat({ subsets: ["latin"], weight: "600", variable: "--font-hand", display: "swap" });
-
-const LOOP = [
-  { t: "Une carte qui se ramifie", d: "Un test de niveau ouvre ce que tu sais déjà. Ensuite, tu choisis ta branche : étudier, travailler, construire." },
-  { t: "Des cours qui se manipulent", d: "Schémas à explorer, prompts annotés, exercices à faire dans ton assistant." },
-  { t: "Un quiz qui corrige", d: "Tu sais tout de suite pourquoi c'est juste ou faux, même pour une réponse rédigée." },
-  { t: "Des révisions qui changent de forme", d: "Une notion revient quand tu risques de l'oublier, sous une autre question. Et ton carnet garde le reste." },
-];
 
 const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
 
@@ -26,6 +22,7 @@ export default async function Home() {
   const viewer = await getViewer().catch(() => null);
   const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Dis-moi où j'en suis" };
   const plan = buildLandingPlan();
+  const previews = buildPreviews();
   const guides = TRACK_IDS.map((id) => ({
     id,
     name: TRACKS[id].name,
@@ -74,23 +71,15 @@ export default async function Home() {
         </section>
       )}
 
-      {/* The loop */}
-      <section className="bg-surface">
+      {/* How it works: a thread with four stops, each with a real preview */}
+      <section id="comment" className="how-band">
         <div className="mx-auto max-w-[90rem] px-4 py-20 sm:px-8 lg:py-28">
-          <h2 className="display display-l mb-12 max-w-[16ch]">Une boucle courte, qui revient au bon moment.</h2>
-          <ol className="grid gap-4 lg:grid-cols-6">
-            {LOOP.map((s, i) => (
-              <li
-                key={s.t}
-                className={`tile flex flex-col justify-end gap-3 p-6 sm:p-8 ${
-                  ["!bg-paper lg:col-span-4 lg:min-h-64", "!bg-paper lg:col-span-2", "!bg-paper lg:col-span-2", "tile-ink lg:col-span-4"][i]
-                }`}
-              >
-                <h3 className="display display-s sm:text-[1.875rem]">{s.t}</h3>
-                <p className={`max-w-[40ch] ${i === 3 ? "text-paper/80" : "text-ink-2"}`}>{s.d}</p>
-              </li>
-            ))}
-          </ol>
+          <div className="mb-14 grid max-w-[42rem] gap-4">
+            <p className="eyebrow">Comment ça marche</p>
+            <h2 className="display display-l">Tu essaies, tu te trompes, tu comprends. Puis ça revient.</h2>
+            <p className="lede">Voici ce que tu verras, étape par étape. Descends : le fil se dessine avec toi.</p>
+          </div>
+          <HowItWorks previews={previews} />
         </div>
       </section>
 

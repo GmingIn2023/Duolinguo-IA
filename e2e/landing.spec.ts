@@ -3,6 +3,52 @@ import { answerCorrectly } from "./quiz";
 
 // The landing page: public, no account needed.
 
+test.describe("how it works: the thread and its four stops", () => {
+  test("the thread passes through every numbered stop, at desktop and phone widths", async ({ page }) => {
+    await page.goto("/");
+    await page.locator("#comment").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    const gaps = await page.evaluate(() => {
+      const path = document.querySelector<SVGPathElement>(".how-base")!;
+      const box = document.querySelector(".how-trail")!.getBoundingClientRect();
+      const len = path.getTotalLength();
+      const samples = Array.from({ length: 800 }, (_, i) => path.getPointAtLength((i / 799) * len));
+      return [...document.querySelectorAll(".how-dot")].map((d) => {
+        const r = d.getBoundingClientRect();
+        const cx = r.left + r.width / 2 - box.left;
+        const cy = r.top + r.height / 2 - box.top;
+        return Math.min(...samples.map((p) => Math.hypot(p.x - cx, p.y - cy)));
+      });
+    });
+    expect(gaps).toHaveLength(4);
+    for (const gap of gaps) expect(gap).toBeLessThan(6);
+  });
+
+  test("the four stops light up as you scroll, and each card carries real content", async ({ page }) => {
+    await page.goto("/");
+    const steps = page.locator(".how-step");
+    await expect(steps).toHaveCount(4);
+    await page.locator(".how-again").scrollIntoViewIfNeeded();
+    await expect(page.locator(".how-step.is-reached")).toHaveCount(4);
+    await expect(page.getByText("Une IA peut affirmer une information fausse avec beaucoup d'assurance.")).toBeVisible();
+    await expect(page.getByText("Parcours conseillé selon ton objectif")).toBeVisible();
+    const brief = page.locator(".how-brief button");
+    await expect(brief).toHaveCount(3);
+    await page.getByRole("button", { name: "Format", exact: true }).click();
+    await expect(page.locator(".how-why").first()).toContainText("Format.");
+  });
+
+  test("reduced motion: the thread is already drawn and every card is readable at rest", async ({ browser }) => {
+    const context = await browser.newContext({ reducedMotion: "reduce" });
+    const page = await context.newPage();
+    await page.goto("/");
+    await expect(page.locator(".how-step.is-reached")).toHaveCount(4);
+    const hidden = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>(".how-card")].filter((c) => getComputedStyle(c).transform !== "none" || Number(getComputedStyle(c).opacity) < 1).length);
+    expect(hidden).toBe(0);
+    await context.close();
+  });
+});
+
 test.describe("themes and plan, drawn from the real curriculum", () => {
   test("ten theme tiles, the real number of lessons, and a tile filters the plan", async ({ page }) => {
     await page.goto("/");
