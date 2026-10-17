@@ -27,6 +27,7 @@
 /* the overscroll area matches the page instead of showing the app's grey */
 html:has(.landing) { background: #fbf6ec; }
 
+.landing .eyebrow { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 .landing .hand { font-family: var(--font-hand), "Bradley Hand", cursive; font-weight: 600; font-size: 1.4rem; line-height: 1; }
 
 /* Highlighter: a solid bar drawn under one word. No gradient (DESIGN.md). */

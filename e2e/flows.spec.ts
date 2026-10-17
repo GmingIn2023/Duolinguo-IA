@@ -9,7 +9,8 @@ test("landing: thesis and the three guides lead into the level test", async ({ p
   const guides = page.getByRole("list", { name: "Les trois parcours" }).getByRole("listitem");
   await expect(guides).toHaveCount(3);
   await guides.first().getByRole("link").click();
-  await expect(page).toHaveURL(/\/onboarding/);
+  await expect(page).toHaveURL(/#depart$/);
+  await expect(page.getByRole("button", { name: "Commencer le test" })).toBeVisible();
 });
 
 test("placement test adapts, scores 10/10 when everything is right, and leads to signup", async ({ page }) => {

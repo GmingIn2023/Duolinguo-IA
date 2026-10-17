@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Caveat } from "next/font/google";
 import { HeroScene } from "@/components/landing/HeroScene";
+import { LandingPlacement } from "@/components/landing/LandingPlacement";
 import { Wordmark } from "@/components/Wordmark";
 import { LESSONS, THEMES, THEME_IDS, TRACKS, TRACK_IDS } from "@/content";
 import { ThemeGlyph } from "@/components/ThemeGlyph";
@@ -51,14 +52,25 @@ export default async function Home() {
           </h1>
           <p className="lede">{LESSONS.length} cours, des quiz qui t&apos;expliquent tes erreurs, des révisions qui reviennent avant que tu oublies. Du tout premier prompt jusqu&apos;aux agents et au RAG.</p>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href={cta.href} className="btn btn-primary btn-lg">{cta.label}</Link>
+            <Link href={viewer ? cta.href : "#depart"} className="btn btn-primary btn-lg">{cta.label}</Link>
           </div>
           {!viewer && <p className="text-sm text-muted">{PLACEMENT_LENGTH} questions qui s&apos;adaptent à toi, un niveau sur 10, aucun compte pour commencer.</p>}
         </div>
         <div className="lg:col-span-5">
-          <HeroScene guides={guides} href={cta.href} />
+          <HeroScene guides={guides} href={viewer ? cta.href : "#depart"} />
         </div>
       </section>
+
+      {/* Where to start: the real level test, or a direct choice. Signed-in learners already have a map. */}
+      {!viewer && (
+        <section id="depart" className="mx-auto max-w-[90rem] scroll-mt-6 px-4 pb-20 sm:px-8 lg:pb-28">
+          <div className="mb-10 grid max-w-[40rem] gap-3">
+            <p className="eyebrow">Par où commencer ?</p>
+            <h2 className="display display-l">Fais le point en {PLACEMENT_LENGTH} questions, ou choisis toi-même.</h2>
+          </div>
+          <LandingPlacement guides={guides} />
+        </section>
+      )}
 
       {/* The loop */}
       <section className="bg-surface">

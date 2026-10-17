@@ -1,6 +1,55 @@
 import { expect, test } from "@playwright/test";
+import { answerCorrectly } from "./quiz";
 
 // The landing page: public, no account needed.
+
+test.describe("level test inside the landing page", () => {
+  test("everything right: 10/10, the stated goal decides the suggested track, answers travel to signup", async ({ page }) => {
+    await page.goto("/");
+    const box = page.locator("#test");
+    await box.getByRole("button", { name: "Commencer le test" }).click();
+    await box.getByRole("radio", { name: /Construire avec l'IA/ }).click();
+    for (let i = 1; i <= 10; i++) {
+      await expect(box.getByText(`Question ${i} sur 10`)).toBeVisible({ timeout: 20_000 });
+      await answerCorrectly(box);
+      await box.getByRole("button", { name: "Valider" }).click();
+    }
+    await expect(box.getByText("Ton niveau estimé : 10/10")).toBeAttached();
+    const fox = box.getByRole("radio", { name: /Construire/ });
+    await expect(fox).toHaveAttribute("aria-checked", "true");
+    await expect(fox).toContainText("Conseillé pour toi");
+    await box.getByRole("radio", { name: /Pratiquer/ }).click();
+    await box.getByRole("button", { name: "Créer mon compte et commencer" }).click();
+    await expect(page).toHaveURL(/\/signup\?track=gecko/, { timeout: 30_000 });
+    const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
+    expect(stored.placement).toHaveLength(10);
+    expect(stored.goal).toBe("build");
+    expect(stored.track).toBe("gecko");
+  });
+
+  test("« Je ne sais pas » everywhere: 0/10 and the beginner track", async ({ page }) => {
+    await page.goto("/");
+    const box = page.locator("#test");
+    await box.getByRole("button", { name: "Commencer le test" }).click();
+    await box.getByRole("radio", { name: /Comprendre ce qu'est l'IA/ }).click();
+    for (let i = 0; i < 10; i++) await box.getByRole("button", { name: "Je ne sais pas" }).click({ timeout: 20_000 });
+    await expect(box.getByText("Ton niveau estimé : 0/10")).toBeAttached();
+    await expect(box.getByRole("radio", { name: /Découvrir/ })).toHaveAttribute("aria-checked", "true");
+    await box.getByRole("button", { name: "Refaire le test" }).click();
+    await expect(box.getByRole("button", { name: "Commencer le test" })).toBeVisible();
+  });
+
+  test("choosing a track directly skips the test and still reaches signup", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Pratiquer · 21 cours/ }).click();
+    const panel = page.getByRole("status").filter({ hasText: "Tu pars sur Pratiquer" });
+    await expect(panel).toBeVisible();
+    await panel.getByRole("button", { name: "Créer mon compte et commencer" }).click();
+    await expect(page).toHaveURL(/\/signup\?track=gecko/, { timeout: 30_000 });
+    const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
+    expect(stored.placement).toEqual([]);
+  });
+});
 
 test("the three guides are links with a readable name, in track order", async ({ page }) => {
   await page.goto("/");
