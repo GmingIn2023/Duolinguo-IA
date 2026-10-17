@@ -1,6 +1,6 @@
 import { LESSONS } from "@/content";
 import { INTERVAL_DAYS } from "./srs";
-import { getPlacementQuestion } from "./placement";
+import { getPlacementQuestion, levelName } from "./placement";
 
 /** The real content behind the "Comment ça marche" previews, so the landing shows what the product really shows. */
 export type LandingPreviews = {
@@ -8,6 +8,8 @@ export type LandingPreviews = {
   brief: { lessonTitle: string; parts: { label: string; text: string; detail: string }[] } | null;
   /** A real question and its real explanation. */
   quiz: { statement: string; explanation: string } | null;
+  /** The example result shown in step 1, labelled with the real level names. */
+  exampleLevel: { level10: number; label: string };
   /** Days since a miss at which the question comes back, given right answers each time (Leitner boxes 1 to 4). */
   reviewDays: number[];
 };
@@ -31,5 +33,6 @@ export function buildPreviews(): LandingPreviews {
 
   let total = 0;
   const reviewDays = [1, 2, 3, 4].map((box) => (total += INTERVAL_DAYS[box]));
-  return { brief, quiz, reviewDays };
+  const level10 = 6;
+  return { brief, quiz, exampleLevel: { level10, label: levelName(level10) }, reviewDays };
 }

@@ -173,6 +173,26 @@ test.describe("themes and plan, drawn from the real curriculum", () => {
 });
 
 test.describe("level test inside the landing page", () => {
+  test("the question bank (with its answers) is only downloaded when the test starts", async ({ page }) => {
+    const MARK = "jeu de test plut"; // ASCII part of a bank question, absent from every other module
+    const holders: string[] = [];
+    page.on("response", async (res) => {
+      if (!res.url().includes("/_next/") || !res.url().endsWith(".js")) return;
+      try {
+        if ((await res.text()).includes(MARK)) holders.push(res.url());
+      } catch {}
+    });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    // the whole landing is on screen and usable, yet the bank has not been downloaded
+    await expect(page.getByRole("button", { name: "Commencer le test" })).toBeVisible();
+    expect(holders, `bank found in: ${holders.join(", ")}`).toEqual([]);
+    await page.getByRole("button", { name: "Commencer le test" }).click();
+    await page.getByRole("radio", { name: /Construire avec l'IA/ }).click();
+    await expect(page.getByText("Question 1 sur 10")).toBeVisible({ timeout: 20_000 });
+    expect(holders.length).toBeGreaterThan(0);
+  });
+
   test("everything right: 10/10, the stated goal decides the suggested track, answers travel to signup", async ({ page }) => {
     await page.goto("/");
     const box = page.locator("#test");

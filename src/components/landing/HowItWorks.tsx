@@ -2,12 +2,10 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/Avatar";
-import { levelName } from "@/lib/placement";
 import { gaugeSegments } from "@/lib/placementFlow";
 import type { LandingPreviews } from "@/lib/landingPreview";
 
 const TRACK_COLOR = { bird: "var(--bird)", gecko: "var(--gecko)", fox: "var(--fox)" } as const;
-const EXAMPLE_LEVEL = 6;
 
 /**
  * "Comment ça marche": a thread that draws itself as you scroll, four stops, each with a real preview.
@@ -132,11 +130,11 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
         <div className="how-card">
           <div className="how-cap"><span>Ton résultat</span><span>exemple</span></div>
           <p className="how-level">
-            {EXAMPLE_LEVEL}
-            <small> sur 10 · {levelName(EXAMPLE_LEVEL)}</small>
+            {previews.exampleLevel.level10}
+            <small> sur 10 · {previews.exampleLevel.label}</small>
           </p>
           <div className="how-gauge" aria-hidden>
-            {gaugeSegments(EXAMPLE_LEVEL).map((s) => (
+            {gaugeSegments(previews.exampleLevel.level10).map((s) => (
               <i key={s.index} style={s.filled ? { background: TRACK_COLOR[s.track], transitionDelay: `${150 + s.index * 70}ms` } : undefined} />
             ))}
           </div>

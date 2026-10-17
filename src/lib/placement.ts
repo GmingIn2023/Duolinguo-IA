@@ -1,10 +1,8 @@
-import type { Answer, Question, TrackId } from "@/content/types";
+import type { Answer, Question } from "@/content/types";
 import { gradeAnswer } from "./grading";
 import { seededShuffle } from "./shuffle";
 
-export type Goal = "discover" | "practice" | "build";
-export const TRACK_FOR_GOAL: Record<Goal, TrackId> = { discover: "bird", practice: "gecko", build: "fox" };
-export const isGoal = (v: unknown): v is Goal => v === "discover" || v === "practice" || v === "build";
+export { TRACK_FOR_GOAL, isGoal, type Goal } from "./goals";
 
 /** Bands follow lesson difficulty: 1 Découverte … 5 Expert. */
 export type Band = 1 | 2 | 3 | 4 | 5;

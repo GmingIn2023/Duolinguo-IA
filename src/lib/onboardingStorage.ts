@@ -1,5 +1,5 @@
 import type { Answer, TrackId } from "@/content/types";
-import type { Goal } from "./placement";
+import type { Goal } from "./goals";
 
 /** What the level test hands over to /signup: read back by SignupForm, re-graded on the server. */
 export const ONBOARDING_KEY = "gusgus.onboarding";

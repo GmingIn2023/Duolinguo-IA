@@ -7,10 +7,12 @@ import { Check } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import type { TrackId } from "@/content/types";
 import { saveOnboarding, type PlacementAnswer } from "@/lib/onboardingStorage";
-import { levelName, placementLevel, type Goal, type PlacementStep } from "@/lib/placement";
+import type { Goal } from "@/lib/goals";
 import { gaugeSegments, suggestTrack } from "@/lib/placementFlow";
 import type { Guide } from "./HeroScene";
+import type { PlacementResult } from "./PlacementRun";
 
+// The question bank (and its answers) lives in PlacementRun: it is downloaded only when someone starts the test.
 const PlacementRun = dynamic(() => import("./PlacementRun"), {
   ssr: false,
   loading: () => <p className="text-muted" role="status">Je prépare tes questions…</p>,
@@ -39,18 +41,17 @@ export function LandingPlacement({ guides }: { guides: Guide[] }) {
   const router = useRouter();
   const [stage, setStage] = useState<Stage>("intro");
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [history, setHistory] = useState<PlacementStep[]>([]);
-  const [answers, setAnswers] = useState<PlacementAnswer[]>([]);
+  const [result, setResult] = useState<PlacementResult | null>(null);
   const [picked, setPicked] = useState<TrackId | null>(null);
   const [direct, setDirect] = useState(false);
 
-  const level10 = placementLevel(history);
+  const level10 = result?.level10 ?? 0;
+  const answers: PlacementAnswer[] = result?.answers ?? [];
   const suggested = suggestTrack(goal, level10);
   const nameOf = (id: TrackId) => guides.find((g) => g.id === id)?.name ?? id;
 
   function restart() {
-    setHistory([]);
-    setAnswers([]);
+    setResult(null);
     setPicked(null);
     setDirect(false);
     setGoal(null);
@@ -60,8 +61,7 @@ export function LandingPlacement({ guides }: { guides: Guide[] }) {
   function chooseDirect(id: TrackId) {
     setDirect(true);
     setPicked(id);
-    setHistory([]);
-    setAnswers([]);
+    setResult(null);
     setGoal(null);
     setStage("intro");
   }
@@ -111,9 +111,8 @@ export function LandingPlacement({ guides }: { guides: Guide[] }) {
 
         {stage === "test" && (
           <PlacementRun
-            onDone={(h, a) => {
-              setHistory(h);
-              setAnswers(a);
+            onDone={(r) => {
+              setResult(r);
               setStage("result");
             }}
           />
@@ -133,7 +132,7 @@ export function LandingPlacement({ guides }: { guides: Guide[] }) {
               ))}
             </div>
             <p className="max-w-[46ch]">
-              <strong>{levelName(level10)}.</strong> Un point de départ, pas une note : tout reste ouvert, à ton rythme.
+              <strong>{result?.levelLabel}.</strong> Un point de départ, pas une note : tout reste ouvert, à ton rythme.
             </p>
             <p className="font-semibold">Ton parcours</p>
             <div className="grid w-full gap-2" role="radiogroup" aria-label="Ton parcours">

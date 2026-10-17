@@ -1,5 +1,5 @@
 import type { TrackId } from "@/content/types";
-import { TRACK_FOR_GOAL, type Goal } from "./placement";
+import { TRACK_FOR_GOAL, type Goal } from "./goals";
 
 /** The track suggested after the test: the stated goal wins, the level decides only without a goal (same rule as /onboarding). */
 export const suggestTrack = (goal: Goal | null, level10: number): TrackId => (goal ? TRACK_FOR_GOAL[goal] : trackForLevel(level10));

@@ -6,14 +6,17 @@ import { initialDraft, initialOrder } from "@/components/quiz/QuizRunner";
 import type { Answer } from "@/content/types";
 import { gradeAnswer } from "@/lib/grading";
 import type { PlacementAnswer } from "@/lib/onboardingStorage";
-import { PLACEMENT_LENGTH, nextPlacementQuestion, type PlacementStep } from "@/lib/placement";
+import { PLACEMENT_LENGTH, levelName, nextPlacementQuestion, placementLevel } from "@/lib/placement";
+import type { PlacementStep } from "@/lib/placement";
 
 /**
  * The adaptive test itself, same engine as /onboarding: a right answer raises the next question's level,
  * a miss or "Je ne sais pas" lowers it, nothing is corrected during the test, and the server re-grades later.
  * Loaded on demand: the question bank (with its answers) is not part of the landing's first download.
  */
-export default function PlacementRun({ onDone }: { onDone: (history: PlacementStep[], answers: PlacementAnswer[]) => void }) {
+export type PlacementResult = { level10: number; levelLabel: string; answers: PlacementAnswer[] };
+
+export default function PlacementRun({ onDone }: { onDone: (result: PlacementResult) => void }) {
   const [seed] = useState(() => Math.random().toString(36).slice(2));
   const [history, setHistory] = useState<PlacementStep[]>([]);
   const [answers, setAnswers] = useState<PlacementAnswer[]>([]);
@@ -34,8 +37,12 @@ export default function PlacementRun({ onDone }: { onDone: (history: PlacementSt
     const nextAnswers = [...answers, { id: question.id, answer: value }];
     setAnswers(nextAnswers);
     setHistory(nextHistory);
-    if (!nextPlacementQuestion(nextHistory, seed)) onDone(nextHistory, nextAnswers);
-    else top.current?.scrollIntoView({ block: "nearest", behavior: "auto" });
+    if (nextPlacementQuestion(nextHistory, seed)) {
+      top.current?.scrollIntoView({ block: "nearest", behavior: "auto" });
+      return;
+    }
+    const level10 = placementLevel(nextHistory);
+    onDone({ level10, levelLabel: levelName(level10), answers: nextAnswers });
   }
 
   if (!question) return null;
