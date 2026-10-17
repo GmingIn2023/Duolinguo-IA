@@ -54,6 +54,10 @@ export type ReviewMode = "daily" | "weekly" | `checkpoint:${string}`;
 export type ReviewResult = {
   correct: number;
   total: number;
+  /** How many questions the session served. */
+  expected: number;
+  /** Checkpoints and weekly reviews only: false when too few were answered or right (no passed marker, no bonus). Always true for daily reviews. */
+  passed: boolean;
   xpEarned: number;
   bonus: number;
   totalXp: number;

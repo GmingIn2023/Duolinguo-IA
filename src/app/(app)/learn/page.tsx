@@ -62,7 +62,7 @@ export default async function LearnPage() {
           <NextCard
             label={recommended.kind === "checkpoint" ? "Bilan d'étape" : "Ta prochaine étape"}
             title={recommended.title}
-            detail={recommended.objective ?? `${recommended.covers} cours revus sous une autre forme`}
+            detail={recommended.objective ?? `${recommended.covers} cours à revoir`}
             theme={recommended.theme ?? "projets"}
             href={itemHref(recommended)}
             cta={recommended.kind === "checkpoint" ? "Passer le bilan" : recommended.status === "covered" ? "Le faire quand même" : "Commencer"}

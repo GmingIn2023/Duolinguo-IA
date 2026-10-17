@@ -23,7 +23,7 @@ E2E_SWEEP=1 BASE_URL=http://localhost:3000 npx playwright test content-sweep --p
 npm run content:check  # infos outils à revérifier (aussi chaque lundi en CI)
 ```
 
-Test de sécurité base de données (droits, `award_xp`) : exécuter `supabase/tests/progress_lock.sql` dans l'éditeur SQL Supabase (transaction annulée, aucune donnée modifiée).
+Tests de base de données (droits, `award_xp`, fenêtre anti-rejeu) : exécuter `supabase/tests/progress_lock.sql` puis `supabase/tests/award_xp_replay.sql` dans l'éditeur SQL Supabase (transactions annulées, aucune donnée modifiée). État des migrations et marche à suivre : `supabase/MIGRATIONS.md`.
 
 Les tests connectés demandent un compte de test confirmé, passé par l'environnement : `E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e` (sinon ils sont ignorés). Ne jamais commiter ces identifiants.
 
@@ -50,3 +50,4 @@ Les tests connectés demandent un compte de test confirmé, passé par l'environ
 | `SITE_URL` (optionnel) | serveur | URL publique du site, pour le lien de confirmation d'inscription |
 
 La migration `supabase/migrations/20261013210000_refonte_levels_prefs_notes.sql` (additive, réexécutable) doit être appliquée **avant** de déployer cette version.
+La migration `supabase/migrations/20261017000000_award_xp_replay_window.sql` (nouvelle signature de `award_xp`, avec la fenêtre anti-rejeu) doit elle aussi être appliquée **avant** de déployer : l'ancien appel à 6 arguments n'existe plus après elle, et le nouveau code échoue si elle manque.

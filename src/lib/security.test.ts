@@ -58,10 +58,26 @@ describe("progress writes", () => {
     expect(migrations).toMatch(/unique index if not exists xp_events_checkpoint_once on public\.xp_events \(user_id, ref\) where source = 'checkpoint'/);
   });
 
-  it("caps replay XP so a scripted loop cannot farm it", () => {
+  it("caps replay XP inside the database, so neither a loop nor simultaneous requests can farm it", () => {
     const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
-    expect(actions).toMatch(/recentlyCredited\(viewer, "lesson", lessonId\)/);
-    expect(actions).toMatch(/recentlyCredited\(viewer, "review", mode\)/);
+    // the window is passed to award_xp: no read-then-write in the server code (that was racy)
+    expect(actions).not.toMatch(/recentlyCredited/);
+    expect(actions).toMatch(/awardXp\(viewer, intended, "lesson", lessonId, REPLAY_WINDOW_HOURS\)/);
+    expect(actions).toMatch(/awardXp\(viewer, reviewXp\(correct\), "review", reviewRef, replayable \? REPLAY_WINDOW_HOURS : 0\)/);
+    const dir = path.resolve(root, "../supabase/migrations");
+    const migrations = readdirSync(dir).map((f) => readFileSync(path.join(dir, f), "utf8")).join("\n");
+    expect(migrations).toMatch(/p_replay_hours integer default 0/);
+    expect(migrations).toMatch(/pg_advisory_xact_lock\(hashtextextended\(p_user::text/);
+    // the old six-argument function must be dropped, or the call would be ambiguous
+    expect(migrations).toMatch(/drop function if exists public\.award_xp\(uuid, integer, text, text, integer, date\)/);
+  });
+
+  it("marks a checkpoint as passed only for a session that passed", () => {
+    const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
+    expect(actions).toMatch(/reviewPassed\(\{ correct, answered: total, expected: allowed\.size \}\)/);
+    expect(actions).toMatch(/const reviewRef = passed \? mode : `try:\$\{mode\}`/);
+    expect(actions).toMatch(/else if \(passed && replayable\)/);
+    expect(actions).toMatch(/if \(passed && mode === "weekly"\)/);
   });
 
   it("credits XP only through the award_xp function", () => {

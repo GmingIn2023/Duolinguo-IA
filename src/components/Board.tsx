@@ -303,7 +303,7 @@ function NodeCard({ item, onClose }: { item: BoardItem; onClose: () => void }) {
           </button>
         </div>
         {item.objective && <p className="text-ink-2">{item.objective}</p>}
-        {item.kind === "checkpoint" && !locked && <p className="text-ink-2">Les notions des cours de cette étape reviennent sous une autre forme. +20 XP la première fois.</p>}
+        {item.kind === "checkpoint" && !locked && <p className="text-ink-2">Les notions des cours de cette étape reviennent. +20 XP la première fois, avec au moins 60 % de bonnes réponses.</p>}
         {item.status === "covered" && <p className="chip chip-th w-fit">Ton test de niveau l&apos;a validé : tu peux passer à la suite.</p>}
         {locked ? (
           <div className="grid gap-2 rounded-xl bg-sunk p-4">

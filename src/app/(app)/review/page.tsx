@@ -17,7 +17,7 @@ export default async function ReviewPage() {
     <div className="grid max-w-5xl gap-10">
       <header className="grid gap-3">
         <h1 className="display display-l">Révisions</h1>
-        <p className="lede !max-w-[60ch]">Une notion réussie revient de plus en plus tard : 1 jour, 2, 4, 7, 15, puis 30. Une erreur la fait revenir dès le lendemain. Et quand elle revient, c&apos;est souvent sous une autre forme.</p>
+        <p className="lede !max-w-[60ch]">Une notion réussie revient de plus en plus tard : 1 jour, 2, 4, 7, 15, puis 30. Une erreur la fait revenir dès le lendemain. À partir de la deuxième révision, elle revient parfois sous une autre question.</p>
       </header>
       <div className="grid items-start gap-5 md:grid-cols-2">
         <section className="tile flex flex-col gap-6 p-6 sm:p-8">

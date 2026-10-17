@@ -8,6 +8,7 @@ import type { Answer, Question, TrackId } from "@/content/types";
 import { Avatar } from "@/components/Avatar";
 import { QuizRunner } from "@/components/quiz/QuizRunner";
 import { mascotLine } from "@/lib/mascot";
+import { PASS_RATIO } from "@/lib/progressRules";
 import type { ReviewMode, ReviewResult } from "@/lib/types";
 
 const LABEL = (mode: ReviewMode) => (mode === "daily" ? "Jour" : mode === "weekly" ? "Semaine" : "Bilan");
@@ -33,6 +34,7 @@ export function ReviewSession({ mode, title, questions, track }: { mode: ReviewM
   }, [mode]);
 
   const total = result ? result.xpEarned + result.bonus : 0;
+  const needed = result ? Math.ceil(result.expected * PASS_RATIO) : 0;
   return (
     <div data-track={track} className="min-h-dvh">
       <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur">
@@ -68,14 +70,19 @@ export function ReviewSession({ mode, title, questions, track }: { mode: ReviewM
                 <span className="reveal-line"><span>+{total}</span></span>
                 <span className="reveal-line"><span>XP</span></span>
               </h1>
-              <Avatar track={track} mood="cheer" size={96} />
+              <Avatar track={track} mood={result.passed ? "cheer" : "think"} size={96} />
             </div>
             <div className="fade-in grid gap-2 [animation-delay:500ms]">
               <p className="bubble w-fit">{mascotLine(track, result.correct === result.total ? "perfect" : "done", result.totalXp)}</p>
               <p className="pt-3 text-xl font-semibold">{result.correct} sur {result.total} du premier coup.</p>
+              {!result.passed && (
+                <p className="rounded-xl bg-bad-soft px-4 py-3 font-medium text-bad" role="status">
+                  {mode === "weekly" ? "Révision de la semaine" : "Bilan"} non validé : il fallait au moins {needed} bonnes réponses sur {result.expected}. Relis les notions manquées, puis refais-le : le bonus t&apos;attend.
+                </p>
+              )}
               <p className="text-ink-2">
                 {result.bonus ? `Dont ${result.bonus} XP de bonus. ` : ""}
-                Les notions réussies reviendront plus tard, les autres dès demain, sous une autre forme.
+                Les notions réussies reviendront plus tard, les autres dès demain.
               </p>
             </div>
             <div className="fade-in flex flex-wrap gap-3 [animation-delay:600ms]">
