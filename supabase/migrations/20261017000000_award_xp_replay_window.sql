@@ -76,3 +76,6 @@ $$;
 
 revoke execute on function public.award_xp(uuid, integer, text, text, integer, date, integer) from public, anon, authenticated;
 grant execute on function public.award_xp(uuid, integer, text, text, integer, date, integer) to service_role;
+
+-- Makes PostgREST (the API layer) pick up the new function signature immediately.
+notify pgrst, 'reload schema';

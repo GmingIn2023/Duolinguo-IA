@@ -48,36 +48,47 @@ describe("progress writes", () => {
     for (const fields of profileUpdates) expect(fields).not.toMatch(/\b(xp|streak_days|last_active_date|placement_level)\b/);
   });
 
-  it("pays one-off bonuses through sources the database makes unique", () => {
-    const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
-    expect(actions).toMatch(/awardXp\(viewer, CHECKPOINT_BONUS_XP, "checkpoint"/);
-    expect(actions).toMatch(/awardXp\(viewer, WEEKLY_BONUS_XP, "weekly"/);
+  const service = () => sources.find((s) => s.path === "lib/progressService.ts")!.code;
+  const store = () => sources.find((s) => s.path === "lib/progressDb.supabase.ts")!.code;
+  const migrations = () => {
     const dir = path.resolve(root, "../supabase/migrations");
-    const migrations = readdirSync(dir).map((f) => readFileSync(path.join(dir, f), "utf8")).join("\n");
-    expect(migrations).toMatch(/unique index xp_events_weekly_once on public\.xp_events \(user_id, ref\) where source = 'weekly'/);
-    expect(migrations).toMatch(/unique index if not exists xp_events_checkpoint_once on public\.xp_events \(user_id, ref\) where source = 'checkpoint'/);
+    return readdirSync(dir).map((f) => readFileSync(path.join(dir, f), "utf8")).join("\n");
+  };
+
+  it("pays one-off bonuses through sources the database makes unique", () => {
+    expect(service()).toMatch(/award\(db, learner, CHECKPOINT_BONUS_XP, "checkpoint", mode, 0, today\)/);
+    expect(service()).toMatch(/award\(db, learner, WEEKLY_BONUS_XP, "weekly", isoWeekKey\(now\), 0, today\)/);
+    expect(migrations()).toMatch(/unique index xp_events_weekly_once on public\.xp_events \(user_id, ref\) where source = 'weekly'/);
+    expect(migrations()).toMatch(/unique index if not exists xp_events_checkpoint_once on public\.xp_events \(user_id, ref\) where source = 'checkpoint'/);
   });
 
+  // These are text guards: they stop the mechanism from being removed by accident.
+  // The behaviour itself is tested in progressService.test.ts (against a model of the database) and in supabase/tests (real SQL).
   it("caps replay XP inside the database, so neither a loop nor simultaneous requests can farm it", () => {
     const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
-    // the window is passed to award_xp: no read-then-write in the server code (that was racy)
     expect(actions).not.toMatch(/recentlyCredited/);
-    expect(actions).toMatch(/awardXp\(viewer, intended, "lesson", lessonId, REPLAY_WINDOW_HOURS\)/);
-    expect(actions).toMatch(/awardXp\(viewer, reviewXp\(correct\), "review", reviewRef, replayable \? REPLAY_WINDOW_HOURS : 0\)/);
-    const dir = path.resolve(root, "../supabase/migrations");
-    const migrations = readdirSync(dir).map((f) => readFileSync(path.join(dir, f), "utf8")).join("\n");
-    expect(migrations).toMatch(/p_replay_hours integer default 0/);
-    expect(migrations).toMatch(/pg_advisory_xact_lock\(hashtextextended\(p_user::text/);
+    expect(service()).not.toMatch(/recentlyCredited/);
+    expect(service()).toMatch(/award\(db, learner, intended, "lesson", lesson\.id, REPLAY_WINDOW_HOURS, today\)/);
+    expect(service()).toMatch(/award\(db, learner, reviewXp\(paying\), "review", reviewRef, replayable \? REPLAY_WINDOW_HOURS : 0, today\)/);
+    expect(migrations()).toMatch(/p_replay_hours integer default 0/);
+    expect(migrations()).toMatch(/pg_advisory_xact_lock\(hashtextextended\(p_user::text/);
     // the old six-argument function must be dropped, or the call would be ambiguous
-    expect(migrations).toMatch(/drop function if exists public\.award_xp\(uuid, integer, text, text, integer, date\)/);
+    expect(migrations()).toMatch(/drop function if exists public\.award_xp\(uuid, integer, text, text, integer, date\)/);
   });
 
   it("marks a checkpoint as passed only for a session that passed", () => {
-    const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
-    expect(actions).toMatch(/reviewPassed\(\{ correct, answered: total, expected: allowed\.size \}\)/);
-    expect(actions).toMatch(/const reviewRef = passed \? mode : `try:\$\{mode\}`/);
-    expect(actions).toMatch(/else if \(passed && replayable\)/);
-    expect(actions).toMatch(/if \(passed && mode === "weekly"\)/);
+    expect(service()).toMatch(/reviewPassed\(\{ correct, answered: total, expected \}\)/);
+    expect(service()).toMatch(/const reviewRef = passed \? mode : `try:\$\{mode\}`/);
+    expect(service()).toMatch(/else if \(passed && replayable\)/);
+    expect(service()).toMatch(/if \(passed && mode === "weekly"\)/);
+  });
+
+  it("keeps the compare-and-swap conditions that make simultaneous writes safe", () => {
+    // lesson progress: only applies if `attempts` is unchanged; daily review: only applies if the box is unchanged and the notion is still due
+    expect(store()).toMatch(/\.eq\("attempts", expectedAttempts\)/);
+    expect(store()).toMatch(/\.eq\("box", expected\.box\)\s*\.lte\("due_at", expected\.dueBefore\)/);
+    expect(store()).toMatch(/UNIQUE_VIOLATION = "23505"/);
+    expect(service()).toMatch(/\{ exclusive: daily \}/);
   });
 
   it("credits XP only through the award_xp function", () => {

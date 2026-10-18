@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { findCheckpoint, getLesson, getQuestion, isTrackId } from "@/content";
+import { findCheckpoint, getLesson, isTrackId } from "@/content";
 import type { Answer } from "@/content/types";
 import { isKnown, isUnlocked } from "@/lib/board";
 import { checkpointQuestions, DAILY_LIMIT, getDueItems, getKnowledge, getViewer, getWeeklyPlan, serveItems } from "@/lib/data";
@@ -10,11 +10,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeAnswer } from "@/lib/grading";
 import { gradePlacement, legacyLevel, placementLevel } from "@/lib/placement";
 import { parsePreferences } from "@/lib/prefs";
-import { REPLAY_WINDOW_HOURS, reviewPassed, srsUpdate } from "@/lib/progressRules";
-import { nextStreak, todayKey } from "@/lib/streak";
+import { supabaseProgressDb } from "@/lib/progressDb.supabase";
+import { completeLessonCore, gradeReviewAnswers, submitReviewCore, type Learner } from "@/lib/progressService";
 import { NOTE_COLORS, NOTE_MAX, type LessonResult, type Note, type NoteColor, type ReviewMode, type ReviewResult } from "@/lib/types";
-import { isoWeekKey } from "@/lib/weekly";
-import { CHECKPOINT_BONUS_XP, lessonXp, reviewXp, WEEKLY_BONUS_XP } from "@/lib/xp";
 
 type Viewer = NonNullable<Awaited<ReturnType<typeof getViewer>>>;
 
@@ -27,70 +25,19 @@ async function viewerOrThrow(): Promise<Viewer> {
 // Learners can only read their rows (see supabase/migrations): every write below goes through
 // the admin client, always scoped to the signed-in user's id.
 
-type Graded = { questionId: string; lessonId: string; correct: boolean };
-
-/** Updates spaced-repetition boxes for the graded notions. */
-async function scheduleReviews(viewer: Viewer, graded: Graded[]) {
-  if (!graded.length) return;
-  const { supabase, user } = viewer;
-  const { data: existing, error } = await supabase
-    .from("review_items")
-    .select("question_id, box, lapses, due_at")
-    .eq("user_id", user.id)
-    .in("question_id", graded.map((g) => g.questionId));
-  if (error) throw new Error(error.message);
-  const prev = new Map((existing ?? []).map((r) => [r.question_id, { box: r.box, lapses: r.lapses, due_at: r.due_at as string | null }]));
-  const now = new Date();
-  // a right answer on a notion that is not due yet changes nothing (see srsUpdate): replays cannot climb the boxes
-  const rows = graded.flatMap((g) => {
-    const s = srsUpdate(prev.get(g.questionId) ?? null, g.correct, now);
-    if (!s) return [];
-    return [
-      {
-        user_id: user.id,
-        question_id: g.questionId,
-        lesson_id: g.lessonId,
-        box: s.box,
-        lapses: s.lapses,
-        due_at: s.dueAt.toISOString(),
-        last_reviewed_at: now.toISOString(),
-      },
-    ];
-  });
-  if (!rows.length) return;
-  const { error: upsertError } = await createAdminClient().from("review_items").upsert(rows);
-  if (upsertError) throw new Error(upsertError.message);
-}
-
 const isRecord = (v: unknown): v is Record<string, unknown> => Boolean(v) && typeof v === "object" && !Array.isArray(v);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-/**
- * Credits XP atomically (event + total + streak). `awarded` is false when a one-off bonus
- * (weekly, checkpoint) was already paid: the database's unique indexes refuse the second claim.
- * With `replayHours`, a claim already paid for the same source and ref inside that window is paid 0:
- * the check and the write happen in one transaction, so two simultaneous requests cannot both be paid.
- * `paid` is the XP really credited.
- */
-async function awardXp(viewer: Viewer, amount: number, source: "lesson" | "review" | "weekly" | "checkpoint", ref: string, replayHours = 0) {
+
+/** The learner as the progress rules see them; `syncProfile` copies the streak and XP back into the cached profile afterwards. */
+function learnerOf(viewer: Viewer): Learner {
   const { user, profile } = viewer;
-  const today = todayKey();
-  const { data, error } = await createAdminClient()
-    .rpc("award_xp", {
-      p_user: user.id,
-      p_amount: amount,
-      p_source: source,
-      p_ref: ref,
-      p_streak: nextStreak(profile.streak_days, profile.last_active_date, today),
-      p_today: today,
-      p_replay_hours: replayHours,
-    })
-    .single<{ total_xp: number; streak_days: number; awarded: boolean; paid: number }>();
-  if (error) throw new Error(error.message);
-  // keep the cached profile coherent if several awards happen in one request
-  if (data.awarded) profile.last_active_date = today;
-  profile.xp = data.total_xp;
-  profile.streak_days = data.streak_days;
-  return { totalXp: data.total_xp, streak: data.streak_days, awarded: data.awarded, paid: data.paid };
+  return { id: user.id, streakDays: profile.streak_days, lastActiveDate: profile.last_active_date, xp: profile.xp };
+}
+
+function syncProfile(viewer: Viewer, learner: Learner) {
+  viewer.profile.streak_days = learner.streakDays;
+  viewer.profile.last_active_date = learner.lastActiveDate;
+  if (learner.xp !== undefined) viewer.profile.xp = learner.xp;
 }
 
 function revalidateApp() {
@@ -102,7 +49,6 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
   if (!lesson) throw new Error("Cours introuvable.");
   if (!isRecord(firstAnswers)) throw new Error("Réponses invalides.");
   const viewer = await viewerOrThrow();
-  const { supabase, user } = viewer;
 
   // prerequisites are enforced here too, not only in the page that renders the lesson
   const { knowledge } = await getKnowledge();
@@ -113,51 +59,13 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
     lessonId,
     correct: Object.hasOwn(firstAnswers, q.id) && gradeAnswer(q, firstAnswers[q.id]),
   }));
-  const correct = graded.filter((g) => g.correct).length;
-  const total = graded.length;
-  const score = Math.round((correct / total) * 100);
-
-  const { data: prev, error } = await supabase
-    .from("lesson_progress")
-    .select("best_score, attempts, xp_earned, first_completed_at")
-    .eq("user_id", user.id)
-    .eq("lesson_id", lessonId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-
-  // The XP is credited first, and the database decides atomically whether this lesson was already paid inside
-  // the replay window: a scripted loop, or two requests sent at once, cannot be paid twice.
-  const intended = lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: Boolean(prev) });
-  const award = await awardXp(viewer, intended, "lesson", lessonId, REPLAY_WINDOW_HOURS);
-  const xpEarned = award.paid;
-  const now = new Date().toISOString();
-  const { error: upsertError } = await createAdminClient().from("lesson_progress").upsert({
-    user_id: user.id,
-    lesson_id: lessonId,
-    best_score: Math.max(prev?.best_score ?? 0, score),
-    attempts: (prev?.attempts ?? 0) + 1,
-    xp_earned: (prev?.xp_earned ?? 0) + xpEarned,
-    first_completed_at: prev?.first_completed_at ?? now,
-    last_completed_at: now,
-  });
-  if (upsertError) throw new Error(upsertError.message);
-
-  await scheduleReviews(viewer, graded);
-  const { totalXp, streak } = award;
+  const learner = learnerOf(viewer);
+  const result = await completeLessonCore(supabaseProgressDb(viewer.supabase), learner, lesson, graded);
+  syncProfile(viewer, learner);
   // the lesson is finished: nothing left to resume (a failure here must not hide the result)
-  await createAdminClient().from("lesson_resume").delete().eq("user_id", user.id).eq("lesson_id", lessonId);
+  await createAdminClient().from("lesson_resume").delete().eq("user_id", viewer.user.id).eq("lesson_id", lessonId);
   revalidateApp();
-  return { correct, total, score, xpEarned, totalXp, streak, firstCompletion: !prev };
-}
-
-/** The scheduled notion a served question stands for: a review form maps back to the quiz question of the same concept. */
-function scheduledFor(servedId: string): { questionId: string; lessonId: string } | null {
-  const found = getQuestion(servedId);
-  if (!found) return null;
-  const { question, lesson, pool } = found;
-  if (pool === "quiz") return { questionId: servedId, lessonId: lesson.id };
-  const base = question.concept ? lesson.questions.find((q) => q.concept === question.concept) : undefined;
-  return { questionId: (base ?? question).id, lessonId: lesson.id };
+  return result;
 }
 
 /** The served question ids this learner is allowed to be graded on right now, for the given mode. */
@@ -178,49 +86,11 @@ export async function submitReview(mode: ReviewMode, firstAnswers: Record<string
   if (!isRecord(firstAnswers)) throw new Error("Réponses invalides.");
   const viewer = await viewerOrThrow();
   const allowed = await allowedQuestions(mode);
-  // one verdict per scheduled notion: missed if any of its forms was missed
-  const verdicts = new Map<string, Graded>();
-  let correct = 0;
-  let total = 0;
-  for (const [servedId, answer] of Object.entries(firstAnswers)) {
-    const found = getQuestion(servedId);
-    const target = scheduledFor(servedId);
-    if (!found || !target || !allowed.has(servedId)) continue;
-    const ok = gradeAnswer(found.question, answer);
-    total += 1;
-    if (ok) correct += 1;
-    const prev = verdicts.get(target.questionId);
-    verdicts.set(target.questionId, { ...target, correct: ok && (prev?.correct ?? true) });
-  }
-  if (!total) throw new Error("Aucune réponse à enregistrer.");
-
-  await scheduleReviews(viewer, [...verdicts.values()]);
-  // Daily items leave the due list once answered, so they cannot be replayed. The weekly plan and checkpoints can be:
-  // their review XP is paid once per window (decided atomically in the database).
-  const replayable = mode !== "daily";
-  // A checkpoint or a weekly review is "passed" with enough right answers on enough answered questions.
-  // Anything less still pays its review XP, but earns neither the passed marker nor the bonus.
-  const passed = !replayable || reviewPassed({ correct, answered: total, expected: allowed.size });
-  // The "checkpoint:<id>" ref is what marks a checkpoint as passed (see getCheckpointsDone): an unpassed attempt is logged under its own ref.
-  const reviewRef = passed ? mode : `try:${mode}`;
-  const paidReview = await awardXp(viewer, reviewXp(correct), "review", reviewRef, replayable ? REPLAY_WINDOW_HOURS : 0);
-  const xpEarned = paidReview.paid;
-  let bonus = 0;
-  let totals: { totalXp: number; streak: number } = paidReview;
-
-  if (passed && mode === "weekly") {
-    // paid once per ISO week: the database refuses a second claim
-    const paid = await awardXp(viewer, WEEKLY_BONUS_XP, "weekly", isoWeekKey(new Date()));
-    if (paid.awarded) bonus = WEEKLY_BONUS_XP;
-    totals = paid;
-  } else if (passed && replayable) {
-    // paid once per checkpoint: a unique index makes concurrent submissions unable to claim it twice
-    const paid = await awardXp(viewer, CHECKPOINT_BONUS_XP, "checkpoint", mode);
-    if (paid.awarded) bonus = CHECKPOINT_BONUS_XP;
-    totals = paid;
-  }
+  const learner = learnerOf(viewer);
+  const result = await submitReviewCore(supabaseProgressDb(viewer.supabase), learner, { mode, answers: gradeReviewAnswers(firstAnswers, allowed), expected: allowed.size });
+  syncProfile(viewer, learner);
   revalidateApp();
-  return { correct, total, expected: allowed.size, passed, xpEarned, bonus, totalXp: totals.totalXp, streak: totals.streak };
+  return result;
 }
 
 export async function chooseTrack(formData: FormData) {
