@@ -116,3 +116,7 @@ Recrée l'ancienne fonction à partir du texte sauvegardé à l'étape B (à pr�
 - Aucune sauvegarde automatique n'est garantie : sa disponibilité dépend de l'offre Supabase **[H]**. L'étape B (définition) suffit à revenir en arrière sur la fonction ; l'étape C exporte les données.
 - Le test de simultanéité réelle (deux sessions) n'est pas automatisable depuis l'éditeur. À défaut, la sécurité repose sur le verrou consultatif (raisonnement) et sur les tests du modèle.
 - `supabase/tests/award_xp_replay.sql` et la migration ont été **analysés statiquement** mais jamais exécutés.
+
+## Strictness of `20261017000000`
+
+The migration asserts, before dropping, that exactly one `award_xp` exists and that it is the 6-argument one. Applied twice, or on a database whose function differs from the repository, it fails with an explicit message and (inside `begin; … commit;`) leaves everything unchanged. Run it only inside the explicit transaction of procedure block F.

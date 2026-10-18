@@ -73,7 +73,7 @@ describe("progress writes", () => {
     expect(migrations()).toMatch(/p_replay_hours integer default 0/);
     expect(migrations()).toMatch(/pg_advisory_xact_lock\(hashtextextended\(p_user::text/);
     // the old six-argument function must be dropped, or the call would be ambiguous
-    expect(migrations()).toMatch(/drop function if exists public\.award_xp\(uuid, integer, text, text, integer, date\)/);
+    expect(migrations()).toMatch(/drop function public\.award_xp\(uuid, integer, text, text, integer, date\)/);
   });
 
   it("marks a checkpoint as passed only for a session that passed", () => {

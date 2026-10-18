@@ -11,7 +11,19 @@
 -- Apply BEFORE deploying the server code that passes p_replay_hours (the call fails on the old function).
 -- The old 6-argument function is dropped on purpose: keeping both would make the call ambiguous.
 
-drop function if exists public.award_xp(uuid, integer, text, text, integer, date);
+-- Strict on purpose: if the 6-argument function is not exactly there (already migrated, or a different history),
+-- the statement fails and the surrounding transaction (begin; ... commit;) leaves everything unchanged.
+do $$
+begin
+  if to_regprocedure('public.award_xp(uuid,integer,text,text,integer,date)') is null
+     or (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+          where n.nspname = 'public' and p.proname = 'award_xp') <> 1 then
+    raise exception 'award_xp: expected exactly the 6-argument function, found a different state (already migrated?). Nothing changed.';
+  end if;
+end
+$$;
+
+drop function public.award_xp(uuid, integer, text, text, integer, date);
 
 create function public.award_xp(
   p_user uuid,
