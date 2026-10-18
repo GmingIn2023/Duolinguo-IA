@@ -60,7 +60,6 @@ describe("completing a lesson", () => {
     expect(db.progress("u1", LESSON.id)).toMatchObject({ attempts: 2, xp_earned: 40 });
     // exactly one of them was the first completion
     expect([a.firstCompletion, b.firstCompletion].filter(Boolean)).toHaveLength(1);
-    expect(db.refusedWrites).toBeGreaterThan(0); // the race really happened and was resolved
   });
 
   it("five completions at once with different scores: one payment, five attempts, the best score kept", async () => {
@@ -77,15 +76,48 @@ describe("completing a lesson", () => {
     expect(results.map((r) => r.xpEarned)).toEqual([40, 40]);
   });
 
-  it("canary: a naive read-then-overwrite implementation DOES lose attempts on this model (so the tests above can fail)", async () => {
-    const naive = async (id: string) => {
-      const prev = await db.getLessonProgress("u1", id);
-      await new Promise<void>((resolve) => setImmediate(resolve)); // the round trip of a separate write
-      const next ={ best_score: 100, attempts: (prev?.attempts ?? 0) + 1, xp_earned: (prev?.xp_earned ?? 0) + 10, first_completed_at: NOW.toISOString(), last_completed_at: NOW.toISOString() };
-      db.lessonProgress.set(`u1|${id}`, next);
-    };
-    await Promise.all([naive("x"), naive("x"), naive("x")]);
-    expect(db.progress("u1", "x")?.attempts).toBe(1); // three attempts, one recorded
+  it("a failure while recording the progress keeps no XP and no event, and the retry is a clean first completion", async () => {
+    const l = learner();
+    db.failNextCompleteLesson = "progress";
+    await expect(completeLessonCore(db, l, LESSON, graded(5), NOW, TODAY)).rejects.toThrow(/progress write failed/);
+    expect(db.paidTotal("u1")).toBe(0);
+    expect(db.events).toHaveLength(0);
+    expect(db.progress("u1", LESSON.id)).toBeUndefined();
+    expect(l.xp).toBe(0); // the in-memory learner is not advanced by a failed call
+    const retry = await completeLessonCore(db, l, LESSON, graded(5), NOW, TODAY);
+    expect(retry).toMatchObject({ xpEarned: 40, firstCompletion: true, totalXp: 40 });
+    expect(db.progress("u1", LESSON.id)).toMatchObject({ attempts: 1, xp_earned: 40 });
+  });
+
+  it("a failure while awarding the XP records no progress either", async () => {
+    db.failNextCompleteLesson = "award";
+    await expect(completeLessonCore(db, learner(), LESSON, graded(5), NOW, TODAY)).rejects.toThrow(/award failed/);
+    expect(db.progress("u1", LESSON.id)).toBeUndefined();
+    expect(db.events).toHaveLength(0);
+  });
+
+  it("profile total, XP events and lesson_progress.xp_earned always agree", async () => {
+    const l = learner();
+    await Promise.all([5, 3, 4].map((right) => completeLessonCore(db, learner(), LESSON, graded(right), NOW, TODAY)));
+    db.clock += 21 * 3_600_000;
+    await completeLessonCore(db, l, LESSON, graded(5), NOW, TODAY);
+    db.failNextCompleteLesson = "progress";
+    await completeLessonCore(db, l, LESSON, graded(5), NOW, TODAY).catch(() => undefined);
+    const total = db.profiles.get("u1")!.xp;
+    expect(total).toBe(db.paidTotal("u1"));
+    expect(total).toBe(db.progress("u1", LESSON.id)!.xp_earned);
+  });
+
+  it("canary: the OLD two-step design (award, then write the progress) DOES leave XP without progress when the second step fails", async () => {
+    await db.awardXp({ userId: "u1", amount: 40, source: "lesson", ref: LESSON.id, streak: 1, today: TODAY, replayHours: 20 });
+    // ...the progress write fails here: nothing was recorded for the lesson, yet the XP is kept
+    expect(db.paidTotal("u1")).toBe(40);
+    expect(db.progress("u1", LESSON.id)).toBeUndefined();
+  });
+
+  it("rejects out-of-range values the way the database does", async () => {
+    await expect(db.completeLesson({ userId: "u1", lessonId: "x", xpFirst: 501, xpRepeat: 1, score: 50, streak: 1, today: TODAY, replayHours: 20 })).rejects.toThrow(/amount out of range/);
+    await expect(db.completeLesson({ userId: "u1", lessonId: "x", xpFirst: 5, xpRepeat: 1, score: 101, streak: 1, today: TODAY, replayHours: 20 })).rejects.toThrow(/score out of range/);
   });
 });
 

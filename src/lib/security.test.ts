@@ -68,7 +68,10 @@ describe("progress writes", () => {
     const actions = sources.find((s) => s.path === "app/actions.ts")!.code;
     expect(actions).not.toMatch(/recentlyCredited/);
     expect(service()).not.toMatch(/recentlyCredited/);
-    expect(service()).toMatch(/award\(db, learner, intended, "lesson", lesson\.id, REPLAY_WINDOW_HOURS, today\)/);
+    // a lesson is paid by complete_lesson (XP + progress in one transaction), never by a separate award followed by a progress write
+    expect(service()).toMatch(/db\.completeLesson\(\{/);
+    expect(service()).toMatch(/replayHours: REPLAY_WINDOW_HOURS/);
+    expect(service()).not.toMatch(/insertLessonProgress|updateLessonProgress|saveLessonProgress/);
     expect(service()).toMatch(/award\(db, learner, reviewXp\(paying\), "review", reviewRef, replayable \? REPLAY_WINDOW_HOURS : 0, today\)/);
     expect(migrations()).toMatch(/p_replay_hours integer default 0/);
     expect(migrations()).toMatch(/pg_advisory_xact_lock\(hashtextextended\(p_user::text/);
@@ -84,14 +87,22 @@ describe("progress writes", () => {
   });
 
   it("keeps the compare-and-swap conditions that make simultaneous writes safe", () => {
-    // lesson progress: only applies if `attempts` is unchanged; daily review: only applies if the box is unchanged and the notion is still due
-    expect(store()).toMatch(/\.eq\("attempts", expectedAttempts\)/);
+    // daily review: only applies if the box is unchanged and the notion is still due (lesson progress is serialised inside complete_lesson)
     expect(store()).toMatch(/\.eq\("box", expected\.box\)\s*\.lte\("due_at", expected\.dueBefore\)/);
-    expect(store()).toMatch(/UNIQUE_VIOLATION = "23505"/);
     expect(service()).toMatch(/\{ exclusive: daily \}/);
   });
 
-  it("credits XP only through the award_xp function", () => {
+  it("credits XP only through the award_xp and complete_lesson functions", () => {
     expect(code).toMatch(/createAdminClient\(\)\s*\.rpc\("award_xp"/);
+    expect(code).toMatch(/createAdminClient\(\)\s*\.rpc\("complete_lesson"/);
+    expect(store()).not.toMatch(/from\("lesson_progress"\)/); // no direct table write: it would bypass the transaction
+  });
+
+  it("locks complete_lesson to the server and validates its input", () => {
+    const m = migrations();
+    expect(m).toMatch(/revoke execute on function public\.complete_lesson\([^)]*\) from public, anon, authenticated/);
+    expect(m).toMatch(/grant execute on function public\.complete_lesson\([^)]*\) to service_role/);
+    expect(m).toMatch(/security invoker\s+set search_path = ''/);
+    expect(m).toMatch(/public\.award_xp\(p_user, case when v_first/);
   });
 });

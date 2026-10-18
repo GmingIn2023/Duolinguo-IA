@@ -4,9 +4,6 @@
  * Every method marked "atomic" must be a single database operation: that is what the logic relies on.
  */
 
-export type LessonProgressRow = { best_score: number; attempts: number; xp_earned: number; first_completed_at: string };
-export type LessonProgressWrite = { best_score: number; attempts: number; xp_earned: number; last_completed_at: string };
-
 export type ReviewRow = { question_id: string; lesson_id: string; box: number; lapses: number; due_at: string };
 export type ReviewWrite = { question_id: string; lesson_id: string; box: number; lapses: number; due_at: string; last_reviewed_at: string };
 
@@ -14,13 +11,11 @@ export type XpSource = "lesson" | "review" | "weekly" | "checkpoint";
 export type AwardArgs = { userId: string; amount: number; source: XpSource; ref: string; streak: number; today: string; replayHours: number };
 export type AwardResult = { totalXp: number; streak: number; awarded: boolean; paid: number };
 
-export interface ProgressDb {
-  getLessonProgress(userId: string, lessonId: string): Promise<LessonProgressRow | null>;
-  /** Atomic. Creates the row for a first completion. Returns false when the row already exists (someone else was first). */
-  insertLessonProgress(userId: string, lessonId: string, row: LessonProgressWrite & { first_completed_at: string }): Promise<boolean>;
-  /** Atomic compare-and-swap: updates only if `attempts` still equals `expectedAttempts`. Returns whether it applied. */
-  updateLessonProgress(userId: string, lessonId: string, expectedAttempts: number, row: LessonProgressWrite): Promise<boolean>;
+/** Everything one lesson validation writes. The two XP amounts are computed by the server (xp.ts); the database picks one. */
+export type CompleteLessonArgs = { userId: string; lessonId: string; xpFirst: number; xpRepeat: number; score: number; streak: number; today: string; replayHours: number };
+export type CompleteLessonResult = { totalXp: number; streak: number; awarded: boolean; paid: number; firstCompletion: boolean };
 
+export interface ProgressDb {
   getReviewItems(userId: string, questionIds: string[]): Promise<ReviewRow[]>;
   /** Writes the given absolute states (idempotent: the same input twice gives the same rows). */
   upsertReviewItems(userId: string, rows: ReviewWrite[]): Promise<void>;
@@ -33,4 +28,9 @@ export interface ProgressDb {
 
   /** Atomic (the award_xp database function): event + total + streak, with the replay window decided inside. */
   awardXp(args: AwardArgs): Promise<AwardResult>;
+  /**
+   * Atomic (the complete_lesson database function): XP event + profile total + streak + lesson_progress row in ONE transaction.
+   * Either all of it is written or none of it is (the call throws). Reviews, weekly and checkpoint use awardXp instead.
+   */
+  completeLesson(args: CompleteLessonArgs): Promise<CompleteLessonResult>;
 }

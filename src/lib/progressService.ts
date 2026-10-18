@@ -65,24 +65,6 @@ export async function scheduleReviews(db: ProgressDb, userId: string, graded: Gr
   return applied;
 }
 
-/**
- * Records a finished lesson: best score, attempts and XP earned. Written with an optimistic compare-and-swap on `attempts`,
- * so simultaneous validations are merged instead of overwriting each other. Returns the row that existed before
- * (null for a first completion).
- */
-async function saveLessonProgress(db: ProgressDb, userId: string, lessonId: string, score: number, paid: number, nowIso: string) {
-  for (let turn = 0; turn < 8; turn++) {
-    const prev = await db.getLessonProgress(userId, lessonId);
-    if (!prev) {
-      if (await db.insertLessonProgress(userId, lessonId, { best_score: score, attempts: 1, xp_earned: paid, first_completed_at: nowIso, last_completed_at: nowIso })) return null;
-      continue; // another request created the row first: merge into it on the next turn
-    }
-    const next = { best_score: Math.max(prev.best_score, score), attempts: prev.attempts + 1, xp_earned: prev.xp_earned + paid, last_completed_at: nowIso };
-    if (await db.updateLessonProgress(userId, lessonId, prev.attempts, next)) return prev;
-  }
-  throw new Error("Ta progression n'a pas pu être enregistrée : trop de validations en même temps. Réessaie.");
-}
-
 export async function completeLessonCore(
   db: ProgressDb,
   learner: Learner,
@@ -95,14 +77,27 @@ export async function completeLessonCore(
   const total = graded.length;
   const score = Math.round((correct / total) * 100);
 
-  const before = await db.getLessonProgress(learner.id, lesson.id);
-  // The XP is credited first. The database decides atomically whether this lesson was already paid inside the replay
-  // window, so a scripted loop, or two requests sent at once, cannot be paid twice.
-  const intended = lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: Boolean(before) });
-  const paid = await award(db, learner, intended, "lesson", lesson.id, REPLAY_WINDOW_HOURS, today);
-  const prev = await saveLessonProgress(db, learner.id, lesson.id, score, paid.paid, now.toISOString());
+  // XP, streak and the lesson_progress row are written by ONE database call (complete_lesson, a single transaction): they
+  // cannot get out of step, and two requests sent at once are serialised there. The database picks the first-completion or the
+  // replay amount depending on whether the lesson was already recorded, and applies the replay window, so a scripted loop,
+  // or two requests sent at the same time, cannot be paid twice.
+  const done = await db.completeLesson({
+    userId: learner.id,
+    lessonId: lesson.id,
+    xpFirst: lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: false }),
+    xpRepeat: lessonXp({ baseXp: lesson.xp, correct, total, alreadyCompleted: true }),
+    score,
+    streak: nextStreak(learner.streakDays, learner.lastActiveDate, today),
+    today,
+    replayHours: REPLAY_WINDOW_HOURS,
+  });
+  if (done.awarded) learner.lastActiveDate = today;
+  learner.streakDays = done.streak;
+  learner.xp = done.totalXp;
+  // Spaced repetition comes after the transaction: absolute, idempotent writes. If this step fails, the XP and the progress are
+  // already saved together, and a retry only reschedules the notions (it pays nothing more inside the replay window).
   await scheduleReviews(db, learner.id, graded, now);
-  return { correct, total, score, xpEarned: paid.paid, totalXp: paid.totalXp, streak: paid.streak, firstCompletion: !prev };
+  return { correct, total, score, xpEarned: done.paid, totalXp: done.totalXp, streak: done.streak, firstCompletion: done.firstCompletion };
 }
 
 /** The scheduled notion a served question stands for: a review form maps back to the quiz question of the same concept. */

@@ -2,9 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { AwardResult, LessonProgressRow, ProgressDb, ReviewRow } from "./progressDb";
-
-const UNIQUE_VIOLATION = "23505";
+import type { AwardResult, CompleteLessonResult, ProgressDb, ReviewRow } from "./progressDb";
 
 /**
  * The Supabase implementation of ProgressDb. Reads go through the signed-in learner's client (RLS),
@@ -12,35 +10,6 @@ const UNIQUE_VIOLATION = "23505";
  */
 export function supabaseProgressDb(reader: SupabaseClient): ProgressDb {
   return {
-    async getLessonProgress(userId, lessonId) {
-      const { data, error } = await reader
-        .from("lesson_progress")
-        .select("best_score, attempts, xp_earned, first_completed_at")
-        .eq("user_id", userId)
-        .eq("lesson_id", lessonId)
-        .maybeSingle<LessonProgressRow>();
-      if (error) throw new Error(error.message);
-      return data ?? null;
-    },
-
-    async insertLessonProgress(userId, lessonId, row) {
-      const { error } = await createAdminClient().from("lesson_progress").insert({ user_id: userId, lesson_id: lessonId, ...row });
-      if (!error) return true;
-      if (error.code === UNIQUE_VIOLATION) return false;
-      throw new Error(error.message);
-    },
-
-    async updateLessonProgress(userId, lessonId, expectedAttempts, row) {
-      const { data, error } = await createAdminClient().from("lesson_progress")
-        .update(row)
-        .eq("user_id", userId)
-        .eq("lesson_id", lessonId)
-        .eq("attempts", expectedAttempts)
-        .select("lesson_id");
-      if (error) throw new Error(error.message);
-      return (data?.length ?? 0) > 0;
-    },
-
     async getReviewItems(userId, questionIds) {
       if (!questionIds.length) return [];
       const { data, error } = await reader.from("review_items").select("question_id, lesson_id, box, lapses, due_at").eq("user_id", userId).in("question_id", questionIds);
@@ -81,6 +50,23 @@ export function supabaseProgressDb(reader: SupabaseClient): ProgressDb {
         .single<{ total_xp: number; streak_days: number; awarded: boolean; paid: number }>();
       if (error) throw new Error(error.message);
       return { totalXp: data.total_xp, streak: data.streak_days, awarded: data.awarded, paid: data.paid } satisfies AwardResult;
+    },
+
+    async completeLesson(a) {
+      const { data, error } = await createAdminClient()
+        .rpc("complete_lesson", {
+          p_user: a.userId,
+          p_lesson: a.lessonId,
+          p_xp_first: a.xpFirst,
+          p_xp_repeat: a.xpRepeat,
+          p_score: a.score,
+          p_streak: a.streak,
+          p_today: a.today,
+          p_replay_hours: a.replayHours,
+        })
+        .single<{ total_xp: number; streak_days: number; awarded: boolean; paid: number; first_completion: boolean }>();
+      if (error) throw new Error(error.message);
+      return { totalXp: data.total_xp, streak: data.streak_days, awarded: data.awarded, paid: data.paid, firstCompletion: data.first_completion } satisfies CompleteLessonResult;
     },
   };
 }

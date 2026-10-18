@@ -14,6 +14,7 @@ Légende : **[V]** vérifié (relevé, requête ou test réellement exécuté) �
 | `20261004145457` disable_client_write_policies | oui | oui | appliqué |
 | `20261013210000` refonte_levels_prefs_notes | oui | **absente** | **appliquée** (colonnes `level10` et `preferences`, tables `notes` et `lesson_resume`, index `xp_events_checkpoint_once`) |
 | `20261017000000` award_xp_replay_window | oui (nouvelle) | absente | **pas appliquée** : `award_xp` a toujours 6 arguments |
+| `20261018000000` complete_lesson | oui (nouvelle) | absente | **pas appliquée** : la fonction `complete_lesson` n'existe pas encore |
 
 Conclusion **[V]** : la refonte a été appliquée sans passer par l'historique des migrations. Le schéma est correct, mais l'historique est incomplet et deux versions locales ne correspondaient pas. Un `supabase db push` aurait tenté de rejouer `init_gusgus` et échoué.
 
@@ -120,3 +121,24 @@ Recrée l'ancienne fonction à partir du texte sauvegardé à l'étape B (à pr�
 ## Strictness of `20261017000000`
 
 The migration asserts, before dropping, that exactly one `award_xp` exists and that it is the 6-argument one. Applied twice, or on a database whose function differs from the repository, it fails with an explicit message and (inside `begin; … commit;`) leaves everything unchanged. Run it only inside the explicit transaction of procedure block F.
+
+
+## 5. Migration `20261018000000_complete_lesson` (XP et progression dans une seule transaction)
+
+**Pourquoi.** Avant, le serveur appelait `award_xp` puis écrivait `lesson_progress` par d'autres requêtes : si la seconde étape échouait, l'XP restait crédité sans progression (démontré par injection de panne). Maintenant, une seule fonction fait tout dans une transaction PostgreSQL : événement XP, total du profil, série **et** ligne `lesson_progress`, ou rien du tout.
+
+**Signature** (nouvelle, aucune ancienne à remplacer) :
+`complete_lesson(p_user uuid, p_lesson text, p_xp_first integer, p_xp_repeat integer, p_score integer, p_streak integer, p_today date, p_replay_hours integer)` → `TABLE(total_xp, streak_days, awarded, paid, first_completion)`.
+Tous les paramètres sont obligatoires (pas de valeur par défaut). `award_xp` (6 et 7 arguments) n'est pas modifiée ; elle sert encore aux révisions, au bilan hebdomadaire et aux bilans de checkpoint.
+
+**Règles conservées.** Le serveur calcule les deux montants (`lessonXp` : première fois / rejeu à 20 %). La base choisit selon que la ligne `lesson_progress` existe déjà (sous verrou), applique la fenêtre de 20 h en appelant `award_xp`, puis écrit `best_score = max`, `attempts + 1`, `xp_earned + XP réellement payé`. La série reste calculée par le serveur (`nextStreak`), comme avant. Les boîtes de révision espacée (`review_items`) restent écrites par le serveur après la transaction (écritures absolues, idempotentes) : un échec à ce stade ne crée ni XP orphelin ni progression perdue, un nouvel essai recalcule seulement les boîtes.
+
+**Sécurité.** `security invoker`, `search_path` vide, `execute` retiré à `public`/`anon`/`authenticated` et accordé à `service_role` seulement, comme `award_xp`. L'identifiant d'utilisateur vient de la session serveur (jamais d'un paramètre de formulaire) ; un apprenant ne peut pas l'appeler lui-même. Paramètres validés (montants 0–500, score 0–100, fenêtre 0–744 h, identifiant de cours non vide ≤ 200, utilisateur sans profil refusé).
+
+**PostgREST.** Nouvelle fonction = nouvelle route RPC ; `notify pgrst, 'reload schema'` est dans la migration. Le **nouveau code échoue** (erreur « function not found ») tant que la migration n'est pas appliquée : appliquer 20261017000000 **puis** 20261018000000 avant de déployer. L'**ancien code** n'appelle pas `complete_lesson` et n'est pas affecté.
+
+**État inattendu.** La migration refuse (rien n'est modifié) si `award_xp` à 7 arguments est absente ou si `complete_lesson` existe déjà. Elle est à appliquer entourée de `begin; … commit;` (bloc F2).
+
+**Annulation.** `drop function public.complete_lesson(...)` (bloc Z2) : aucune donnée n'est touchée. À faire avec un retour au déploiement Vercel précédent.
+
+**Tests.** `supabase/tests/complete_lesson.sql` (transaction annulée), `src/lib/progress.local.test.ts` (chaîne réelle, voir `supabase/local-test/README.md`), modèle en mémoire dans `progressService.test.ts`.

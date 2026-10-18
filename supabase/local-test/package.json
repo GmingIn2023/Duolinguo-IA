@@ -1,0 +1,10 @@
+{
+  "name": "gusgus-local-test",
+  "private": true,
+  "description": "Isolated local PostgreSQL (+ PostgREST) to replay the Supabase migrations and run the SQL and integration tests. Never connects to Supabase.",
+  "type": "module",
+  "dependencies": {
+    "embedded-postgres": "^17.10.0-beta.17",
+    "pg": "^8.23.1"
+  }
+}
