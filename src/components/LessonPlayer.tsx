@@ -359,7 +359,7 @@ function Done({ lesson, track, saving, error, result, next, onRetrySave }: {
         <ul className="flex flex-wrap gap-2">
           {lesson.skills.map((s) => <li key={s} className="chip chip-th">{s}</li>)}
         </ul>
-        <p className="text-[0.9375rem] text-ink-2">Ces notions reviendront dans tes révisions, sous une autre forme, au moment où tu risques de les oublier.</p>
+        <p className="text-[0.9375rem] text-ink-2">Ces notions reviendront dans tes révisions, au moment où tu risques de les oublier, parfois sous une autre question.</p>
       </section>
       <div className="fade-in flex flex-wrap gap-3 [animation-delay:700ms]">
         {next && <Link href={`/lesson/${next.id}`} className="btn btn-primary btn-lg" aria-label={`Cours suivant : ${next.title}`}>Cours suivant<ArrowRight className="size-5" aria-hidden /></Link>}

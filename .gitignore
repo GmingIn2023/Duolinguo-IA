@@ -46,3 +46,8 @@ next-env.d.ts
 .impeccable/config.local.json
 /test-results/
 /playwright-report/
+
+# isolated local database harness
+/supabase/local-test/node_modules
+/supabase/local-test/.data
+/supabase/local-test/.postgrest

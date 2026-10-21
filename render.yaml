@@ -1,0 +1,24 @@
+# Render blueprint: runs the app as a normal Node server (`next start`), free plan, no per-request cap.
+# The free plan sleeps after ~15 min without traffic (the next visit waits about a minute).
+# Secret values are never stored here: set them in the Render dashboard (sync: false).
+services:
+  - type: web
+    name: gusgus
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm run start
+    healthCheckPath: /login
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SITE_URL
+        sync: false

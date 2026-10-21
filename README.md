@@ -23,7 +23,7 @@ E2E_SWEEP=1 BASE_URL=http://localhost:3000 npx playwright test content-sweep --p
 npm run content:check  # infos outils à revérifier (aussi chaque lundi en CI)
 ```
 
-Test de sécurité base de données (droits, `award_xp`) : exécuter `supabase/tests/progress_lock.sql` dans l'éditeur SQL Supabase (transaction annulée, aucune donnée modifiée).
+Tests de base de données (droits, `award_xp`, fenêtre anti-rejeu) : exécuter `supabase/tests/progress_lock.sql`, `award_xp_replay.sql` puis `complete_lesson.sql` dans l'éditeur SQL Supabase (transactions annulées, aucune donnée modifiée). État des migrations et marche à suivre : `supabase/MIGRATIONS.md`.
 
 Les tests connectés demandent un compte de test confirmé, passé par l'environnement : `E2E_EMAIL=… E2E_PASSWORD=… npm run test:e2e` (sinon ils sont ignorés). Ne jamais commiter ces identifiants.
 
@@ -38,7 +38,7 @@ Les tests connectés demandent un compte de test confirmé, passé par l'environ
 ## À savoir
 
 - Supabase exige la confirmation par email. Le service d'email par défaut est très limité : pour tester des inscriptions, désactive « Confirm email » (Authentication → Sign In / Providers → Email) ou branche un SMTP.
-- **XP et progression sont verrouillées** : les utilisateurs n'ont qu'un accès en lecture à `xp_events`, `lesson_progress`, `review_items` et aux colonnes XP/série de `profiles` (seuls nom et parcours sont modifiables). Le serveur écrit avec `SUPABASE_SECRET_KEY` (`src/lib/supabase/admin.ts`, server-only) et crédite l'XP via la fonction atomique `award_xp`. Sans cette variable, rien n'est enregistré. À définir aussi dans Vercel (variable serveur, jamais `NEXT_PUBLIC_`).
+- **XP et progression sont verrouillées** : les utilisateurs n'ont qu'un accès en lecture à `xp_events`, `lesson_progress`, `review_items` et aux colonnes XP/série de `profiles` (seuls nom et parcours sont modifiables). Le serveur écrit avec `SUPABASE_SECRET_KEY` (`src/lib/supabase/admin.ts`, server-only) et crédite l'XP via les fonctions atomiques `award_xp` et `complete_lesson` (XP + progression d'un cours dans une seule transaction). Sans cette variable, rien n'est enregistré. À définir aussi dans Vercel (variable serveur, jamais `NEXT_PUBLIC_`).
 
 ## Variables d'environnement
 
@@ -50,3 +50,4 @@ Les tests connectés demandent un compte de test confirmé, passé par l'environ
 | `SITE_URL` (optionnel) | serveur | URL publique du site, pour le lien de confirmation d'inscription |
 
 La migration `supabase/migrations/20261013210000_refonte_levels_prefs_notes.sql` (additive, réexécutable) doit être appliquée **avant** de déployer cette version.
+Les migrations `20261017000000_award_xp_replay_window.sql` puis `20261018000000_complete_lesson.sql` (dans cet ordre) sont à appliquer avant de déployer. Tests sur une base locale isolée : `supabase/local-test/README.md`. La première (nouvelle signature de `award_xp`, avec la fenêtre anti-rejeu) doit elle aussi être appliquée **avant** de déployer : l'ancienne fonction à 6 arguments est remplacée par une version à 7 arguments (le dernier, `p_replay_hours`, a une valeur par défaut), et le nouveau code échoue si la migration manque. Que l'ancien code continue de fonctionner après elle **n'est pas vérifié** : voir `supabase/MIGRATIONS.md`. Le code de progression (`src/lib/progressService.ts`) dépend aussi de la contrainte « une seule ligne par utilisateur et par cours / notion » de `lesson_progress` et `review_items` (clés primaires de la migration d'init).

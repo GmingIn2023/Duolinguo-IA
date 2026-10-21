@@ -69,6 +69,7 @@ test("anonymous visitor cannot write XP or progress", async () => {
   denied(await call("/rest/v1/notes", { method: "POST", body: { user_id: id, body: "x" } }));
   denied(await call("/rest/v1/lesson_resume", { method: "POST", body: { user_id: id, lesson_id: "x", section_index: 0 } }));
   denied(await call("/rest/v1/rpc/award_xp", { method: "POST", body: { p_user: id, p_amount: 100, p_source: "lesson", p_ref: "x", p_streak: 1, p_today: "2026-01-01" } }));
+  denied(await call("/rest/v1/rpc/complete_lesson", { method: "POST", body: { p_user: id, p_lesson: "hack", p_xp_first: 500, p_xp_repeat: 500, p_score: 100, p_streak: 1, p_today: "2099-01-01", p_replay_hours: 20 } }));
 });
 
 test("signed-in learner cannot give themselves XP", async () => {
@@ -88,6 +89,7 @@ test("signed-in learner cannot give themselves XP", async () => {
   denied(await call("/rest/v1/lesson_progress", { method: "POST", token, body: { user_id: user.id, lesson_id: "hack", xp_earned: 1000 } }));
   denied(await call(`/rest/v1/review_items?user_id=eq.${user.id}`, { method: "PATCH", token, body: { box: 6 } }));
   denied(await call("/rest/v1/rpc/award_xp", { method: "POST", token, body: { p_user: user.id, p_amount: 100, p_source: "lesson", p_ref: "hack", p_streak: 1, p_today: "2099-01-01" } }));
+  denied(await call("/rest/v1/rpc/complete_lesson", { method: "POST", token, body: { p_user: user.id, p_lesson: "hack", p_xp_first: 500, p_xp_repeat: 500, p_score: 100, p_streak: 1, p_today: "2099-01-01", p_replay_hours: 20 } }));
 
   // still allowed: choosing a track (own row only)
   const track = await call(me, { method: "PATCH", token, body: { track_id: before[0].track_id } });
