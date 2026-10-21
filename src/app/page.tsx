@@ -1,26 +1,41 @@
 import Link from "next/link";
-import { Avatar } from "@/components/Avatar";
-import { LandingDemo } from "@/components/LandingDemo";
+import { Caveat } from "next/font/google";
+import { HeroScene } from "@/components/landing/HeroScene";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { LandingPlacement } from "@/components/landing/LandingPlacement";
+import { SleepingFooter } from "@/components/landing/SleepingFooter";
+import { ThemePlan } from "@/components/landing/ThemePlan";
+import { TokenDemo } from "@/components/landing/TokenDemo";
 import { Wordmark } from "@/components/Wordmark";
-import { LESSONS, THEMES, THEME_IDS, TRACKS, TRACK_IDS } from "@/content";
-import { ThemeGlyph } from "@/components/ThemeGlyph";
+import { LESSONS, TRACKS, TRACK_IDS } from "@/content";
 import { getViewer } from "@/lib/data";
+import { buildLandingPlan } from "@/lib/landingBoard";
+import { buildPreviews } from "@/lib/landingPreview";
+import { PLACEMENT_LENGTH } from "@/lib/placement";
+import "./landing.css";
+import "./landing-how.css";
+import "./landing-close.css";
 
-const LOOP = [
-  { t: "Une carte qui se ramifie", d: "Un test de niveau ouvre ce que tu sais déjà. Ensuite, tu choisis ta branche : étudier, travailler, construire." },
-  { t: "Des cours qui se manipulent", d: "Schémas à explorer, prompts annotés, exercices à faire dans ton assistant." },
-  { t: "Un quiz qui corrige", d: "Tu sais tout de suite pourquoi c'est juste ou faux, même pour une réponse rédigée." },
-  { t: "Des révisions qui changent de forme", d: "Une notion revient quand tu risques de l'oublier, sous une autre question. Et ton carnet garde le reste." },
-];
+// handwriting for rare annotations only (arrows, "clique sur ton guide")
+const hand = Caveat({ subsets: ["latin"], weight: "600", variable: "--font-hand", display: "swap" });
 
 const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
 
 export default async function Home() {
   const viewer = await getViewer().catch(() => null);
-  const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Trouver mon niveau" };
+  const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Dis-moi où j'en suis" };
+  const plan = buildLandingPlan();
+  const previews = buildPreviews();
+  const guides = TRACK_IDS.map((id) => ({
+    id,
+    name: TRACKS[id].name,
+    animal: TRACKS[id].animal,
+    audience: TRACKS[id].audience,
+    lessons: TRACKS[id].nodes.filter((n) => n.lessonId).length,
+  }));
 
   return (
-    <div className="overflow-x-clip">
+    <div className={`landing overflow-x-clip ${hand.variable}`}>
       <header className="mx-auto flex h-20 max-w-[90rem] items-center justify-between px-4 sm:px-8">
         <Wordmark />
         <nav className="flex items-center gap-1 sm:gap-2">
@@ -29,108 +44,114 @@ export default async function Home() {
         </nav>
       </header>
 
-      {/* First viewport: the thesis, three ways in */}
-      <section className="mx-auto grid max-w-[90rem] gap-12 px-4 pb-20 pt-8 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pb-28 lg:pt-16">
-        <div className="flex flex-col gap-8 lg:col-span-7">
-          <h1 className="display display-xl">
+      {/* First viewport: the thesis, and three guides that are three ways in */}
+      <section className="mx-auto grid max-w-[90rem] items-center gap-12 px-4 pb-20 pt-6 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pb-28 lg:pt-10">
+        <div className="flex flex-col gap-7 lg:col-span-7">
+          <h1 className="display display-xl hero-title">
             <span className="reveal-line"><span>Apprends l&apos;IA</span></span>
             <span className="reveal-line"><span>comme une</span></span>
-            <span className="reveal-line"><span>langue.</span></span>
+            <span className="reveal-line"><span><span className="hl">langue</span>.</span></span>
           </h1>
-          <p className="lede">{LESSONS.length} cours courts et sourcés, des quiz qui corrigent tes erreurs, des révisions qui reviennent au bon moment. Trois cartes, du tout premier prompt jusqu&apos;aux agents et au RAG.</p>
+          <p className="lede">{LESSONS.length} cours, des quiz qui t&apos;expliquent tes erreurs, des révisions qui reviennent avant que tu oublies. Du tout premier prompt jusqu&apos;aux agents et au RAG.</p>
           <div className="flex flex-wrap items-center gap-3">
-            <Link href={cta.href} className="btn btn-primary btn-lg">{cta.label}</Link>
-            <span className="text-sm text-muted">Test de niveau · 3 minutes</span>
+            <Link href={viewer ? cta.href : "#depart"} className="btn btn-primary btn-lg">{cta.label}</Link>
           </div>
+          {!viewer && <p className="text-sm text-muted">{PLACEMENT_LENGTH} questions qui s&apos;adaptent à toi, un niveau sur 10, aucun compte pour commencer.</p>}
         </div>
-
-        <ul className="grid gap-4 self-end lg:col-span-5" aria-label="Les trois parcours">
-          {TRACK_IDS.map((id, i) => {
-            const t = TRACKS[id];
-            return (
-              <li key={id} data-track={id} style={{ marginLeft: `${[0, 2.5, 5][i]}rem` }} className="max-sm:!ml-0">
-                <div className="tile-accent tile flex items-center gap-5 p-5 sm:p-6">
-                  <span className="grid size-16 flex-none place-items-center rounded-2xl bg-surface sm:size-20">
-                    <Avatar track={id} size={56} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="display display-s">{t.name}</p>
-                    <p className="text-sm font-medium">{t.animal} · {t.audience} · {t.nodes.filter((n) => n.lessonId).length} cours</p>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="lg:col-span-5">
+          <HeroScene guides={guides} href={viewer ? cta.href : "#depart"} />
+        </div>
       </section>
 
-      {/* Proof: a real question */}
-      <section className="mx-auto grid max-w-[90rem] items-center gap-10 px-4 pb-20 sm:px-8 lg:grid-cols-12 lg:pb-28">
-        <div className="grid gap-5 lg:col-span-5">
-          <h2 className="display display-l">Essaie, là, maintenant.</h2>
-          <p className="lede">Voici une vraie question d&apos;un cours Gusgus. Réponds&nbsp;: la correction arrive tout de suite, avec l&apos;explication.</p>
+      {/* Where to start: the real level test, or a direct choice. Signed-in learners already have a map. */}
+      {!viewer && (
+        <section id="depart" className="mx-auto max-w-[90rem] scroll-mt-6 px-4 pb-20 sm:px-8 lg:pb-28">
+          <div className="mb-10 grid max-w-[40rem] gap-3">
+            <p className="eyebrow">Par où commencer ?</p>
+            <h2 className="display display-l">Fais le point en {PLACEMENT_LENGTH} questions, ou choisis toi-même.</h2>
+          </div>
+          <LandingPlacement guides={guides} />
+        </section>
+      )}
+
+      {/* How it works: a thread with four stops, each with a real preview */}
+      <section id="comment" className="how-band">
+        <div className="mx-auto max-w-[90rem] px-4 py-20 sm:px-8 lg:py-28">
+          <div className="mb-14 grid max-w-[42rem] gap-4">
+            <p className="eyebrow">Comment ça marche</p>
+            <h2 className="display display-l">Tu essaies, tu te trompes, tu comprends. Puis ça revient.</h2>
+            <p className="lede">Voici ce que tu verras, étape par étape. Descends : le fil se dessine avec toi.</p>
+          </div>
+          <HowItWorks previews={previews} />
+        </div>
+      </section>
+
+      {/* Ten themes and the plan of the three tracks, from the real curriculum */}
+      <ThemePlan plan={plan} />
+
+      {/* One idea made visible: a chatbot picks its next word */}
+      <section className="mx-auto grid max-w-[90rem] items-center gap-10 px-4 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
+        <div className="grid content-start gap-4 lg:col-span-5">
+          <p className="eyebrow">Cours « Comment un chatbot écrit ses réponses »</p>
+          <h2 className="display display-l">Regarde-le choisir ses mots.</h2>
+          <p className="lede">Un chatbot n&apos;a pas de fiche de faits sous les yeux. À chaque mot, il tire parmi les suites possibles : souvent la plus probable, pas toujours.</p>
+          <p className="hand text-ink-2">probabilités données pour l&apos;exemple, pas mesurées</p>
         </div>
         <div className="lg:col-span-6 lg:col-start-7">
-          <LandingDemo />
+          <TokenDemo />
         </div>
       </section>
 
-      {/* The loop */}
-      <section className="bg-surface">
+      {/* The method, in one sentence, and four numbers computed from the real content */}
+      <section className="bg-bird-soft">
         <div className="mx-auto max-w-[90rem] px-4 py-20 sm:px-8 lg:py-28">
-          <h2 className="display display-l mb-12 max-w-[16ch]">Une boucle courte, qui revient au bon moment.</h2>
-          <ol className="grid gap-4 lg:grid-cols-6">
-            {LOOP.map((s, i) => (
-              <li
-                key={s.t}
-                className={`tile flex flex-col justify-end gap-3 p-6 sm:p-8 ${
-                  ["!bg-paper lg:col-span-4 lg:min-h-64", "!bg-paper lg:col-span-2", "!bg-paper lg:col-span-2", "tile-ink lg:col-span-4"][i]
-                }`}
-              >
-                <h3 className="display display-s sm:text-[1.875rem]">{s.t}</h3>
-                <p className={`max-w-[40ch] ${i === 3 ? "text-paper/80" : "text-ink-2"}`}>{s.d}</p>
+          <figure className="quote mx-auto">
+            <span className="quote-mark" aria-hidden>
+              <svg viewBox="0 0 80 64"><path d="M2 36C2 17 12 6 30 2l3 8C23 13 19 19 19 26h12v30H2zM46 36C46 17 56 6 74 2l3 8c-10 3-14 9-14 16h12v30H46z" fill="currentColor" /></svg>
+            </span>
+            <div>
+              <blockquote>
+                On n&apos;apprend pas l&apos;IA en lisant des articles. On l&apos;apprend <span className="mk m1">en lui parlant</span>, <span className="mk m2">en repérant ses erreurs</span>, puis <span className="mk m3">en recommençant</span>.
+              </blockquote>
+              <figcaption>La méthode Gusgus</figcaption>
+            </div>
+          </figure>
+          <ul className="facts" aria-label="Gusgus en chiffres">
+            {[
+              [String(plan.uniqueLessons), "cours, du premier prompt aux agents", "bg-surface"],
+              [String(plan.themes.length), "thèmes", "bg-sky-soft"],
+              [String(TRACK_IDS.length), "parcours, un guide chacun", "bg-gecko-soft"],
+              [String(PLACEMENT_LENGTH), "questions pour te placer", "bg-rose-soft"],
+            ].map(([n, label, bg]) => (
+              <li key={label} className={`fact ${bg}`}>
+                <b>{n}</b>
+                <span>{label}</span>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </section>
 
-      {/* Concepts first, tools second */}
-      <section className="mx-auto grid max-w-[90rem] gap-10 px-4 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
-        <div className="grid content-start gap-5 lg:col-span-5">
-          <h2 className="display display-l">D&apos;abord comprendre. Ensuite les outils.</h2>
-          <p className="lede">Comment un chatbot écrit, pourquoi il invente, comment le briefer, quoi ne jamais lui confier. Puis les outils, avec des infos datées et revérifiées régulièrement.</p>
-        </div>
-        <ul className="grid grid-cols-2 gap-3 self-center sm:grid-cols-3 lg:col-span-6 lg:col-start-7" translate="no">
+      {/* The assistants taught in the lessons */}
+      <section className="mx-auto grid max-w-[90rem] justify-items-center gap-5 px-4 py-16 text-center sm:px-8 lg:py-24">
+        <p className="eyebrow">Les outils</p>
+        <h2 className="display display-m max-w-[40rem]">Des assistants qu&apos;on apprend à utiliser correctement, à leur plein potentiel.</h2>
+        <ul className="flex flex-wrap justify-center gap-3" translate="no" aria-label="Les assistants abordés">
           {TOOLS.map((t, i) => (
-            <li key={t} className={`tile px-5 py-6 text-xl font-semibold sm:text-2xl ${i === 4 ? "col-span-2" : ""}`}>{t}</li>
-          ))}
-        </ul>
-      </section>
-
-      {/* Ten themes */}
-      <section className="mx-auto max-w-[90rem] px-4 pb-20 sm:px-8 lg:pb-28">
-        <h2 className="display display-l mb-10 max-w-[18ch]">Dix thèmes, de la première question au projet complet.</h2>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {THEME_IDS.map((t) => (
-            <li key={t} data-theme={t} className="tile-th tile flex flex-col gap-6 p-5">
-              <ThemeGlyph theme={t} size={30} />
-              <div className="grid gap-1">
-                <p className="display display-xs">{THEMES[t].name}</p>
-                <p className="text-sm opacity-85">{THEMES[t].pitch}</p>
-              </div>
-            </li>
+            <li key={t} className={`tools-chip ${["bg-gecko-soft", "bg-fox-soft", "bg-sky-soft", "bg-lilac-soft", "bg-bird-soft"][i]}`}>{t}</li>
           ))}
         </ul>
       </section>
 
       <footer className="bg-ink text-paper">
-        <div className="mx-auto flex max-w-[90rem] flex-col gap-10 px-4 py-16 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
-          <p className="display text-[clamp(4rem,14vw,12rem)] leading-[0.8]">gusgus</p>
-          <div className="grid gap-4 lg:justify-items-end">
-            <p className="text-paper/80">Way of Learning AI</p>
-            <Link href={cta.href} className="btn btn-lg bg-paper text-ink">{cta.label}</Link>
+        <div className="mx-auto max-w-[90rem] px-4 pb-8 pt-20 sm:px-8">
+          <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+            <h2 className="display display-l max-w-[16ch]">Ton premier prompt t&apos;attend.</h2>
+            <Link href={viewer ? cta.href : "#depart"} className="btn btn-lg bg-bird text-ink">{viewer ? cta.label : "Faire le test"}</Link>
           </div>
+          <div className="mt-12"><SleepingFooter /></div>
+          <p className="display mt-6 overflow-hidden pb-[0.12em] text-[clamp(4.5rem,22vw,19rem)] leading-[0.85] tracking-[-0.06em]" aria-hidden>gusgus</p>
+          <p className="mt-4 text-paper/80">Apprendre l&apos;IA en français</p>
         </div>
       </footer>
     </div>

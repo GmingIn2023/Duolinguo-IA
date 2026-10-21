@@ -224,6 +224,18 @@ The base colour is the flat field (accent tile, current lesson badge, progress f
 
 **The Edge Is Deeper Rule.** A pressed edge is always the darker step of its own tile colour: `edge` under white, `accent-deep` under accent, Graphite under ink, `good`/`bad` under feedback states. Never a neutral grey under a coloured tile.
 
+## Landing exception
+
+The landing page (`src/app/page.tsx`, styles in `src/app/landing.css`, scope `.landing`) is allowed to differ from the app so it can welcome people. The app screens are unchanged.
+
+- **Warm paper.** `.landing` overrides the neutrals: paper `#fbf6ec`, surface `#fffdf8`, ink `#1d1a16`, muted `#57514a`, edge `#e8dfcc`. Same structure, warmer values.
+- **More than one colour on a page is allowed here.** The three track colours appear together (one per guide), and the ten theme hues appear on the theme tiles. Use them as flat fields. Text on any of them is ink.
+- **A raised edge means "you can press this".** Anything with a pressed underside must be a link or a button. Static content is flat: a hairline `--line` border or no edge.
+- **Highlighter, not gradient.** A solid bar drawn under one word (`.hl`). Never a gradient.
+- **Handwriting is an annotation.** Caveat 600, only for short notes and arrows (`.hand`), never for body text.
+- **Motion.** Tokens `--dur-press 120ms`, `--dur-hover 200ms`, `--dur-enter 500ms`, `--dur-draw 800ms`, `--stagger 60ms`, ease `--ease-out`. One orchestrated moment per screen. Everything stays readable at rest and under `prefers-reduced-motion`.
+- **Mascots are actors.** Larger than icons, with eyes that follow the pointer (`.mascot-look`, set through `--gx / --gy`), a `sleep` mood for quiet moments, and speech bubbles that show one at a time and never depend on hover.
+
 ## Typography
 
 **Display Font:** Archivo (variable, `wdth` axis at 112%, weight 800), fallback sans-serif

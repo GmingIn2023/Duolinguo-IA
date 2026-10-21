@@ -1,0 +1,20 @@
+/* Landing, bas de page : citation, chiffres, outils (voir page.tsx). */
+.landing .quote { max-width: 62rem; display: grid; grid-template-columns: auto 1fr; gap: clamp(1rem, 3vw, 2.2rem); align-items: start; margin: 0 auto; }
+.landing .quote-mark { width: clamp(2.8rem, 5vw, 3.6rem); aspect-ratio: 1; border-radius: 50%; background: var(--bird); box-shadow: 0 4px 0 var(--bird-deep); display: grid; place-items: center; margin-top: 0.35rem; color: var(--ink); }
+.landing .quote-mark svg { width: 52%; height: auto; display: block; }
+.landing .quote blockquote { margin: 0; font-family: var(--font-archivo), sans-serif; font-stretch: 118%; font-weight: 800; letter-spacing: -0.035em; line-height: 1.06; font-size: clamp(1.8rem, 3.8vw, 3.2rem); text-wrap: balance; }
+.landing .quote figcaption { margin-top: 1.2rem; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.1em; text-transform: uppercase; }
+/* a thick underline drawn behind the words, like a highlighter: it follows the phrase over several lines (no gradient) */
+.landing .quote .mk { text-decoration: underline; text-decoration-thickness: 0.3em; text-underline-offset: -0.08em; text-decoration-skip-ink: none; }
+.landing .quote .m1 { text-decoration-color: var(--sky); }
+.landing .quote .m2 { text-decoration-color: var(--rose); }
+.landing .quote .m3 { text-decoration-color: var(--gecko); }
+@media (max-width: 560px) { .landing .quote { grid-template-columns: 1fr; } }
+
+.landing .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; margin-top: 3.2rem; padding: 0; list-style: none; }
+.landing .fact { border-radius: 20px; padding: 1.1rem 1.2rem; display: grid; gap: 0.2rem; justify-items: center; align-content: center; text-align: center; min-height: 8rem; color: var(--ink); }
+.landing .fact b { font: 800 clamp(2.2rem, 4vw, 3.2rem)/1 var(--font-archivo), sans-serif; font-stretch: 125%; letter-spacing: -0.04em; }
+.landing .fact span { font-weight: 500; font-size: 0.95rem; }
+@media (max-width: 860px) { .landing .facts { grid-template-columns: repeat(2, 1fr); } }
+
+.landing .tools-chip { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0.55rem 1.2rem; border-radius: 99px; border: 1.5px solid var(--line); font-family: var(--font-archivo), sans-serif; font-stretch: 112%; font-weight: 700; font-size: 1.05rem; color: var(--ink); }

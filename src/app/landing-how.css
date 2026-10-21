@@ -1,0 +1,66 @@
+/* Landing, section « Comment ça marche » : le fil et ses quatre étapes (voir HowItWorks.tsx). */
+.landing { --night: #14342b; --night-2: #1d4a3d; --mint: #9be8bd; }
+.how-band { background: var(--night); color: var(--paper); }
+.how-band .eyebrow, .how-band .lede { color: #e4f1ea; }
+.how-band :focus-visible { outline-color: var(--bird); }
+.how-trail { position: relative; display: grid; gap: 4.2rem; padding-bottom: 1rem; }
+.how-rail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
+.how-rail path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.how-base { stroke: var(--night-2); stroke-width: 4; }
+.how-draw { stroke: var(--bird); stroke-width: 4; }
+.how-curl { stroke: var(--bird); stroke-width: 4; stroke-dasharray: 6 9; opacity: 0; transition: opacity 400ms; }
+.how-step { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 7rem 1fr; align-items: center; gap: 1rem; }
+.how-copy { display: grid; gap: 0.6rem; justify-items: start; order: 1; }
+.how-dotc { display: grid; place-items: center; order: 2; }
+.how-card { order: 3; }
+.how-step:nth-of-type(even) .how-copy { order: 3; }
+.how-step:nth-of-type(even) .how-card { order: 1; }
+.how-step:nth-of-type(odd) .how-copy { text-align: right; justify-items: end; }
+.how-n { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mint); }
+.how-copy h3 { font-family: var(--font-archivo), sans-serif; font-weight: 800; font-stretch: 118%; letter-spacing: -0.03em; line-height: 1; font-size: clamp(1.5rem, 2.4vw, 2rem); text-wrap: balance; }
+.how-copy p { color: #e4f1ea; max-width: 24rem; }
+.how-dot { width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--night); border: 4px solid var(--night-2); display: grid; place-items: center; font: 800 0.95rem var(--font-archivo), sans-serif; color: var(--mint); transform: translateX(var(--dx, 0)); transition: background 400ms, border-color 400ms, color 400ms, transform 500ms var(--ease-out); }
+.how-step.is-reached .how-dot { background: var(--bird); border-color: var(--bird); color: var(--ink); transform: translateX(var(--dx, 0)) scale(1.12); }
+.how-card { background: var(--paper); color: var(--ink); border-radius: 22px; padding: 1.2rem; box-shadow: 0 6px 0 #0c2019; display: grid; gap: 0.8rem; min-width: 0; transform: translateY(12px); transition: transform 600ms var(--ease-out); }
+.how-step.is-reached .how-card { transform: none; }
+.how-cap { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.how-level { font: 800 2rem/1 var(--font-archivo), sans-serif; font-stretch: 125%; letter-spacing: -0.04em; }
+.how-level small { font: 500 0.95rem var(--font-geist), sans-serif; letter-spacing: 0; color: var(--muted); }
+.how-gauge { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }
+.how-gauge i { height: 0.7rem; border-radius: 3px; background-color: #e9dfc8; transition: background-color 300ms; }
+.how-brief { line-height: 1.9; font-size: 0.98rem; }
+.how-mark { font: inherit; text-align: left; padding: 0.08rem 0.25rem; border-radius: 5px; cursor: pointer; color: var(--ink); background: var(--bird-soft); box-shadow: inset 0 -2px 0 var(--bird-deep); }
+.how-mark[data-k="1"] { background: var(--sky-soft); box-shadow: inset 0 -2px 0 var(--sky-deep); }
+.how-mark[data-k="2"] { background: var(--rose-soft); box-shadow: inset 0 -2px 0 var(--rose-deep); }
+.how-mark[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 1px; }
+.how-legend { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.how-legend button { min-height: 2.25rem; padding: 0 0.8rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; color: var(--ink); background: var(--bird-soft); }
+.how-legend button[data-k="1"] { background: var(--sky-soft); }
+.how-legend button[data-k="2"] { background: var(--rose-soft); }
+.how-legend button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.how-why { font-size: 0.9rem; background: var(--bird-soft); border-radius: 12px; padding: 0.7rem 0.9rem; }
+.how-q { font-weight: 700; line-height: 1.3; }
+.how-ans { padding: 0.6rem 0.8rem; border-radius: 12px; font-size: 0.92rem; display: flex; gap: 0.5rem; align-items: center; }
+.how-ans em { font-style: normal; font-weight: 800; flex: none; }
+.how-ans-mine { background: var(--fox-soft); box-shadow: inset 0 0 0 2px var(--fox-deep); }
+.how-ans-mine em { color: var(--bad); }
+.how-ans-good { background: var(--gecko-soft); box-shadow: inset 0 0 0 2px var(--gecko-deep); }
+.how-ans-good em { color: var(--good); }
+.how-curve { width: 100%; height: auto; display: block; }
+.how-curve text { font: 600 10px var(--font-geist), sans-serif; fill: var(--ink); }
+.how-fall { fill: none; stroke: var(--ink); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.how-rv { fill: var(--gecko); stroke: var(--ink); stroke-width: 1.6; transform-box: fill-box; transform-origin: center; }
+.how-step.is-reached .how-rv { animation: landing-pop 500ms var(--ease-out) both; }
+@keyframes landing-pop { from { transform: scale(0.3); } }
+.how-again { grid-column: 1 / -1; display: grid; justify-items: center; gap: 0.3rem; padding-top: 0.4rem; position: relative; z-index: 1; color: var(--mint); text-align: center; }
+.how-end { width: 3.4rem; height: 3.4rem; display: block; }
+@media (max-width: 860px) {
+  .how-step { grid-template-columns: 2.8rem 1fr; gap: 0.8rem 1rem; align-items: start; }
+  .how-dotc { grid-row: 1 / span 2; grid-column: 1; align-self: start; }
+  .how-step .how-copy, .how-step:nth-of-type(odd) .how-copy, .how-step:nth-of-type(even) .how-copy { grid-column: 2; grid-row: 1; order: 0; text-align: left; justify-items: start; }
+  .how-step .how-card, .how-step:nth-of-type(even) .how-card { grid-column: 2; grid-row: 2; order: 0; }
+  .how-dot { --dx: 0px !important; }
+  .how-again { justify-items: start; }
+  .how-trail { gap: 2.6rem; }
+}
+@media (prefers-reduced-motion: reduce) { .how-card { transform: none; } .how-curl { opacity: 1; transition: none; } }

@@ -10,6 +10,7 @@ import { QuestionView, isDraftComplete, type Draft } from "@/components/quiz/Que
 import { initialDraft, initialOrder } from "@/components/quiz/QuizRunner";
 import { LESSONS, TRACKS, TRACK_IDS } from "@/content";
 import type { Answer, TrackId } from "@/content/types";
+import { ONBOARDING_KEY, type PlacementAnswer } from "@/lib/onboardingStorage";
 import { coveredByLevel } from "@/lib/board";
 import { gradeAnswer } from "@/lib/grading";
 import { PLACEMENT_LENGTH, TRACK_FOR_GOAL, levelName, nextPlacementQuestion, placementLevel, type Goal, type PlacementStep } from "@/lib/placement";
@@ -21,8 +22,8 @@ const GOALS: { id: Goal; title: string; hint: string }[] = [
 ];
 
 type Stage = "goal" | "intro" | "test" | "result";
-export type PlacementAnswer = { id: string; answer: Answer | null };
-export const ONBOARDING_KEY = "gusgus.onboarding";
+export type { PlacementAnswer };
+export { ONBOARDING_KEY };
 
 /**
  * Goal, then an adaptive 10-question test: a right answer raises the next question's level, a miss

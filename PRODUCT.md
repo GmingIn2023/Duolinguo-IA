@@ -5,8 +5,8 @@ A web/mobile learning platform that teaches people to understand and use AI thro
 
 ## Users and jobs
 - **Bird — complete beginners**: understand what AI is, stop being intimidated, use it safely.
-- **Gecko — high-school / university students**: use AI to learn (not to cheat), check sources, revise.
-- **Fox — AI for work**: write effective work prompts, protect confidential data, review AI output critically.
+- **Gecko — studies and work**: use AI to learn (not to cheat), write and summarise well, check sources, revise, automate daily tasks.
+- **Fox — technical and advanced**: understand the mechanics and build with it: APIs, agents, MCP, RAG, code, an end-to-end document assistant. (Source of truth: `src/content/curriculum.ts`.)
 
 Core loop: onboarding questions → level estimate → suggested track (changeable) → track map → lesson → quiz with error correction → XP → saved progress → spaced-repetition reviews (daily due items + ~10-minute weekly review of the week's lessons).
 
@@ -26,7 +26,7 @@ Next.js 16 (App Router) + TypeScript + Tailwind 4 + Supabase (auth, Postgres, RL
 
 ## Brand commitments (from the brief)
 - Name: "Gusgus — Way of Learning AI".
-- Mascot families per track: Bird (beginner), Gecko (student), Fox (work). Simple for MVP.
+- Mascot families per track: Bird (beginner), Gecko (studies and work), Fox (technical). Simple for MVP.
 - White / black / very clean greys; colour only where it does a job. Strong typography, large compositions, crafted cards, generous space, sober but memorable motion.
 - Not a generic SaaS UI.
 
