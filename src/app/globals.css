@@ -278,6 +278,7 @@ button.chip, a.chip { cursor: pointer; }
 .chip-th { background: var(--th-soft); box-shadow: none; }
 [data-theme="projets"].chip-th { background: var(--sunk); }
 
+.atelier .choice[aria-pressed="true"]:not([data-state]) { background: var(--lilac-soft); }
 .beta { display: inline-flex; align-items: center; height: 1.375rem; padding: 0 0.55rem; border-radius: 999px; background: var(--lilac); color: var(--ink); font-size: 0.75rem; font-weight: 700; box-shadow: 0 2px 0 var(--lilac-deep); }
 .meta { font-size: 0.875rem; font-weight: 500; color: var(--muted); }
 .field-area { width: 100%; padding: 0.875rem 1rem; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line); font-size: 1rem; line-height: 1.5; resize: vertical; min-height: 6.5rem; transition: box-shadow 120ms; }

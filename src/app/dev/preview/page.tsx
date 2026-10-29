@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { LessonPlayer } from "@/components/LessonPlayer";
+import { Atelier } from "@/components/atelier/Atelier";
+import { ATELIER } from "@/content/atelier";
 import { PathView } from "@/components/path/PathView";
 import { LESSONS, TRACKS, getLesson, isTrackId, trackLessons } from "@/content";
 import { knowledgeFrom, trackPath } from "@/lib/path";
@@ -20,6 +22,8 @@ export default async function Preview(props: { searchParams: Promise<Record<stri
     const lesson = getLesson(sp.id ?? "") ?? LESSONS[0];
     return <LessonPlayer lesson={lesson} track={trackId} resumeAt={sp.resume ? Number(sp.resume) : null} notes={[]} next={null} completedBefore={false} />;
   }
+
+  if (sp.view === "jeu") return <Atelier track={trackId} missions={ATELIER[trackId]} sounds={false} motion="full" />;
 
   if (sp.view === "gallery") {
     const blocks = new Map<Block["type"], GalleryBlock>();
