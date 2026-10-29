@@ -72,7 +72,7 @@ export function LessonPlayer({
     <div data-track={track} data-theme={lesson.theme} className="min-h-dvh" ref={top}>
       <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-3 px-4">
-          <Link href="/map" className="icon-btn" aria-label="Quitter le cours">
+          <Link href="/learn" className="icon-btn" aria-label="Quitter le cours">
             <X className="size-6" aria-hidden />
           </Link>
           <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-sunk" role="progressbar" aria-label="Avancement du cours" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
@@ -363,7 +363,7 @@ function Done({ lesson, track, saving, error, result, next, onRetrySave }: {
       </section>
       <div className="fade-in flex flex-wrap gap-3 [animation-delay:700ms]">
         {next && <Link href={`/lesson/${next.id}`} className="btn btn-primary btn-lg" aria-label={`Cours suivant : ${next.title}`}>Cours suivant<ArrowRight className="size-5" aria-hidden /></Link>}
-        <Link href="/map" className={`btn btn-lg ${next ? "btn-secondary" : "btn-primary"}`}>Voir la carte</Link>
+        <Link href="/learn" className={`btn btn-lg ${next ? "btn-secondary" : "btn-primary"}`}>Retour au chemin</Link>
       </div>
     </div>
   );

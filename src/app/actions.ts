@@ -41,7 +41,7 @@ function syncProfile(viewer: Viewer, learner: Learner) {
 }
 
 function revalidateApp() {
-  for (const p of ["/learn", "/map", "/courses", "/review", "/profile"]) revalidatePath(p);
+  for (const p of ["/learn", "/learn/chapitres", "/courses", "/review", "/profile"]) revalidatePath(p);
 }
 
 export async function completeLesson(lessonId: string, firstAnswers: Record<string, Answer>): Promise<LessonResult> {

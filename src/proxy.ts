@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabasePublishableKey } from "@/lib/supabase/env";
 
-const PROTECTED = ["/learn", "/map", "/courses", "/lesson", "/review", "/notes", "/profile"];
+const PROTECTED = ["/learn", "/map", "/jeu", "/courses", "/lesson", "/review", "/notes", "/profile"];
 
 /** Refreshes the Supabase session cookie and keeps signed-out visitors out of the app. */
 export async function proxy(request: NextRequest) {

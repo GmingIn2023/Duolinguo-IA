@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Flame, Zap } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
-import { AppNav } from "@/components/AppNav";
+import { AppNav, MobileTopBar } from "@/components/AppNav";
+import { parsePreferences } from "@/lib/prefs";
 import { Wordmark } from "@/components/Wordmark";
 import type { Profile } from "@/lib/types";
 
@@ -17,8 +18,9 @@ export function Stat({ icon, value, label }: { icon: "xp" | "streak"; value: num
 }
 
 export function AppShell({ profile, dueCount, children }: { profile: Profile; dueCount: number; children: React.ReactNode }) {
+  const prefs = parsePreferences(profile.preferences);
   return (
-    <div data-track={profile.track_id ?? undefined} className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
+    <div data-track={profile.track_id ?? undefined} data-motion={prefs.motion} data-text={prefs.textSize} className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
       <a href="#contenu" className="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50">Aller au contenu</a>
       <aside className="sticky top-0 hidden h-dvh flex-col gap-10 border-r border-line px-5 py-7 lg:flex">
         <Wordmark href="/learn" small />
@@ -35,6 +37,7 @@ export function AppShell({ profile, dueCount, children }: { profile: Profile; du
         </Link>
       </aside>
 
+      <MobileTopBar>
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-line bg-paper/90 px-4 backdrop-blur lg:hidden">
         <Wordmark href="/learn" small />
         <div className="flex items-center gap-4 text-sm">
@@ -45,6 +48,7 @@ export function AppShell({ profile, dueCount, children }: { profile: Profile; du
           </Link>
         </div>
       </header>
+      </MobileTopBar>
 
       <main id="contenu" className="min-w-0 px-4 pb-28 pt-6 sm:px-8 lg:px-12 lg:pb-16 lg:pt-10">{children}</main>
 

@@ -19,7 +19,7 @@ export function ReviewSession({ mode, title, questions, track }: { mode: ReviewM
   const [result, setResult] = useState<ReviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, start] = useTransition();
-  const back = mode.startsWith("checkpoint:") ? "/map" : "/review";
+  const back = mode.startsWith("checkpoint:") ? "/learn" : "/review";
 
   const save = useCallback((a: Record<string, Answer>) => {
     setAnswers(a);
@@ -70,23 +70,23 @@ export function ReviewSession({ mode, title, questions, track }: { mode: ReviewM
                 <span className="reveal-line"><span>+{total}</span></span>
                 <span className="reveal-line"><span>XP</span></span>
               </h1>
-              <Avatar track={track} mood={result.passed ? "cheer" : "think"} size={96} />
+              <Avatar track={track} mood={result.passed ? "cheer" : "think"} size={120} animate />
             </div>
             <div className="fade-in grid gap-2 [animation-delay:500ms]">
               <p className="bubble w-fit">{mascotLine(track, result.correct === result.total ? "perfect" : "done", result.totalXp)}</p>
               <p className="pt-3 text-xl font-semibold">{result.correct} sur {result.total} du premier coup.</p>
               {!result.passed && (
                 <p className="rounded-xl bg-bad-soft px-4 py-3 font-medium text-bad" role="status">
-                  {mode === "weekly" ? "Révision de la semaine" : "Bilan"} non validé : il fallait au moins {needed} bonnes réponses sur {result.expected}. Relis les notions manquées, puis refais-le : le bonus t&apos;attend.
+                  Pas encore validé : il fallait {needed} bonnes réponses sur {result.expected}. Refais-le quand tu veux, le bonus t&apos;attend.
                 </p>
               )}
               <p className="text-ink-2">
                 {result.bonus ? `Dont ${result.bonus} XP de bonus. ` : ""}
-                Les notions réussies reviendront plus tard, les autres dès demain.
+                Les ratées reviennent dès demain.
               </p>
             </div>
             <div className="fade-in flex flex-wrap gap-3 [animation-delay:600ms]">
-              <Link href="/map" className="btn btn-primary btn-lg">Voir la carte</Link>
+              <Link href="/learn" className="btn btn-primary btn-lg">Retour au chemin</Link>
               <Link href="/review" className="btn btn-secondary btn-lg">Révisions</Link>
             </div>
           </div>

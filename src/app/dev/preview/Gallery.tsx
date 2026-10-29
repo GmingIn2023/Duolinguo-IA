@@ -23,6 +23,8 @@ function answersFor(q: Question): { right: Answer; wrong: Answer } {
       return { right: q.answer, wrong: [...q.answer].reverse() };
     case "match":
       return { right: q.answer, wrong: [...q.answer.slice(1), q.answer[0]] };
+    case "sort":
+      return { right: q.answer.map(String), wrong: q.answer.map((b) => String(1 - b)) };
     case "ai_analysis":
     case "multi": {
       const extra = q.options.find((o) => !q.answer.includes(o.id));

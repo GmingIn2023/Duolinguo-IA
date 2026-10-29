@@ -3,22 +3,20 @@
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { savePreferences } from "@/app/actions";
-import { THEMES, THEME_IDS } from "@/content/curriculum";
-import type { ThemeId } from "@/content/types";
-import { ThemeGlyph } from "@/components/ThemeGlyph";
-import { SESSION_MINUTES, type Preferences } from "@/lib/prefs";
+import { DAILY_GOALS, SESSION_MINUTES, type Preferences } from "@/lib/prefs";
 
-const MODES = [
-  { v: "guided", label: "Guidé", hint: "Une étape conseillée à la fois, la plus utile maintenant." },
-  { v: "free", label: "Libre", hint: "Toutes les branches ouvertes se valent : tu choisis." },
-] as const;
+type Option<T> = { v: T; label: string };
 
-const PACE: { v: Preferences["pace"]; label: string; hint: string }[] = [
-  { v: -1, label: "Tout revoir", hint: "Le test de niveau valide moins de cours." },
-  { v: 0, label: "Équilibré", hint: "Ton niveau décide de ce que tu peux sauter." },
-  { v: 1, label: "Aller vite", hint: "Le test valide davantage de cours de base." },
+const ROWS: { key: keyof Preferences; title: string; hint: string; options: Option<Preferences[keyof Preferences]>[] }[] = [
+  { key: "mode", title: "Chemin", hint: "Guidé ouvre un cours à la fois. Libre ouvre tout ton parcours.", options: [{ v: "guided", label: "Guidé" }, { v: "free", label: "Libre" }] },
+  { key: "dailyGoal", title: "Objectif du jour", hint: "Les XP à gagner chaque jour.", options: DAILY_GOALS.map((g) => ({ v: g, label: `${g} XP` })) },
+  { key: "sessionMinutes", title: "Durée d'une séance", hint: "Pour te proposer des cours à ta mesure.", options: SESSION_MINUTES.map((m) => ({ v: m, label: `${m} min` })) },
+  { key: "sounds", title: "Sons", hint: "Un petit son sur les bonnes et mauvaises réponses.", options: [{ v: true, label: "Oui" }, { v: false, label: "Non" }] },
+  { key: "motion", title: "Mascotte", hint: "Calme : elle change d'expression sans bouger.", options: [{ v: "full", label: "Animée" }, { v: "calm", label: "Calme" }] },
+  { key: "textSize", title: "Texte des cours", hint: "Pour lire plus confortablement.", options: [{ v: "normal", label: "Normal" }, { v: "large", label: "Grand" }] },
 ];
 
+/** Settings as a list of rows: a name, one line, a small segmented control. Saved on every change. */
 export function PreferencesForm({ initial }: { initial: Preferences }) {
   const [prefs, setPrefs] = useState(initial);
   const [state, setState] = useState<"idle" | "saved" | "error">("idle");
@@ -28,6 +26,9 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
     const next = { ...prefs, ...patch };
     setPrefs(next);
     setState("idle");
+    // the shell reads these attributes: apply them now rather than after the server round trip
+    document.querySelector("[data-motion]")?.setAttribute("data-motion", next.motion);
+    document.querySelector("[data-text]")?.setAttribute("data-text", next.textSize);
     start(async () => {
       try {
         await savePreferences(next);
@@ -37,57 +38,33 @@ export function PreferencesForm({ initial }: { initial: Preferences }) {
       }
     });
   };
-  const toggleTheme = (t: ThemeId) => update({ themes: prefs.themes.includes(t) ? prefs.themes.filter((x) => x !== t) : [...prefs.themes, t] });
 
   return (
-    <div className="grid gap-8">
-      <fieldset className="grid gap-3">
-        <legend className="mb-3 font-semibold">Comment avancer</legend>
-        <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Mode">
-          {MODES.map((o) => (
-            <button key={o.v} type="button" role="radio" aria-checked={prefs.mode === o.v} className="choice !items-start" onClick={() => update({ mode: o.v })}>
-              <span className="grid gap-0.5"><span className="font-semibold">{o.label}</span><span className="text-[0.9375rem] text-ink-2">{o.hint}</span></span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset className="grid gap-3">
-        <legend className="mb-1 font-semibold">Thèmes à mettre en avant</legend>
-        <p className="text-[0.9375rem] text-ink-2">Dans l&apos;ordre où tu les touches. Les prérequis restent respectés.</p>
-        <div className="flex flex-wrap gap-2">
-          {THEME_IDS.map((t) => {
-            const rank = prefs.themes.indexOf(t);
-            return (
-              <button key={t} type="button" data-theme={t} className="chip" aria-pressed={rank !== -1} onClick={() => toggleTheme(t)}>
-                {rank !== -1 ? <span className="tabular grid size-5 place-items-center rounded-full bg-paper text-[0.75rem] text-ink">{rank + 1}</span> : <ThemeGlyph theme={t} size={16} />}
-                {THEMES[t].short}
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
-
-      <fieldset className="grid gap-3">
-        <legend className="mb-3 font-semibold">Durée d&apos;une séance</legend>
-        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Durée d'une séance">
-          {SESSION_MINUTES.map((m) => (
-            <button key={m} type="button" role="radio" aria-checked={prefs.sessionMinutes === m} className="chip !min-h-11 !px-5" onClick={() => update({ sessionMinutes: m })}>{m} min</button>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset className="grid gap-3">
-        <legend className="mb-3 font-semibold">Rythme</legend>
-        <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label="Rythme">
-          {PACE.map((o) => (
-            <button key={o.v} type="button" role="radio" aria-checked={prefs.pace === o.v} className="choice !items-start" onClick={() => update({ pace: o.v })}>
-              <span className="grid gap-0.5"><span className="font-semibold">{o.label}</span><span className="text-[0.9375rem] text-ink-2">{o.hint}</span></span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
+    <div className="grid gap-3">
+      <ul className="tile divide-y divide-line">
+        {ROWS.map((row) => (
+          <li key={row.key} className="grid gap-3 p-4 sm:grid-cols-[1fr_auto] sm:items-center sm:gap-6 sm:px-5">
+            <div className="grid gap-0.5">
+              <p className="font-semibold">{row.title}</p>
+              <p className="text-sm text-muted">{row.hint}</p>
+            </div>
+            <div className="flex w-fit flex-wrap gap-1 rounded-full bg-paper p-1 shadow-[inset_0_0_0_1.5px_var(--line)]" role="radiogroup" aria-label={row.title}>
+              {row.options.map((o) => (
+                <button
+                  key={String(o.v)}
+                  type="button"
+                  role="radio"
+                  aria-checked={prefs[row.key] === o.v}
+                  onClick={() => update({ [row.key]: o.v } as Partial<Preferences>)}
+                  className="min-h-10 rounded-full px-3.5 text-sm font-semibold text-ink-2 transition-colors aria-checked:bg-ink aria-checked:text-paper"
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ul>
       <p className="meta min-h-6" aria-live="polite">
         {pending ? "Enregistrement…" : state === "saved" ? <span className="inline-flex items-center gap-1.5 text-good"><Check className="size-4" aria-hidden />Enregistré</span> : state === "error" ? <span className="text-bad">Pas enregistré. Vérifie ta connexion.</span> : ""}
       </p>
