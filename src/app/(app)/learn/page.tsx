@@ -34,6 +34,9 @@ export default async function LearnPage() {
   return (
     <div className="mx-auto grid max-w-5xl gap-8 xl:grid-cols-[minmax(0,34rem)_17rem] xl:justify-center xl:gap-14" data-track={trackId}>
       <div className="grid min-w-0 content-start gap-3">
+        <h1 className="sr-only">
+          {profile.display_name ? `Bonjour ${profile.display_name}. ` : ""}Ton chemin {TRACKS[trackId].name}
+        </h1>
         <header className="sticky top-0 z-30 -mx-4 flex h-[3.75rem] items-center justify-between gap-3 bg-paper/95 px-3 backdrop-blur sm:-mx-8 sm:px-6 lg:static lg:mx-0 lg:h-auto lg:bg-transparent lg:px-0 lg:backdrop-blur-none">
           <TrackSwitcher current={trackId} tracks={tracks} chapterName={midChapter?.chapter.name ?? null} testedTrack={tested ?? null} />
           <div className="flex items-center gap-4 text-[1.0625rem] xl:hidden">

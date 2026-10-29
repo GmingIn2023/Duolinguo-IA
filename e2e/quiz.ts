@@ -134,14 +134,16 @@ export async function solveStep(page: Page, wrongFirst = false) {
   if (answeredRight) await answerCorrectly(scope);
   await verify.click();
   if (answeredRight) await expect(scope.getByRole("status")).toContainText(/Juste|Les idées y sont/);
-  await scope.getByRole("button", { name: "Continuer", exact: true }).click();
+  // the full quiz shows "Continuer"; an in-lesson check moves on by itself
+  const next = scope.getByRole("button", { name: "Continuer", exact: true });
+  if (await next.waitFor({ timeout: 1500 }).then(() => true, () => false)) await next.click();
   await scope.evaluateAll((els) => els.forEach((el) => el.removeAttribute("data-e2e-scope")));
 }
 
 /** Runs a full quiz until `done` shows, answering everything right except the first question when `missOne`. */
 export async function finishQuiz(page: Page, done: RegExp, { missOne = false } = {}) {
   for (let i = 0; i < 80; i++) {
-    if (await page.getByRole("heading", { name: done }).isVisible().catch(() => false)) return;
+    if (await endOf(page, done).isVisible().catch(() => false)) return;
     const again = page.getByRole("button", { name: "C'est parti" });
     if (await again.isVisible().catch(() => false)) {
       await again.click();
@@ -153,8 +155,11 @@ export async function finishQuiz(page: Page, done: RegExp, { missOne = false } =
     }
     await page.waitForTimeout(250);
   }
-  await expect(page.getByRole("heading", { name: done })).toBeVisible();
+  await expect(endOf(page, done)).toBeVisible();
 }
+
+/** The end screen: the review's XP heading, or the lesson's XP figure (labelled, not a heading). */
+const endOf = (page: Page, done: RegExp) => page.getByRole("heading", { name: done }).or(page.getByLabel(done)).first();
 
 /** Answers every in-lesson check of the current section so "Suivant" unlocks. */
 export async function answerSectionChecks(page: Page) {
