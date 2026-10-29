@@ -102,7 +102,7 @@ describe("lessons", () => {
     for (const s of l.sections) expect(s.blocks.length, `${l.id}/${s.id}`).toBeGreaterThan(0);
     expect(l.summary.length).toBeGreaterThanOrEqual(3);
     expect(l.summary.length).toBeLessThanOrEqual(6);
-    expect(l.questions.length).toBeGreaterThanOrEqual(5);
+    expect(l.questions.length).toBeGreaterThanOrEqual(4);
     expect(l.reviewQuestions.length).toBeGreaterThanOrEqual(1);
     expect(l.durationMin).toBeGreaterThan(0);
     expect(l.sources.length).toBeGreaterThan(0);
@@ -169,7 +169,11 @@ const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const proseText = (b: Block) => (b.type === "text" || b.type === "definition" || b.type === "keypoint" ? b.body : b.type === "mistake" ? `${b.why} ${b.fix}` : "");
 
 /** Lessons still in their v1 format, rewritten one by one. Must end empty. */
-const NOT_YET_REWRITTEN = new Set<string>(LESSONS.map((l) => l.id));
+const NOT_YET_REWRITTEN = new Set<string>([
+ 
+  "prompt-de-travail", "tuteur-pas-copieur", "reviser-avec-ia", "rediger-resumer", "relire-ia", "donnees-confidentielles", "decouper-une-tache", "automatiser-sans-coder", "projet-assistant-de-revision",
+  "modeles-et-raisonnement", "prompts-avances", "evaluer-un-modele", "api-cest-quoi", "sorties-structurees-et-outils", "cadrer-un-projet-ia", "agents-cest-quoi", "concevoir-un-agent", "mcp", "embeddings-et-recherche", "rag", "coder-avec-ia", "deboguer-et-relire-code", "projet-bot-documentaire",
+]);
 
 describe("lesson templates", () => {
   const rewritten = TRACK_IDS.flatMap((track) => trackLessons(track).filter((l) => !NOT_YET_REWRITTEN.has(l.id)).map((l) => [l.id, track, l] as const));

@@ -122,10 +122,12 @@ export function QuizRunner({
     setLine(mascotLine(track, moment, index));
     setReveal({ correct });
     if (sounds) playSound(correct ? "right" : "wrong");
+    // inside a lesson, the correction is enough: the lesson's own "Suivant" moves on
+    if (compact) onDone({ ...firstAnswers, [step.question.id]: answer });
     if (!(step.question.id in firstAnswers)) setFirstAnswers((f) => ({ ...f, [step.question.id]: answer }));
     if (correct) setSolved((s) => s + 1);
     else if (!compact) setQueue((q) => [...q, { question: step.question, retry: true }]);
-  }, [reveal, step, draft, firstAnswers, streak, track, index, compact, sounds]);
+  }, [reveal, step, draft, firstAnswers, streak, track, index, compact, sounds, onDone]);
 
   /** A written question can be passed: it counts as missed, shows the model answer, and does not come back. */
   const skip = useCallback(() => {
@@ -232,9 +234,11 @@ export function QuizRunner({
         !compact && <p className="hidden text-sm text-muted sm:block">{keyHint(q)}</p>
       )}
       {reveal ? (
-        <button className={`btn btn-lg flex-none sm:min-w-44 ${blockBtn} ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
-          Continuer
-        </button>
+        !compact && (
+          <button className={`btn btn-lg flex-none sm:min-w-44 ${blockBtn} ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
+            Continuer
+          </button>
+        )
       ) : (
         <div className={`flex flex-none flex-wrap items-center gap-2 ${compact ? "" : "sm:flex-row-reverse"}`}>
           <button className={`btn btn-primary btn-lg flex-none sm:min-w-44 ${blockBtn}`} onClick={check} disabled={!isDraftComplete(q, draft)}>

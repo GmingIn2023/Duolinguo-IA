@@ -9,12 +9,24 @@ import { devLessons } from "./lessons/dev";
 import { apiLessons } from "./lessons/api";
 import { ragLessons } from "./lessons/rag";
 import { projetsLessons } from "./lessons/projets";
+import { birdChapter1 } from "./lessons/bird/b1";
 import { THEMES, THEME_IDS, TRACKS as RAW_TRACKS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId } from "./curriculum";
+import { birdChapter2 } from "./lessons/bird/b2";
+import { birdChapter3 } from "./lessons/bird/b3";
+import { birdChapter4 } from "./lessons/bird/b4";
+import { birdChapter5 } from "./lessons/bird/b5";
+import { birdChapter6 } from "./lessons/bird/b6";
 import { typesetContent } from "../lib/typo";
 
 export { THEMES, THEME_IDS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId };
 
 export const LESSONS: Lesson[] = typesetContent([
+  ...birdChapter6,
+  ...birdChapter5,
+  ...birdChapter4,
+  ...birdChapter3,
+  ...birdChapter2,
+  ...birdChapter1,
   ...comprendreLessons,
   ...promptLessons,
   ...confianceLessons,
