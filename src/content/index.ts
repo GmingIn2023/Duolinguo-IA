@@ -1,16 +1,6 @@
 import type { Chapter, Lesson, Question, ThemeId, TrackId } from "./types";
-import { comprendreLessons } from "./lessons/comprendre";
-import { promptLessons } from "./lessons/prompt";
-import { confianceLessons } from "./lessons/confiance";
-import { outilsLessons } from "./lessons/outils";
-import { workflowsLessons } from "./lessons/workflows";
-import { agentsLessons } from "./lessons/agents";
-import { devLessons } from "./lessons/dev";
-import { apiLessons } from "./lessons/api";
-import { ragLessons } from "./lessons/rag";
-import { projetsLessons } from "./lessons/projets";
-import { birdChapter1 } from "./lessons/bird/b1";
 import { THEMES, THEME_IDS, TRACKS as RAW_TRACKS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId } from "./curriculum";
+import { birdChapter1 } from "./lessons/bird/b1";
 import { birdChapter2 } from "./lessons/bird/b2";
 import { birdChapter3 } from "./lessons/bird/b3";
 import { birdChapter4 } from "./lessons/bird/b4";
@@ -22,33 +12,43 @@ import { geckoChapter3 } from "./lessons/gecko/g3";
 import { geckoChapter4 } from "./lessons/gecko/g4";
 import { geckoChapter5 } from "./lessons/gecko/g5";
 import { geckoChapter6 } from "./lessons/gecko/g6";
+import { foxTokens } from "./lessons/fox/tokens";
+import { foxChapter1 } from "./lessons/fox/f1";
+import { foxChapter2 } from "./lessons/fox/f2";
+import { foxChapter3 } from "./lessons/fox/f3";
+import { foxChapter4 } from "./lessons/fox/f4";
+import { foxOrchestrer } from "./lessons/fox/orchestrer";
+import { foxChapter5 } from "./lessons/fox/f5";
+import { foxEvaluerRag } from "./lessons/fox/evaluer-un-rag";
+import { foxChapter6 } from "./lessons/fox/f6";
+import { foxChapter7 } from "./lessons/fox/f7";
 import { typesetContent } from "../lib/typo";
 
 export { THEMES, THEME_IDS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId };
 
 export const LESSONS: Lesson[] = typesetContent([
-  ...geckoChapter6,
-  ...geckoChapter5,
-  ...geckoChapter4,
-  ...geckoChapter3,
-  ...geckoChapter2,
-  ...geckoChapter1,
-  ...birdChapter6,
-  ...birdChapter5,
-  ...birdChapter4,
-  ...birdChapter3,
-  ...birdChapter2,
   ...birdChapter1,
-  ...comprendreLessons,
-  ...promptLessons,
-  ...confianceLessons,
-  ...outilsLessons,
-  ...workflowsLessons,
-  ...agentsLessons,
-  ...devLessons,
-  ...apiLessons,
-  ...ragLessons,
-  ...projetsLessons,
+  ...birdChapter2,
+  ...birdChapter3,
+  ...birdChapter4,
+  ...birdChapter5,
+  ...birdChapter6,
+  ...geckoChapter1,
+  ...geckoChapter2,
+  ...geckoChapter3,
+  ...geckoChapter4,
+  ...geckoChapter5,
+  ...geckoChapter6,
+  ...foxTokens,
+  ...foxChapter1,
+  ...foxChapter2,
+  ...foxChapter3,
+  ...foxChapter4,
+  ...foxOrchestrer,
+  ...foxChapter5,
+  ...foxEvaluerRag,
+  ...foxChapter6,
+  ...foxChapter7,
 ]);
 
 const byId = new Map(LESSONS.map((l) => [l.id, l]));

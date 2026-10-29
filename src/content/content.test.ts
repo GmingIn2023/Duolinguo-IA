@@ -168,17 +168,9 @@ const PROSE: Partial<Record<string, number>> = { text: 1, definition: 1, mistake
 const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const proseText = (b: Block) => (b.type === "text" || b.type === "definition" || b.type === "keypoint" ? b.body : b.type === "mistake" ? `${b.why} ${b.fix}` : "");
 
-/** Lessons still in their v1 format, rewritten one by one. Must end empty. */
-const NOT_YET_REWRITTEN = new Set<string>([
- 
- 
-  "modeles-et-raisonnement", "prompts-avances", "evaluer-un-modele", "api-cest-quoi", "sorties-structurees-et-outils", "cadrer-un-projet-ia", "agents-cest-quoi", "concevoir-un-agent", "mcp", "embeddings-et-recherche", "rag", "coder-avec-ia", "deboguer-et-relire-code", "projet-bot-documentaire",
-]);
-
 describe("lesson templates", () => {
-  const rewritten = TRACK_IDS.flatMap((track) => trackLessons(track).filter((l) => !NOT_YET_REWRITTEN.has(l.id)).map((l) => [l.id, track, l] as const));
-  it("tracks how many lessons still use the v1 format", () => expect(NOT_YET_REWRITTEN.size).toBeLessThanOrEqual(LESSONS.length));
-  it.skipIf(!rewritten.length).each(rewritten.length ? rewritten : [["none", "bird", LESSONS[0]] as const])("%s follows the %s format", (_, track, l) => {
+  const lessons = TRACK_IDS.flatMap((track) => trackLessons(track).map((l) => [l.id, track, l] as const));
+  it.each(lessons)("%s follows the %s format", (_, track, l) => {
     const t = TEMPLATE[track];
     const project = lessonPlace(l.id)?.chapter.project;
     expect(l.durationMin, "duration").toBeGreaterThanOrEqual(t.minutes[0]);
@@ -195,6 +187,6 @@ describe("lesson templates", () => {
     const interactive = l.sections.filter((s) => s.blocks.some((b) => INTERACTIVE.has(b.type))).length;
     expect(interactive / l.sections.length, "interactive share").toBeGreaterThanOrEqual(t.interactiveShare);
     if (!t.written) for (const q of allQuestions(l)) expect(q.type, `${q.id}: no writing in ${track}`).not.toBe("written");
-    expect(l.summary.length, "summary").toBeLessThanOrEqual(track === "bird" ? 3 : 5);
+    expect(l.summary.length, "summary").toBeLessThanOrEqual(track === "bird" ? 3 : track === "gecko" ? 5 : 6);
   });
 });
