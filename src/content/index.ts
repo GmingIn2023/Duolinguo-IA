@@ -16,11 +16,23 @@ import { birdChapter3 } from "./lessons/bird/b3";
 import { birdChapter4 } from "./lessons/bird/b4";
 import { birdChapter5 } from "./lessons/bird/b5";
 import { birdChapter6 } from "./lessons/bird/b6";
+import { geckoChapter1 } from "./lessons/gecko/g1";
+import { geckoChapter2 } from "./lessons/gecko/g2";
+import { geckoChapter3 } from "./lessons/gecko/g3";
+import { geckoChapter4 } from "./lessons/gecko/g4";
+import { geckoChapter5 } from "./lessons/gecko/g5";
+import { geckoChapter6 } from "./lessons/gecko/g6";
 import { typesetContent } from "../lib/typo";
 
 export { THEMES, THEME_IDS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId };
 
 export const LESSONS: Lesson[] = typesetContent([
+  ...geckoChapter6,
+  ...geckoChapter5,
+  ...geckoChapter4,
+  ...geckoChapter3,
+  ...geckoChapter2,
+  ...geckoChapter1,
   ...birdChapter6,
   ...birdChapter5,
   ...birdChapter4,

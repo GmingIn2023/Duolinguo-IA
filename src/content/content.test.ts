@@ -171,7 +171,7 @@ const proseText = (b: Block) => (b.type === "text" || b.type === "definition" ||
 /** Lessons still in their v1 format, rewritten one by one. Must end empty. */
 const NOT_YET_REWRITTEN = new Set<string>([
  
-  "prompt-de-travail", "tuteur-pas-copieur", "reviser-avec-ia", "rediger-resumer", "relire-ia", "donnees-confidentielles", "decouper-une-tache", "automatiser-sans-coder", "projet-assistant-de-revision",
+ 
   "modeles-et-raisonnement", "prompts-avances", "evaluer-un-modele", "api-cest-quoi", "sorties-structurees-et-outils", "cadrer-un-projet-ia", "agents-cest-quoi", "concevoir-un-agent", "mcp", "embeddings-et-recherche", "rag", "coder-avec-ia", "deboguer-et-relire-code", "projet-bot-documentaire",
 ]);
 
