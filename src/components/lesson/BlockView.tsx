@@ -62,9 +62,9 @@ export function BlockView({ block, track, onCheckDone }: { block: Block; track: 
       );
     case "definition":
       return (
-        <section className="border-l-[6px] border-th py-1 pl-4">
-          <p className="display display-s mb-1">{renderInline(block.term)}</p>
-          <Rich text={block.body} as="p" className="prose-gg" />
+        <section className="rounded-2xl bg-th-soft p-4 sm:p-5">
+          <p className="display display-s mb-1.5">{renderInline(block.term)}</p>
+          <Rich text={block.body} as="p" className="prose-gg !text-ink" />
         </section>
       );
     case "example": {
@@ -170,7 +170,7 @@ export function BlockView({ block, track, onCheckDone }: { block: Block; track: 
       );
     case "mistake":
       return (
-        <section className="tile border-l-[6px] border-bad p-4 sm:p-5">
+        <section className="tile p-4 sm:p-5">
           <p className="meta mb-1 flex items-center gap-1.5 font-semibold text-bad">
             <TriangleAlert aria-hidden className="size-4" />
             Erreur fréquente
@@ -361,8 +361,9 @@ function LayersView({ title, layers, caption }: Extract<Block, { type: "layers" 
               aria-expanded={open === i}
               aria-controls={open === i ? `${uid}-${i}` : undefined}
               onClick={() => setOpen(open === i ? null : i)}
-              className={`${TOUCH} flex w-full items-center gap-3 border-l-[10px] border-th px-3.5 py-3 text-left font-semibold`}
+              className={`${TOUCH} flex w-full items-center gap-3 px-3.5 py-3 text-left font-semibold`}
             >
+              <span className="tabular grid size-7 flex-none place-items-center rounded-full bg-th text-sm font-bold [[data-theme=projets]_&]:text-paper" aria-hidden>{i + 1}</span>
               <span className="min-w-0 flex-1 [overflow-wrap:anywhere]">{renderInline(l.label)}</span>
               <ChevronDown aria-hidden className={`size-5 flex-none transition-transform ${open === i ? "rotate-180" : ""}`} />
             </button>
@@ -497,9 +498,9 @@ function ExerciseView({ title, prompt, hints = [], solution, minutes }: Extract<
   const [shown, setShown] = useState(0);
   const [reveal, setReveal] = useState(false);
   return (
-    <section className="tile border-t-[6px] border-th p-4 sm:p-5">
+    <section className="tile p-4 sm:p-5">
       <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-        <p className="meta font-semibold">À toi de jouer</p>
+        <p className="chip chip-th !min-h-7 font-semibold">À toi de jouer · facultatif</p>
         {minutes != null && (
           <span className="chip chip-th">
             <Clock aria-hidden className="size-4" />

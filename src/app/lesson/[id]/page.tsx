@@ -16,7 +16,7 @@ export default async function LessonPage(props: PageProps<"/lesson/[id]">) {
   const { id } = await props.params;
   const lesson = getLesson(id);
   if (!lesson) notFound();
-  const [{ profile }, { knowledge }] = await Promise.all([requireViewer(), getKnowledge()]);
+  const [{ profile }, { knowledge, prefs }] = await Promise.all([requireViewer(), getKnowledge()]);
   const trackId = profile.track_id ?? "bird";
 
   const place = lessonPlace(lesson.id);
@@ -55,6 +55,7 @@ export default async function LessonPage(props: PageProps<"/lesson/[id]">) {
       notes={notes}
       next={next && next.id !== id ? { id: next.id, title: next.title } : null}
       completedBefore={knowledge.completed.has(lesson.id)}
+      prefs={{ sounds: prefs.sounds, motion: prefs.motion, textSize: prefs.textSize }}
     />
   );
 }

@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { submitReview } from "@/app/actions";
 import type { Answer, Question, TrackId } from "@/content/types";
 import { Avatar } from "@/components/Avatar";
+import { LearnerPrefs } from "@/components/LearnerPrefs";
 import { QuizRunner } from "@/components/quiz/QuizRunner";
 import { mascotLine } from "@/lib/mascot";
 import { PASS_RATIO } from "@/lib/progressRules";
@@ -13,7 +14,7 @@ import type { ReviewMode, ReviewResult } from "@/lib/types";
 
 const LABEL = (mode: ReviewMode) => (mode === "daily" ? "Jour" : mode === "weekly" ? "Semaine" : "Bilan");
 
-export function ReviewSession({ mode, title, questions, track }: { mode: ReviewMode; title: string; questions: Question[]; track: TrackId }) {
+export function ReviewSession({ mode, title, questions, track, prefs }: { mode: ReviewMode; title: string; questions: Question[]; track: TrackId; prefs: { sounds: boolean; motion: "full" | "calm"; textSize: "normal" | "large" } }) {
   const [progress, setProgress] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer> | null>(null);
   const [result, setResult] = useState<ReviewResult | null>(null);
@@ -36,7 +37,8 @@ export function ReviewSession({ mode, title, questions, track }: { mode: ReviewM
   const total = result ? result.xpEarned + result.bonus : 0;
   const needed = result ? Math.ceil(result.expected * PASS_RATIO) : 0;
   return (
-    <div data-track={track} className="min-h-dvh">
+    <LearnerPrefs.Provider value={{ sounds: prefs.sounds }}>
+    <div data-track={track} data-motion={prefs.motion} data-text={prefs.textSize} className="min-h-dvh">
       <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-4 px-4">
           <Link href={back} className="icon-btn" aria-label="Quitter"><X className="size-6" aria-hidden /></Link>
@@ -93,5 +95,6 @@ export function ReviewSession({ mode, title, questions, track }: { mode: ReviewM
         )}
       </main>
     </div>
+    </LearnerPrefs.Provider>
   );
 }

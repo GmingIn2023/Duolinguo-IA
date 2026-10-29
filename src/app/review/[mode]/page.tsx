@@ -19,6 +19,7 @@ export default async function ReviewModePage(props: PageProps<"/review/[mode]">)
     notFound(); // malformed escape in the URL
   }
   const { profile } = await requireViewer();
+  const { prefs } = await getKnowledge();
   const track = profile.track_id ?? "bird";
   let questions: Question[];
   let title: string;
@@ -50,5 +51,5 @@ export default async function ReviewModePage(props: PageProps<"/review/[mode]">)
   } else notFound();
 
   if (!questions.length) redirect("/review");
-  return <ReviewSession mode={mode} title={title} questions={questions} track={track} />;
+  return <ReviewSession mode={mode} title={title} questions={questions} track={track} prefs={prefs} />;
 }

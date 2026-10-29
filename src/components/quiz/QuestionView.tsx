@@ -7,7 +7,7 @@ import { WRITTEN_MAX, metCriteria } from "@/lib/grading";
 import { Rich, renderInline } from "@/components/Rich";
 
 export type Draft = Answer | null;
-export type Reveal = null | { correct: boolean };
+export type Reveal = null | { correct: boolean; skipped?: boolean };
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 const WRITTEN_MIN = 3;
