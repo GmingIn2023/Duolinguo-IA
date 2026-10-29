@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Check } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
-import { gaugeSegments } from "@/lib/placementFlow";
+import { renderInline } from "@/components/Rich";
 import type { LandingPreviews } from "@/lib/landingPreview";
-
-const TRACK_COLOR = { bird: "var(--bird)", gecko: "var(--gecko)", fox: "var(--fox)" } as const;
 
 /**
  * "Comment ça marche": a thread that draws itself as you scroll, four stops, each with a real preview.
@@ -115,47 +114,49 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
         <path ref={curl} className="how-curl" />
         <g ref={rider} style={{ opacity: 0 }}>
           <g transform="translate(-17 -17)">
-            <Avatar track="bird" size={34} />
+            <Avatar track="bird" size={34} decorative />
           </g>
         </g>
       </svg>
 
       <article className={stepClass(0)}>
         <div className="how-copy">
-          <span className="how-n">Étape 1 · Test de niveau</span>
           <h3>On voit ce que tu sais déjà.</h3>
-          <p>Dix questions qui s&apos;adaptent. Tu sautes ce que tu maîtrises au lieu de le relire.</p>
+          <p>Dix questions sur le parcours qui t&apos;intéresse. Ce que tu sais est validé, et tu commences au bon chapitre.</p>
         </div>
         <div className="how-dotc"><span className="how-dot" ref={(e) => { dots.current[0] = e; }} style={{ ["--dx" as string]: "-1.2rem" }}>1</span></div>
-        <div className="how-card">
+        <div className="how-card" data-track="gecko">
           <div className="how-cap"><span>Ton résultat</span><span>exemple</span></div>
           <p className="how-level">
-            {previews.exampleLevel.level10}
-            <small> sur 10 · {previews.exampleLevel.label}</small>
+            {previews.example.score}
+            <small> sur 10 · test {previews.example.trackName}</small>
           </p>
           <div className="how-gauge" aria-hidden>
-            {gaugeSegments(previews.exampleLevel.level10).map((s) => (
-              <i key={s.index} style={s.filled ? { background: TRACK_COLOR[s.track], transitionDelay: `${150 + s.index * 70}ms` } : undefined} />
+            {Array.from({ length: 10 }, (_, i) => (
+              <i key={i} style={i < previews.example.score ? { background: "var(--gecko)", transitionDelay: `${150 + i * 70}ms` } : undefined} />
             ))}
           </div>
-          <p className="text-sm">Parcours conseillé selon ton objectif : tu pars de là, et tu peux en changer.</p>
+          <ul className="how-chapters">
+            {previews.example.validated.map((c) => (
+              <li key={c}><Check className="size-4" strokeWidth={3} aria-hidden />{c}</li>
+            ))}
+            <li className="is-start">Tu commences ici : {previews.example.start}</li>
+          </ul>
         </div>
       </article>
 
       <article className={stepClass(1)}>
         <div className="how-copy">
-          <span className="how-n">Étape 2 · Cours à pratiquer</span>
-          <h3>Tu lis, puis tu essaies pour de vrai.</h3>
-          <p>Chaque cours a son exercice : écrire un prompt, vérifier une source, relire du code… selon le sujet. Les points importants sont surlignés et expliqués.</p>
+          <h3>Une idée par écran, puis tu essaies.</h3>
+          <p>Peu de texte, les mots qui comptent en gras, et tout de suite une petite question pour vérifier.</p>
         </div>
         <div className="how-dotc"><span className="how-dot" ref={(e) => { dots.current[1] = e; }} style={{ ["--dx" as string]: "1.2rem" }}>2</span></div>
-        <BriefCard brief={previews.brief} />
+        <ExcerptCard excerpt={previews.excerpt} />
       </article>
 
       <article className={stepClass(2)}>
         <div className="how-copy">
-          <span className="how-n">Étape 3 · Quiz qui explique</span>
-          <h3>Tu te trompes, on te dit pourquoi.</h3>
+          <h3>Tu te trompes, on te dit <em className="how-why-word">pourquoi</em>.</h3>
           <p>Tu vois la bonne réponse et la raison, pas seulement une croix rouge.</p>
         </div>
         <div className="how-dotc"><span className="how-dot" ref={(e) => { dots.current[2] = e; }} style={{ ["--dx" as string]: "-1.2rem" }}>3</span></div>
@@ -163,10 +164,22 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
           <div className="how-cap"><span>Quiz · vrai ou faux</span><span>question réelle</span></div>
           {previews.quiz ? (
             <>
-              <p className="how-q">{previews.quiz.statement}</p>
-              <p className="how-ans how-ans-mine"><em>Ta réponse</em> Faux</p>
-              <p className="how-ans how-ans-good"><em>Correct</em> Vrai</p>
-              <p className="how-why">{previews.quiz.explanation}</p>
+              <p className="how-q">« {previews.quiz.statement} »</p>
+              <div className="how-pair">
+                <p className="how-ans how-ans-mine"><em>Ta réponse</em> {previews.quiz.answer ? "Faux" : "Vrai"}</p>
+                <p className="how-ans how-ans-good"><em>Correct</em> {previews.quiz.answer ? "Vrai" : "Faux"}</p>
+              </div>
+              <div className="how-explain">
+                <span className="hand how-note" aria-hidden>
+                  voilà pourquoi
+                  <svg viewBox="0 0 60 34" className="how-arrow"><path d="M4 4c14 2 30 8 40 22m0 0-9-2m9 2 1-9" /></svg>
+                </span>
+                <p>
+                  {previews.quiz.before}
+                  {previews.quiz.mark && <mark className="how-mark-hl"><strong>{previews.quiz.mark}</strong></mark>}
+                  {previews.quiz.after}
+                </p>
+              </div>
             </>
           ) : null}
         </div>
@@ -174,7 +187,6 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
 
       <article className={stepClass(3)}>
         <div className="how-copy">
-          <span className="how-n">Étape 4 · Révisions</span>
           <h3>Ce que tu rates revient avant l&apos;oubli.</h3>
           <p>Une notion ratée revient plus tard, puis de plus en plus espacée. Ton carnet garde aussi tes notes.</p>
         </div>
@@ -194,25 +206,34 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
   );
 }
 
-function BriefCard({ brief }: { brief: LandingPreviews["brief"] }) {
-  const [open, setOpen] = useState(0);
-  if (!brief) return <div className="how-card" />;
+/** A real lesson screen, shrunk: one short paragraph with its bold words, then the quick question after it. */
+function ExcerptCard({ excerpt }: { excerpt: LandingPreviews["excerpt"] }) {
+  const [picked, setPicked] = useState<boolean | null>(null);
+  const right = picked === excerpt.answer;
   return (
-    <div className="how-card">
-      <div className="how-cap"><span>Extrait du cours</span><span>{brief.lessonTitle}</span></div>
-      <p className="how-brief">
-        {brief.parts.map((p, i) => (
-          <span key={p.label}>
-            <button type="button" className="how-mark" data-k={i} aria-pressed={open === i} onClick={() => setOpen(i)}>{p.text}</button>{" "}
-          </span>
-        ))}
-      </p>
-      <div className="how-legend" role="group" aria-label="Parties du brief">
-        {brief.parts.map((p, i) => (
-          <button key={p.label} type="button" data-k={i} aria-pressed={open === i} onClick={() => setOpen(i)}>{p.label}</button>
-        ))}
+    <div className="how-card how-lesson">
+      <div className="how-cap"><span>Extrait du cours</span><span>{excerpt.lessonTitle}</span></div>
+      <p className="how-read">{renderInline(excerpt.body)}</p>
+      <div className="how-try">
+        <p className="how-try-q"><span>À toi</span> {excerpt.statement}</p>
+        <div className="how-tf" role="radiogroup" aria-label="Vrai ou faux">
+          {[true, false].map((v) => (
+            <button
+              key={String(v)}
+              type="button"
+              role="radio"
+              aria-checked={picked === v}
+              data-state={picked === v ? (right ? "correct" : "wrong") : undefined}
+              onClick={() => setPicked(v)}
+            >
+              {v ? "Vrai" : "Faux"}
+            </button>
+          ))}
+        </div>
+        <p className="how-try-why" aria-live="polite">
+          {picked === null ? "" : right ? <><strong>Juste.</strong> {excerpt.why}</> : <><strong>Pas tout à fait.</strong> {excerpt.why}</>}
+        </p>
       </div>
-      <p className="how-why" aria-live="polite"><strong>{brief.parts[open].label}.</strong> {brief.parts[open].detail}</p>
     </div>
   );
 }

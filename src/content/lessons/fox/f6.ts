@@ -1,6 +1,7 @@
-import type { Lesson } from "../types";
+import type { Lesson } from "../../types";
 
-export const devLessons: Lesson[] = [
+/** Fox · chapitre 6 : « Coder avec l'IA » */
+export const foxChapter6: Lesson[] = [
   {
     id: "coder-avec-ia",
     title: "Coder avec un assistant IA",
@@ -16,7 +17,6 @@ export const devLessons: Lesson[] = [
       "Avancer par petites modifications en lisant chaque diff",
       "Repérer code plausible mais faux, dépendances inventées et fuites de secrets",
     ],
-    prerequisites: ["prompts-avances"],
     sections: [
       {
         id: "familles",
@@ -30,9 +30,24 @@ export const devLessons: Lesson[] = [
             type: "table",
             headers: ["Famille", "Comment elle travaille", "Ce qu'elle voit", "Ce que tu contrôles"],
             rows: [
-              ["Complétion dans l'éditeur", "Propose la suite pendant que tu tapes : une ligne, un bloc", "Le fichier ouvert et un peu de son voisinage", "Chaque suggestion, acceptée ou refusée une par une"],
-              ["Chat", "Tu poses une question ou colles du code, il répond ; tu copies ce qui te convient", "Uniquement ce que tu lui donnes", "Tout : rien n'entre dans ton projet sans ton geste"],
-              ["Agent de code", "Lit le dépôt, modifie plusieurs fichiers, lance des commandes (tests, installation), observe le résultat et recommence", "Le projet entier, selon les accès accordés", "Le but, les permissions, puis la relecture du diff final"],
+              [
+                "Complétion dans l'éditeur",
+                "Propose la suite pendant que tu tapes : une ligne, un bloc",
+                "Le fichier ouvert et un peu de son voisinage",
+                "Chaque suggestion, acceptée ou refusée une par une",
+              ],
+              [
+                "Chat",
+                "Tu poses une question ou colles du code, il répond ; tu copies ce qui te convient",
+                "Uniquement ce que tu lui donnes",
+                "Tout : rien n'entre dans ton projet sans ton geste",
+              ],
+              [
+                "Agent de code",
+                "Lit le dépôt, modifie plusieurs fichiers, lance des commandes (tests, installation), observe le résultat et recommence",
+                "Le projet entier, selon les accès accordés",
+                "Le but, les permissions, puis la relecture du diff final",
+              ],
             ],
             caption: "Des catégories, pas des produits : les outils changent vite et beaucoup combinent plusieurs familles.",
           },
@@ -41,9 +56,21 @@ export const devLessons: Lesson[] = [
             title: "Qui tient le clavier ?",
             poles: ["Toi", "L'assistant"],
             items: [
-              { label: "Complétion", position: 20, detail: "Tu écris, il finit tes phrases. L'erreur typique : accepter par réflexe une suggestion qui a l'air juste." },
-              { label: "Chat", position: 50, detail: "Il écrit des blocs entiers, tu les intègres. L'erreur typique : coller sans avoir donné le contexte du projet." },
-              { label: "Agent de code", position: 85, detail: "Il écrit, exécute et corrige. L'erreur typique : valider un gros changement sans l'avoir lu." },
+              {
+                label: "Complétion",
+                position: 20,
+                detail: "Tu écris, il finit tes phrases. L'erreur typique : accepter par réflexe une suggestion qui a l'air juste.",
+              },
+              {
+                label: "Chat",
+                position: 50,
+                detail: "Il écrit des blocs entiers, tu les intègres. L'erreur typique : coller sans avoir donné le contexte du projet.",
+              },
+              {
+                label: "Agent de code",
+                position: 85,
+                detail: "Il écrit, exécute et corrige. L'erreur typique : valider un gros changement sans l'avoir lu.",
+              },
             ],
             caption: "Plus tu délègues, plus ta relecture doit être organisée.",
           },
@@ -54,59 +81,82 @@ export const devLessons: Lesson[] = [
         ],
       },
       {
-        id: "contexte-spec",
-        title: "Donner le contexte, spécifier avant de générer",
+        id: "specifier",
+        title: "Spécifier avant de générer",
         blocks: [
           {
             type: "text",
-            body: "Tu connais déjà les prompts structurés : un rôle, un contexte, une tâche, un format. Pour du code, le contexte prend une forme précise, et une pièce s'ajoute : **la spécification**, c'est-à-dire la description du comportement attendu, assez précise pour qu'on puisse dire si le code est bon ou non.",
+            body: "Pour du code, le prompt structuré (rôle, contexte, tâche, format) prend une forme précise, et une pièce s'ajoute : **la spécification**. C'est la description du comportement attendu, assez précise pour qu'on puisse dire si le code est bon ou non.",
           },
           {
             type: "compare",
             title: "Deux demandes pour la même fonction",
             columns: ["Vague", "Spécifiée"],
             rows: [
-              { label: "La demande", a: "« Écris une fonction qui convertit une durée en minutes. »", b: "Langage, signature, formats acceptés, formats refusés, comportement en cas d'erreur, conventions du projet" },
-              { label: "Ce que l'assistant doit deviner", a: "Le langage, les formats, que faire de « 1h75 », d'une chaîne vide, d'un nombre négatif", b: "Presque rien" },
-              { label: "Ce que tu peux vérifier", a: "Seulement que « ça a l'air de marcher »", b: "Chaque exemple, un par un" },
+              {
+                label: "La demande",
+                a: "« Écris une fonction qui convertit une durée en minutes. »",
+                b: "Langage, signature, formats acceptés, formats refusés, comportement en cas d'erreur, conventions du projet",
+              },
+              {
+                label: "Ce que l'assistant doit deviner",
+                a: "Le langage, les formats, que faire de « 1h75 », d'une chaîne vide, d'un nombre négatif",
+                b: "Presque rien",
+              },
+              {
+                label: "Ce que tu peux vérifier",
+                a: "Seulement que « ça a l'air de marcher »",
+                b: "Chaque exemple, un par un",
+              },
             ],
           },
           {
             type: "anatomy",
             title: "Le prompt complet",
             segments: [
-              { text: "Projet Python 3.12, sans dépendance externe. Module `durees.py`. ", label: "contexte technique", detail: "Version du langage et contrainte sur les dépendances : sans elle, l'assistant peut proposer une bibliothèque que tu ne veux pas, ou qui n'existe pas." },
-              { text: "Conventions : annotations de type, noms en français, erreurs signalées par `ValueError`. ", label: "conventions", detail: "Ce qui distingue du code correct de du code qui s'intègre à ton projet." },
-              { text: "Écris `duree_en_minutes(texte: str) -> int`. ", label: "signature", detail: "Nom, paramètres, type de retour : la surface exacte attendue." },
-              { text: "Valides : « 1h30 » donne 90, « 2h » donne 120, « 45min » donne 45, « 90min » donne 90. Espaces autour et majuscules tolérés. ", label: "comportement attendu", detail: "Des exemples concrets entrée et sortie valent mieux qu'une description." },
-              { text: "Invalides, à refuser par `ValueError` : chaîne vide, « abc », « -5min », « 1h75 » (après des heures, les minutes vont de 0 à 59), « 1h30min ». ", label: "cas limites", detail: "C'est ici que se joue la qualité. Les cas limites que tu n'écris pas seront tranchés au hasard." },
-              { text: "Donne d'abord les tests pytest, puis la fonction. N'ajoute rien d'autre.", label: "format et ordre", detail: "Demander les tests en premier oblige à fixer le comportement avant d'écrire le code." },
+              {
+                text: "Projet Python 3.12, sans dépendance externe. Module `durees.py`. ",
+                label: "contexte technique",
+                detail: "Version du langage et contrainte sur les dépendances : sans elle, l'assistant peut proposer une bibliothèque que tu ne veux pas, ou qui n'existe pas.",
+              },
+              {
+                text: "Conventions : annotations de type, noms en français, erreurs signalées par `ValueError`. ",
+                label: "conventions",
+                detail: "Ce qui distingue du code correct de du code qui s'intègre à ton projet.",
+              },
+              {
+                text: "Écris `duree_en_minutes(texte: str) -> int`. ",
+                label: "signature",
+                detail: "Nom, paramètres, type de retour : la surface exacte attendue.",
+              },
+              {
+                text: "Valides : « 1h30 » donne 90, « 2h » donne 120, « 45min » donne 45, « 90min » donne 90. Espaces autour et majuscules tolérés. ",
+                label: "comportement attendu",
+                detail: "Des exemples concrets entrée et sortie valent mieux qu'une description.",
+              },
+              {
+                text: "Invalides, à refuser par `ValueError` : chaîne vide, « abc », « -5min », « 1h75 » (après des heures, les minutes vont de 0 à 59), « 1h30min ». ",
+                label: "cas limites",
+                detail: "C'est ici que se joue la qualité. Les cas limites que tu n'écris pas seront tranchés au hasard.",
+              },
+              {
+                text: "Donne d'abord les tests pytest, puis la fonction. N'ajoute rien d'autre.",
+                label: "format et ordre",
+                detail: "Demander les tests en premier oblige à fixer le comportement avant d'écrire le code.",
+              },
             ],
             caption: "Touche chaque partie. Écrire cette spécification t'a obligé à décider toi-même ce que vaut « 1h75 » : c'est la partie du travail qui ne se délègue pas.",
           },
+        ],
+      },
+      {
+        id: "tests-dabord",
+        title: "Les tests d'abord",
+        blocks: [
           {
             type: "code",
             lang: "python",
-            code: `import pytest
-
-from durees import duree_en_minutes
-
-
-@pytest.mark.parametrize("texte, attendu", [
-    ("1h30", 90),
-    ("2h", 120),
-    ("45min", 45),
-    ("90min", 90),
-    (" 1H30 ", 90),
-])
-def test_durees_valides(texte, attendu):
-    assert duree_en_minutes(texte) == attendu
-
-
-@pytest.mark.parametrize("texte", ["", "abc", "-5min", "1h75", "1h30min"])
-def test_durees_invalides(texte):
-    with pytest.raises(ValueError):
-        duree_en_minutes(texte)`,
+            code: "import pytest\n\nfrom durees import duree_en_minutes\n\n\n@pytest.mark.parametrize(\"texte, attendu\", [\n    (\"1h30\", 90),\n    (\"2h\", 120),\n    (\"45min\", 45),\n    (\"90min\", 90),\n    (\" 1H30 \", 90),\n])\ndef test_durees_valides(texte, attendu):\n    assert duree_en_minutes(texte) == attendu\n\n\n@pytest.mark.parametrize(\"texte\", [\"\", \"abc\", \"-5min\", \"1h75\", \"1h30min\"])\ndef test_durees_invalides(texte):\n    with pytest.raises(ValueError):\n        duree_en_minutes(texte)",
             caption: "La spécification, traduite en tests. Relis-les ligne par ligne : ce sont eux qui diront si le code est juste.",
           },
           {
@@ -125,7 +175,10 @@ def test_durees_invalides(texte):
               options: [
                 { id: "a", text: "Des exemples d'adresses à accepter et à refuser" },
                 { id: "b", text: "Ce que la fonction renvoie ou lève en cas d'adresse invalide" },
-                { id: "c", text: "Le contexte : où elle sera utilisée, avec quelles conventions et dépendances" },
+                {
+                  id: "c",
+                  text: "Le contexte : où elle sera utilisée, avec quelles conventions et dépendances",
+                },
                 { id: "d", text: "Le langage", feedback: "Il est donné : JavaScript." },
               ],
               answer: ["a", "b", "c"],
@@ -135,8 +188,8 @@ def test_durees_invalides(texte):
         ],
       },
       {
-        id: "petits-pas",
-        title: "Petits pas : une modification, un diff",
+        id: "le-test-echoue",
+        title: "Le test qui échoue",
         blocks: [
           {
             type: "text",
@@ -145,17 +198,7 @@ def test_durees_invalides(texte):
           {
             type: "code",
             lang: "python",
-            code: `import re
-
-
-def duree_en_minutes(texte: str) -> int:
-    """Convertit '1h30', '2h' ou '45min' en nombre de minutes."""
-    m = re.fullmatch(r"(?:(\\d+)h(\\d{1,2})?|(\\d+)min)", texte.strip().lower())
-    if m is None:
-        raise ValueError(f"Durée illisible : {texte!r}")
-    if m.group(3) is not None:
-        return int(m.group(3))
-    return int(m.group(1)) * 60 + int(m.group(2) or 0)`,
+            code: "import re\n\n\ndef duree_en_minutes(texte: str) -> int:\n    \"\"\"Convertit '1h30', '2h' ou '45min' en nombre de minutes.\"\"\"\n    m = re.fullmatch(r\"(?:(\\d+)h(\\d{1,2})?|(\\d+)min)\", texte.strip().lower())\n    if m is None:\n        raise ValueError(f\"Durée illisible : {texte!r}\")\n    if m.group(3) is not None:\n        return int(m.group(3))\n    return int(m.group(1)) * 60 + int(m.group(2) or 0)",
             caption: "Première version générée. Neuf tests passent sur dix.",
           },
           {
@@ -163,26 +206,38 @@ def duree_en_minutes(texte: str) -> int:
             title: "Le test qui échoue",
             body: "`duree_en_minutes(\"1h75\")` renvoie 135 au lieu de lever une erreur. Le code est plausible : accepter deux chiffres après le « h » semble raisonnable. Il est pourtant faux au regard de ta spécification, et seul le test que tu avais prévu le révèle. Sans lui, « 1h75 » serait parti en production.",
           },
+        ],
+      },
+      {
+        id: "petits-pas",
+        title: "Une modification, un diff",
+        blocks: [
           {
             type: "steps",
             title: "La discipline des petits pas",
             items: [
-              { title: "Une modification à la fois", body: "Demande la correction de ce cas précis, pas « améliore la fonction ». Un changement, une raison." },
-              { title: "Lis le diff", body: "Regarde ce qui a été retiré et ajouté, ligne par ligne. Si l'assistant a touché autre chose que ce que tu demandais, tu dois savoir pourquoi." },
-              { title: "Relance tous les tests", body: "Pas seulement celui qui échouait : une correction peut casser un cas qui marchait." },
-              { title: "Enregistre l'état qui marche", body: "Un commit par étape validée. Si la suite dérape, tu reviens en arrière en une commande." },
+              {
+                title: "Une modification à la fois",
+                body: "Demande la correction de ce cas précis, pas « améliore la fonction ». Un changement, une raison.",
+              },
+              {
+                title: "Lis le diff",
+                body: "Regarde ce qui a été retiré et ajouté, ligne par ligne. Si l'assistant a touché autre chose que ce que tu demandais, tu dois savoir pourquoi.",
+              },
+              {
+                title: "Relance tous les tests",
+                body: "Pas seulement celui qui échouait : une correction peut casser un cas qui marchait.",
+              },
+              {
+                title: "Enregistre l'état qui marche",
+                body: "Un commit par étape validée. Si la suite dérape, tu reviens en arrière en une commande.",
+              },
             ],
           },
           {
             type: "code",
             lang: "diff",
-            code: `     if m.group(3) is not None:
-         return int(m.group(3))
--    return int(m.group(1)) * 60 + int(m.group(2) or 0)
-+    minutes = int(m.group(2) or 0)
-+    if minutes >= 60:
-+        raise ValueError(f"Minutes invalides dans {texte!r}")
-+    return int(m.group(1)) * 60 + minutes`,
+            code: "     if m.group(3) is not None:\n         return int(m.group(3))\n-    return int(m.group(1)) * 60 + int(m.group(2) or 0)\n+    minutes = int(m.group(2) or 0)\n+    if minutes >= 60:\n+        raise ValueError(f\"Minutes invalides dans {texte!r}\")\n+    return int(m.group(1)) * 60 + minutes",
             caption: "Le diff de la correction : quatre lignes, un seul sujet. Il se lit en vingt secondes, et les dix tests passent.",
           },
           {
@@ -223,17 +278,35 @@ def duree_en_minutes(texte: str) -> int:
             type: "table",
             headers: ["Tu dois comprendre", "Pourquoi", "Comment t'en assurer"],
             rows: [
-              ["Ce que le code doit faire", "C'est toi qui connais le besoin ; l'assistant ne voit que ta demande", "Tu sais écrire les exemples entrée et sortie sans aide"],
-              ["Ce que fait chaque ligne retenue", "Tu devras la modifier et la déboguer plus tard, peut-être sans assistant", "Tu peux l'expliquer à voix haute, ligne par ligne"],
-              ["Ce que le code touche", "Fichiers, réseau, base de données, argent : c'est là que sont les dégâts possibles", "Tu sais lister les effets de bord de la fonction"],
+              [
+                "Ce que le code doit faire",
+                "C'est toi qui connais le besoin ; l'assistant ne voit que ta demande",
+                "Tu sais écrire les exemples entrée et sortie sans aide",
+              ],
+              [
+                "Ce que fait chaque ligne retenue",
+                "Tu devras la modifier et la déboguer plus tard, peut-être sans assistant",
+                "Tu peux l'expliquer à voix haute, ligne par ligne",
+              ],
+              [
+                "Ce que le code touche",
+                "Fichiers, réseau, base de données, argent : c'est là que sont les dégâts possibles",
+                "Tu sais lister les effets de bord de la fonction",
+              ],
             ],
           },
           {
             type: "dialogue",
             label: "Se faire expliquer plutôt que valider à l'aveugle",
             turns: [
-              { who: "user", text: "Explique-moi l'expression régulière de la fonction, morceau par morceau. Puis donne-moi deux entrées qu'elle accepte et auxquelles je n'ai peut-être pas pensé." },
-              { who: "ai", text: "Elle décrit deux formes possibles. La première : un ou plusieurs chiffres, la lettre h, puis éventuellement un ou deux chiffres (les minutes). La seconde : un ou plusieurs chiffres suivis de « min ». `fullmatch` exige que tout le texte corresponde. Deux entrées acceptées auxquelles penser : « 0h » qui donne 0, et « 1h5 » qui donne 65 minutes et non 1 h 50." },
+              {
+                who: "user",
+                text: "Explique-moi l'expression régulière de la fonction, morceau par morceau. Puis donne-moi deux entrées qu'elle accepte et auxquelles je n'ai peut-être pas pensé.",
+              },
+              {
+                who: "ai",
+                text: "Elle décrit deux formes possibles. La première : un ou plusieurs chiffres, la lettre h, puis éventuellement un ou deux chiffres (les minutes). La seconde : un ou plusieurs chiffres suivis de « min ». `fullmatch` exige que tout le texte corresponde. Deux entrées acceptées auxquelles penser : « 0h » qui donne 0, et « 1h5 » qui donne 65 minutes et non 1 h 50.",
+              },
             ],
             note: "L'explication fait apparaître deux décisions que tu n'avais pas prises : une durée nulle est-elle valide ? « 1h5 » doit-il être accepté ? À toi de trancher, puis d'ajouter les tests correspondants.",
           },
@@ -245,17 +318,37 @@ def duree_en_minutes(texte: str) -> int:
       },
       {
         id: "risques",
-        title: "Les risques propres au code généré",
+        title: "Les risques du code généré",
         blocks: [
           {
             type: "table",
             headers: ["Risque", "À quoi ça ressemble", "Parade"],
             rows: [
-              ["Code plausible mais faux", "Il s'exécute, passe les cas évidents et se trompe sur un cas limite (« 1h75 »)", "Tests écrits à partir de la spécification, cas limites compris"],
-              ["Fonction ou option inventée", "Un appel à une méthode qui n'existe pas dans la version que tu utilises", "Exécuter le code ; consulter la documentation officielle de la bibliothèque"],
-              ["Dépendance inventée", "Une commande d'installation pour un paquet au nom crédible, qui n'existe pas", "Vérifier le paquet sur le registre officiel avant toute installation"],
-              ["Faille de sécurité", "Requête construite par concaténation, entrée non validée, droits trop larges", "Relecture ciblée sécurité ; outils d'analyse ; ne jamais supposer que « généré » veut dire « sûr »"],
-              ["Secret dans le prompt", "Tu colles un fichier de configuration avec une clé d'API ou un mot de passe", "Retirer ou remplacer les secrets avant de coller ; les garder hors du code"],
+              [
+                "Code plausible mais faux",
+                "Il s'exécute, passe les cas évidents et se trompe sur un cas limite (« 1h75 »)",
+                "Tests écrits à partir de la spécification, cas limites compris",
+              ],
+              [
+                "Fonction ou option inventée",
+                "Un appel à une méthode qui n'existe pas dans la version que tu utilises",
+                "Exécuter le code ; consulter la documentation officielle de la bibliothèque",
+              ],
+              [
+                "Dépendance inventée",
+                "Une commande d'installation pour un paquet au nom crédible, qui n'existe pas",
+                "Vérifier le paquet sur le registre officiel avant toute installation",
+              ],
+              [
+                "Faille de sécurité",
+                "Requête construite par concaténation, entrée non validée, droits trop larges",
+                "Relecture ciblée sécurité ; outils d'analyse ; ne jamais supposer que « généré » veut dire « sûr »",
+              ],
+              [
+                "Secret dans le prompt",
+                "Tu colles un fichier de configuration avec une clé d'API ou un mot de passe",
+                "Retirer ou remplacer les secrets avant de coller ; les garder hors du code",
+              ],
             ],
           },
           {
@@ -267,12 +360,30 @@ def duree_en_minutes(texte: str) -> int:
             type: "steps",
             title: "Avant d'installer une dépendance suggérée",
             items: [
-              { title: "Demande-toi si tu en as besoin", body: "Pour convertir « 1h30 » en minutes, la bibliothèque standard suffit. Chaque dépendance ajoutée est du code d'inconnus que tu exécutes." },
-              { title: "Cherche le paquet toi-même", body: "Sur le registre officiel de ton langage, en tapant le nom : existe-t-il, depuis quand, qui le maintient, renvoie-t-il vers un dépôt de code cohérent ?" },
-              { title: "Recoupe avec une source indépendante", body: "La documentation officielle du projet que tu veux utiliser donne le nom exact du paquet à installer. Un nom proche n'est pas le bon nom." },
-              { title: "Ne laisse pas un agent installer sans accord", body: "L'installation de paquets fait partie des commandes qui méritent une confirmation humaine." },
+              {
+                title: "Demande-toi si tu en as besoin",
+                body: "Pour convertir « 1h30 » en minutes, la bibliothèque standard suffit. Chaque dépendance ajoutée est du code d'inconnus que tu exécutes.",
+              },
+              {
+                title: "Cherche le paquet toi-même",
+                body: "Sur le registre officiel de ton langage, en tapant le nom : existe-t-il, depuis quand, qui le maintient, renvoie-t-il vers un dépôt de code cohérent ?",
+              },
+              {
+                title: "Recoupe avec une source indépendante",
+                body: "La documentation officielle du projet que tu veux utiliser donne le nom exact du paquet à installer. Un nom proche n'est pas le bon nom.",
+              },
+              {
+                title: "Ne laisse pas un agent installer sans accord",
+                body: "L'installation de paquets fait partie des commandes qui méritent une confirmation humaine.",
+              },
             ],
           },
+        ],
+      },
+      {
+        id: "secrets",
+        title: "Les secrets restent chez toi",
+        blocks: [
           {
             type: "mistake",
             title: "Coller le fichier de configuration entier pour « donner le contexte »",
@@ -327,8 +438,16 @@ def duree_en_minutes(texte: str) -> int:
         prompt: "Quel élément d'une demande de code réduit le plus le risque d'obtenir du « plausible mais faux » ?",
         options: [
           { id: "a", text: "Des exemples entrée et sortie, cas limites compris" },
-          { id: "b", text: "La formule « écris un code propre et sans bug »", feedback: "C'est une intention, pas un critère : elle ne dit pas ce que « juste » signifie ici." },
-          { id: "c", text: "Une demande très courte, pour ne pas embrouiller l'assistant", feedback: "Moins tu précises, plus il devine." },
+          {
+            id: "b",
+            text: "La formule « écris un code propre et sans bug »",
+            feedback: "C'est une intention, pas un critère : elle ne dit pas ce que « juste » signifie ici.",
+          },
+          {
+            id: "c",
+            text: "Une demande très courte, pour ne pas embrouiller l'assistant",
+            feedback: "Moins tu précises, plus il devine.",
+          },
         ],
         answer: "a",
         explanation: "Les exemples fixent le comportement attendu et deviennent des tests : ils transforment une impression en vérification.",
@@ -342,10 +461,17 @@ def duree_en_minutes(texte: str) -> int:
         aiResponse: "Installe d'abord le paquet avec `pip install excel-fast-reader-pro`, puis utilise ce code : `import excel_fast_reader as efr` … `requests.post(API_URL, headers={\"Authorization\": \"sk-prod-8f3a91c2e7…\"}, data=efr.load(\"fichier.xlsx\"))`. Ce code est prêt pour la production.",
         options: [
           { id: "a", text: "L'utilisateur a collé une clé d'API de production dans son message" },
-          { id: "b", text: "Le paquet suggéré doit être vérifié sur le registre officiel avant toute installation" },
+          {
+            id: "b",
+            text: "Le paquet suggéré doit être vérifié sur le registre officiel avant toute installation",
+          },
           { id: "c", text: "La clé est écrite en dur dans le code proposé" },
           { id: "d", text: "« Prêt pour la production » est affirmé sans aucun test ni gestion d'erreur" },
-          { id: "e", text: "Python ne sait pas lire les fichiers Excel", feedback: "Des bibliothèques réelles le font très bien. Le problème est de vérifier que celle proposée existe." },
+          {
+            id: "e",
+            text: "Python ne sait pas lire les fichiers Excel",
+            feedback: "Des bibliothèques réelles le font très bien. Le problème est de vérifier que celle proposée existe.",
+          },
         ],
         answer: ["a", "b", "c", "d"],
         explanation: "Quatre risques du cours réunis : secret dans le prompt, dépendance peut-être inventée, secret dans le code, assurance sans vérification.",
@@ -379,8 +505,16 @@ def duree_en_minutes(texte: str) -> int:
         prompt: "Un agent de code te présente un diff de 600 lignes réparties sur quinze fichiers pour « ajouter l'export CSV et nettoyer un peu ». Que fais-tu ?",
         options: [
           { id: "a", text: "Tu refuses et tu redemandes l'export seul, sans le « nettoyage »" },
-          { id: "b", text: "Tu acceptes si les tests passent", feedback: "Les tests ne couvrent pas tout, et tu intégrerais 600 lignes que personne n'a lues." },
-          { id: "c", text: "Tu parcours rapidement les noms de fichiers puis tu valides", feedback: "Survoler n'est pas relire : c'est ainsi que les défauts passent." },
+          {
+            id: "b",
+            text: "Tu acceptes si les tests passent",
+            feedback: "Les tests ne couvrent pas tout, et tu intégrerais 600 lignes que personne n'a lues.",
+          },
+          {
+            id: "c",
+            text: "Tu parcours rapidement les noms de fichiers puis tu valides",
+            feedback: "Survoler n'est pas relire : c'est ainsi que les défauts passent.",
+          },
         ],
         answer: "a",
         explanation: "Un diff trop gros pour être lu signale une demande trop grosse. Un changement, une raison, un diff lisible.",
@@ -392,9 +526,47 @@ def duree_en_minutes(texte: str) -> int:
         prompt: "Un camarade te dit : « Je ne comprends pas ce que fait cette fonction générée, mais elle marche, donc je la garde. » Réponds-lui en deux phrases.",
         placeholder: "Le problème, c'est que…",
         criteria: [
-          { id: "responsable", label: "Il devra la maintenir, la déboguer ou en répondre", anyOf: ["maint", "débog", "debog", "debug", "modifi", "corrig", "responsab", "répond", "repond", "plus tard", "évoluer", "evoluer"] },
-          { id: "marche", label: "« Elle marche » ne prouve pas qu'elle est juste partout", anyOf: ["cas limite", "cas particulier", "plausible", "pas testé", "pas teste", "test", "faille", "sécurité", "securite", "bug", "faux", "erreur"] },
-          { id: "expliquer", label: "Se la faire expliquer avant de l'intégrer", anyOf: ["expliqu", "comprend", "ligne par ligne", "relire", "relis"] },
+          {
+            id: "responsable",
+            label: "Il devra la maintenir, la déboguer ou en répondre",
+            anyOf: [
+              "maint",
+              "débog",
+              "debog",
+              "debug",
+              "modifi",
+              "corrig",
+              "responsab",
+              "répond",
+              "repond",
+              "plus tard",
+              "évoluer",
+              "evoluer",
+            ],
+          },
+          {
+            id: "marche",
+            label: "« Elle marche » ne prouve pas qu'elle est juste partout",
+            anyOf: [
+              "cas limite",
+              "cas particulier",
+              "plausible",
+              "pas testé",
+              "pas teste",
+              "test",
+              "faille",
+              "sécurité",
+              "securite",
+              "bug",
+              "faux",
+              "erreur",
+            ],
+          },
+          {
+            id: "expliquer",
+            label: "Se la faire expliquer avant de l'intégrer",
+            anyOf: ["expliqu", "comprend", "ligne par ligne", "relire", "relis"],
+          },
         ],
         minCriteria: 2,
         modelAnswer: "Le problème, c'est qu'elle marche sur les cas que tu as essayés, pas forcément sur les cas limites, et que tu ne pourras ni la corriger ni la faire évoluer si tu ne la comprends pas. Demande à l'assistant de te l'expliquer ligne par ligne et écris des tests avant de la garder.",
@@ -411,7 +583,11 @@ def duree_en_minutes(texte: str) -> int:
           { id: "a", text: "Une date de naissance dans le futur" },
           { id: "b", text: "Une personne née un 29 février" },
           { id: "c", text: "Le jour même de l'anniversaire" },
-          { id: "d", text: "La couleur du thème de l'éditeur", feedback: "Sans rapport avec le comportement de la fonction." },
+          {
+            id: "d",
+            text: "La couleur du thème de l'éditeur",
+            feedback: "Sans rapport avec le comportement de la fonction.",
+          },
         ],
         answer: ["a", "b", "c"],
         explanation: "Chaque cas limite non spécifié sera tranché au hasard par l'assistant. Les nommer, c'est décider.",
@@ -422,9 +598,20 @@ def duree_en_minutes(texte: str) -> int:
         concept: "slopsquatting",
         prompt: "L'assistant te suggère d'installer un paquet dont tu n'as jamais entendu parler. Quel est le bon premier geste ?",
         options: [
-          { id: "a", text: "Chercher ce paquet sur le registre officiel et dans la documentation du projet concerné" },
-          { id: "b", text: "L'installer pour voir s'il existe", feedback: "S'il existe et qu'il est malveillant, l'installation suffit à exécuter son code." },
-          { id: "c", text: "Redemander à l'assistant s'il est sûr de lui", feedback: "Il confirmera probablement avec la même assurance. Il faut une source indépendante." },
+          {
+            id: "a",
+            text: "Chercher ce paquet sur le registre officiel et dans la documentation du projet concerné",
+          },
+          {
+            id: "b",
+            text: "L'installer pour voir s'il existe",
+            feedback: "S'il existe et qu'il est malveillant, l'installation suffit à exécuter son code.",
+          },
+          {
+            id: "c",
+            text: "Redemander à l'assistant s'il est sûr de lui",
+            feedback: "Il confirmera probablement avec la même assurance. Il faut une source indépendante.",
+          },
         ],
         answer: "a",
         explanation: "On vérifie l'existence, l'ancienneté et l'origine d'un paquet avant de l'exécuter chez soi, jamais après.",
@@ -482,31 +669,60 @@ def duree_en_minutes(texte: str) -> int:
       "Verrouiller un correctif par un test de non-régression",
       "Relire du code généré : correction, cas limites, sécurité, lisibilité, dépendances, tests",
     ],
-    prerequisites: ["coder-avec-ia"],
     sections: [
       {
         id: "rapporter",
-        title: "Rapporter un bug à l'IA",
+        title: "Un bug mal rapporté",
         blocks: [
           {
             type: "text",
-            body: "Ton application liste les clients par pages de vingt. Un utilisateur te signale que le client « Abadie », le premier de la base, n'apparaît nulle part. Tu ouvres le chat et tu tapes : « ma pagination ne marche pas, corrige ». L'assistant va répondre, et avec assurance. Mais sur quoi ? Il ne voit ni ton code, ni ton erreur, ni ce que « marcher » veut dire pour toi. Il va produire le correctif le plus probable pour un bug de pagination en général.",
+            body: "Ton application liste les clients par pages de vingt. Le client « Abadie », le premier de la base, n'apparaît nulle part. Tu tapes : « ma pagination ne marche pas, corrige ». L'assistant répondra avec assurance. Mais il ne voit ni ton code, ni ton erreur, ni ce que « marcher » veut dire pour toi : il produira le correctif le plus probable pour un bug de pagination **en général**.",
           },
           {
             type: "definition",
             term: "Exemple minimal reproductible",
             body: "Le plus petit morceau de code et de données qui fait apparaître le bug à coup sûr. On l'obtient en retirant tout ce qui n'est pas nécessaire pour reproduire le problème. Souvent, le construire suffit à trouver la cause.",
           },
+        ],
+      },
+      {
+        id: "rapport",
+        title: "Un rapport exploitable",
+        blocks: [
           {
             type: "anatomy",
             title: "Un rapport de bug exploitable",
             segments: [
-              { text: "Python 3.12, module standard sqlite3. ", label: "environnement", detail: "Langage, version, bibliothèques. Un même code peut se comporter différemment d'une version à l'autre." },
-              { text: "Fonction ci-dessous, appelée avec chercher_clients(db, \"\", page=1, par_page=2) sur une table de 5 clients d'id 1 à 5. ", label: "code minimal et appel", detail: "Le code concerné et l'appel exact, sur des données réduites que l'assistant peut se représenter entièrement." },
-              { text: "Attendu : les clients d'id 1 et 2. ", label: "attendu", detail: "Sans attendu, l'assistant doit deviner ce que « correct » signifie." },
-              { text: "Obtenu : les clients d'id 3 et 4. Aucune erreur affichée. ", label: "obtenu", detail: "Le résultat réel, copié tel quel. S'il y avait un message d'erreur, il figurerait ici en entier, trace comprise." },
-              { text: "Déjà essayé : page=0 renvoie bien 1 et 2, mais l'interface numérote les pages à partir de 1. ", label: "déjà essayé", detail: "Évite les suggestions que tu as déjà écartées, et apporte ici un indice décisif sur la cause." },
-              { text: "Ne corrige pas encore : donne tes hypothèses classées de la plus probable à la moins probable, avec pour chacune comment la vérifier.", label: "consigne", detail: "Tu demandes un diagnostic avant un traitement. C'est le cœur de la méthode." },
+              {
+                text: "Python 3.12, module standard sqlite3. ",
+                label: "environnement",
+                detail: "Langage, version, bibliothèques. Un même code peut se comporter différemment d'une version à l'autre.",
+              },
+              {
+                text: "Fonction ci-dessous, appelée avec chercher_clients(db, \"\", page=1, par_page=2) sur une table de 5 clients d'id 1 à 5. ",
+                label: "code minimal et appel",
+                detail: "Le code concerné et l'appel exact, sur des données réduites que l'assistant peut se représenter entièrement.",
+              },
+              {
+                text: "Attendu : les clients d'id 1 et 2. ",
+                label: "attendu",
+                detail: "Sans attendu, l'assistant doit deviner ce que « correct » signifie.",
+              },
+              {
+                text: "Obtenu : les clients d'id 3 et 4. Aucune erreur affichée. ",
+                label: "obtenu",
+                detail: "Le résultat réel, copié tel quel. S'il y avait un message d'erreur, il figurerait ici en entier, trace comprise.",
+              },
+              {
+                text: "Déjà essayé : page=0 renvoie bien 1 et 2, mais l'interface numérote les pages à partir de 1. ",
+                label: "déjà essayé",
+                detail: "Évite les suggestions que tu as déjà écartées, et apporte ici un indice décisif sur la cause.",
+              },
+              {
+                text: "Ne corrige pas encore : donne tes hypothèses classées de la plus probable à la moins probable, avec pour chacune comment la vérifier.",
+                label: "consigne",
+                detail: "Tu demandes un diagnostic avant un traitement. C'est le cœur de la méthode.",
+              },
             ],
             caption: "Touche chaque partie. Ce rapport prend deux minutes à écrire et en économise vingt.",
           },
@@ -515,9 +731,21 @@ def duree_en_minutes(texte: str) -> int:
             title: "Ce que chaque rapport permet",
             columns: ["« Ça ne marche pas, corrige »", "Rapport complet"],
             rows: [
-              { label: "Base de la réponse", a: "Les bugs les plus fréquents en général", b: "Ton code, tes données, ton écart précis" },
-              { label: "Risque", a: "Un correctif qui change autre chose et masque le symptôme", b: "Un diagnostic que tu peux vérifier" },
-              { label: "Message d'erreur", a: "Résumé de mémoire (« une erreur de type »)", b: "Copié en entier : type, message, fichier, ligne, trace" },
+              {
+                label: "Base de la réponse",
+                a: "Les bugs les plus fréquents en général",
+                b: "Ton code, tes données, ton écart précis",
+              },
+              {
+                label: "Risque",
+                a: "Un correctif qui change autre chose et masque le symptôme",
+                b: "Un diagnostic que tu peux vérifier",
+              },
+              {
+                label: "Message d'erreur",
+                a: "Résumé de mémoire (« une erreur de type »)",
+                b: "Copié en entier : type, message, fichier, ligne, trace",
+              },
             ],
           },
           {
@@ -530,18 +758,33 @@ def duree_en_minutes(texte: str) -> int:
       },
       {
         id: "boucle",
-        title: "Hypothèses d'abord : la boucle de débogage",
+        title: "Hypothèses d'abord",
         blocks: [
           {
             type: "flow",
             title: "La boucle",
             loop: true,
             nodes: [
-              { label: "Reproduire", detail: "Obtenir le bug à volonté, sur le plus petit cas possible. Un bug que tu ne sais pas reproduire, tu ne sauras pas non plus prouver qu'il est corrigé." },
-              { label: "Hypothèse", detail: "Formuler une cause précise et vérifiable : « le décalage est calculé avec page au lieu de page - 1 ». Pas « il y a un souci dans la pagination »." },
-              { label: "Test", detail: "Une expérience qui confirme ou réfute l'hypothèse : afficher la valeur du décalage pour page=1, sans encore rien modifier." },
-              { label: "Correctif", detail: "La plus petite modification qui traite la cause confirmée. Tu dois pouvoir expliquer pourquoi elle marche." },
-              { label: "Non-régression", detail: "Un test automatique qui échouait avant le correctif et passe après. Il reste dans le projet : le bug ne reviendra pas en silence." },
+              {
+                label: "Reproduire",
+                detail: "Obtenir le bug à volonté, sur le plus petit cas possible. Un bug que tu ne sais pas reproduire, tu ne sauras pas non plus prouver qu'il est corrigé.",
+              },
+              {
+                label: "Hypothèse",
+                detail: "Formuler une cause précise et vérifiable : « le décalage est calculé avec page au lieu de page - 1 ». Pas « il y a un souci dans la pagination ».",
+              },
+              {
+                label: "Test",
+                detail: "Une expérience qui confirme ou réfute l'hypothèse : afficher la valeur du décalage pour page=1, sans encore rien modifier.",
+              },
+              {
+                label: "Correctif",
+                detail: "La plus petite modification qui traite la cause confirmée. Tu dois pouvoir expliquer pourquoi elle marche.",
+              },
+              {
+                label: "Non-régression",
+                detail: "Un test automatique qui échouait avant le correctif et passe après. Il reste dans le projet : le bug ne reviendra pas en silence.",
+              },
             ],
             caption: "Si le test réfute l'hypothèse, on revient à l'étape « hypothèse » avec une information de plus, sans avoir abîmé le code.",
           },
@@ -549,33 +792,27 @@ def duree_en_minutes(texte: str) -> int:
             type: "dialogue",
             label: "La réponse au rapport de bug",
             turns: [
-              { who: "ai", text: "Hypothèses, de la plus probable à la moins probable. 1) Le décalage est calculé comme page × par_page : pour page=1 il vaut 2, donc les deux premières lignes sont sautées. Ton essai avec page=0 va dans ce sens. Vérification : affiche la valeur de `debut` pour page=1. 2) La requête n'a pas de ORDER BY : l'ordre des lignes n'est pas garanti. Vérification : ajoute ORDER BY id et compare. 3) Les deux premiers clients sont exclus par le filtre sur le nom. Vérification : exécute la requête sans LIMIT." },
-              { who: "user", text: "`debut` vaut 2 pour page=1. Hypothèse 1 confirmée. Propose le correctif minimal, et un test qui échoue avec le code actuel." },
+              {
+                who: "ai",
+                text: "Hypothèses, de la plus probable à la moins probable. 1) Le décalage est calculé comme page × par_page : pour page=1 il vaut 2, donc les deux premières lignes sont sautées. Ton essai avec page=0 va dans ce sens. Vérification : affiche la valeur de `debut` pour page=1. 2) La requête n'a pas de ORDER BY : l'ordre des lignes n'est pas garanti. Vérification : ajoute ORDER BY id et compare. 3) Les deux premiers clients sont exclus par le filtre sur le nom. Vérification : exécute la requête sans LIMIT.",
+              },
+              {
+                who: "user",
+                text: "`debut` vaut 2 pour page=1. Hypothèse 1 confirmée. Propose le correctif minimal, et un test qui échoue avec le code actuel.",
+              },
             ],
             note: "L'assistant propose, tu vérifies, puis tu autorises le correctif. Au passage, l'hypothèse 2 a révélé un vrai défaut secondaire (l'absence de tri), à traiter séparément.",
           },
+        ],
+      },
+      {
+        id: "reproduire",
+        title: "Le test qui reproduit",
+        blocks: [
           {
             type: "code",
             lang: "python",
-            code: `import sqlite3
-
-from clients import chercher_clients
-
-
-def test_page_1_commence_au_premier_client(tmp_path):
-    db = tmp_path / "test.db"
-    con = sqlite3.connect(db)
-    con.execute("CREATE TABLE clients (id INTEGER PRIMARY KEY, nom TEXT, email TEXT)")
-    con.executemany(
-        "INSERT INTO clients (nom, email) VALUES (?, ?)",
-        [(f"Martin {i}", f"m{i}@exemple.test") for i in range(1, 6)],
-    )
-    con.commit()
-    con.close()
-
-    resultats = chercher_clients(db, "Martin", page=1, par_page=2)
-
-    assert [ligne[0] for ligne in resultats] == [1, 2]`,
+            code: "import sqlite3\n\nfrom clients import chercher_clients\n\n\ndef test_page_1_commence_au_premier_client(tmp_path):\n    db = tmp_path / \"test.db\"\n    con = sqlite3.connect(db)\n    con.execute(\"CREATE TABLE clients (id INTEGER PRIMARY KEY, nom TEXT, email TEXT)\")\n    con.executemany(\n        \"INSERT INTO clients (nom, email) VALUES (?, ?)\",\n        [(f\"Martin {i}\", f\"m{i}@exemple.test\") for i in range(1, 6)],\n    )\n    con.commit()\n    con.close()\n\n    resultats = chercher_clients(db, \"Martin\", page=1, par_page=2)\n\n    assert [ligne[0] for ligne in resultats] == [1, 2]",
             caption: "Le test de non-régression (pytest). Lance-le avant le correctif : il doit échouer. S'il passe déjà, il ne teste pas le bug.",
           },
           {
@@ -616,15 +853,39 @@ def test_page_1_commence_au_premier_client(tmp_path):
             type: "table",
             headers: ["Point", "Questions à se poser"],
             rows: [
-              ["1. Correction", "Le code fait-il ce qui est demandé sur le cas nominal ? Les calculs d'indices, de bornes et de décalages sont-ils justes ?"],
-              ["2. Cas limites", "Entrée vide, nulle, négative, énorme, de mauvais type ? Première et dernière page ? Liste vide ? Caractères spéciaux ?"],
-              ["3. Sécurité", "Une entrée utilisateur est-elle insérée dans une requête, une commande, un chemin de fichier, du HTML ? Les entrées sont-elles validées ? Y a-t-il un secret dans le code ?"],
-              ["4. Lisibilité", "Pourrais-tu modifier ce code dans six mois ? Les ressources ouvertes (fichiers, connexions) sont-elles refermées ?"],
-              ["5. Dépendances", "Chaque import existe-t-il vraiment, dans une version que tu utilises ? Est-il nécessaire ?"],
-              ["6. Tests", "Existe-t-il des tests ? Couvrent-ils les cas limites, ou seulement le cas facile ?"],
+              [
+                "1. Correction",
+                "Le code fait-il ce qui est demandé sur le cas nominal ? Les calculs d'indices, de bornes et de décalages sont-ils justes ?",
+              ],
+              [
+                "2. Cas limites",
+                "Entrée vide, nulle, négative, énorme, de mauvais type ? Première et dernière page ? Liste vide ? Caractères spéciaux ?",
+              ],
+              [
+                "3. Sécurité",
+                "Une entrée utilisateur est-elle insérée dans une requête, une commande, un chemin de fichier, du HTML ? Les entrées sont-elles validées ? Y a-t-il un secret dans le code ?",
+              ],
+              [
+                "4. Lisibilité",
+                "Pourrais-tu modifier ce code dans six mois ? Les ressources ouvertes (fichiers, connexions) sont-elles refermées ?",
+              ],
+              [
+                "5. Dépendances",
+                "Chaque import existe-t-il vraiment, dans une version que tu utilises ? Est-il nécessaire ?",
+              ],
+              [
+                "6. Tests",
+                "Existe-t-il des tests ? Couvrent-ils les cas limites, ou seulement le cas facile ?",
+              ],
             ],
             caption: "Six points, dans cet ordre : inutile de discuter du style d'un code qui est faux.",
           },
+        ],
+      },
+      {
+        id: "injection",
+        title: "L'injection",
+        blocks: [
           {
             type: "definition",
             term: "Injection",
@@ -638,7 +899,7 @@ def test_page_1_commence_au_premier_client(tmp_path):
       },
       {
         id: "labo",
-        title: "Labo : relire un extrait pas à pas",
+        title: "Labo : à toi de relire",
         blocks: [
           {
             type: "text",
@@ -647,22 +908,7 @@ def test_page_1_commence_au_premier_client(tmp_path):
           {
             type: "code",
             lang: "python",
-            code: `import sqlite3
-
-API_KEY = "sk-live-4f9a27d1c08b"  # clé du service d'envoi d'e-mails
-
-
-def chercher_clients(db_path, nom, page=1, par_page=20):
-    """Renvoie une page de clients dont le nom contient le texte donné."""
-    con = sqlite3.connect(db_path)
-    cur = con.cursor()
-    debut = page * par_page
-    requete = (
-        f"SELECT id, nom, email FROM clients WHERE nom LIKE '%{nom}%' "
-        f"LIMIT {par_page} OFFSET {debut}"
-    )
-    cur.execute(requete)
-    return cur.fetchall()`,
+            code: "import sqlite3\n\nAPI_KEY = \"sk-live-4f9a27d1c08b\"  # clé du service d'envoi d'e-mails\n\n\ndef chercher_clients(db_path, nom, page=1, par_page=20):\n    \"\"\"Renvoie une page de clients dont le nom contient le texte donné.\"\"\"\n    con = sqlite3.connect(db_path)\n    cur = con.cursor()\n    debut = page * par_page\n    requete = (\n        f\"SELECT id, nom, email FROM clients WHERE nom LIKE '%{nom}%' \"\n        f\"LIMIT {par_page} OFFSET {debut}\"\n    )\n    cur.execute(requete)\n    return cur.fetchall()",
             caption: "Extrait à relire. La clé est fictive.",
           },
           {
@@ -677,56 +923,68 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
                 { id: "b", text: "Le décalage saute la première page quand page vaut 1" },
                 { id: "c", text: "Une clé d'API est écrite en dur dans le fichier" },
                 { id: "d", text: "page et par_page ne sont jamais validés" },
-                { id: "e", text: "sqlite3 est une dépendance inventée", feedback: "Non : sqlite3 fait partie de la bibliothèque standard de Python. Vérifier une dépendance, c'est aussi savoir reconnaître celles qui existent." },
+                {
+                  id: "e",
+                  text: "sqlite3 est une dépendance inventée",
+                  feedback: "Non : sqlite3 fait partie de la bibliothèque standard de Python. Vérifier une dépendance, c'est aussi savoir reconnaître celles qui existent.",
+                },
               ],
               answer: ["a", "b", "c", "d"],
               explanation: "Quatre défauts, de natures différentes : sécurité (injection, secret), correction (décalage) et cas limites (validation). Passons-les en revue.",
             },
           },
+        ],
+      },
+      {
+        id: "corrige",
+        title: "La relecture, point par point",
+        blocks: [
           {
             type: "steps",
             title: "La relecture, point par point",
             items: [
-              { title: "Correction : le décalage", body: "`debut = page * par_page` : pour la page 1, les vingt premiers clients sont sautés. Le calcul juste est `(page - 1) * par_page`. C'est le bug signalé par l'utilisateur." },
-              { title: "Cas limites : aucune validation", body: "`page=0` ou `page=-3` produit un décalage nul ou négatif ; `par_page=1000000` renvoie toute la table ; rien ne vérifie que ces valeurs sont des entiers." },
-              { title: "Sécurité : injection SQL", body: "`nom` est collé dans la requête par une f-string. Avec la valeur `' OR 1=1 --`, la requête devient `… WHERE nom LIKE '%' OR 1=1 --%' LIMIT …` : la condition est toujours vraie et tout ce qui suit `--` est un commentaire, limite de pagination comprise. Tous les clients sortent. `par_page` et `debut` sont insérés de la même façon." },
-              { title: "Sécurité : secret en dur", body: "`API_KEY` est dans le code source : elle sera copiée dans le dépôt, son historique, et tout prompt où tu colleras ce fichier. Elle n'a d'ailleurs aucun rapport avec cette fonction." },
-              { title: "Lisibilité et ressources", body: "La connexion n'est jamais fermée. Et sans `ORDER BY`, l'ordre des lignes n'est pas garanti : un même client peut apparaître sur deux pages ou sur aucune." },
-              { title: "Dépendances et tests", body: "Dépendances : uniquement la bibliothèque standard, rien à signaler. Tests : aucun. Le bug de la page 1 aurait été attrapé par un seul test de trois lignes." },
+              {
+                title: "Correction : le décalage",
+                body: "`debut = page * par_page` : pour la page 1, les vingt premiers clients sont sautés. Le calcul juste est `(page - 1) * par_page`. C'est le bug signalé par l'utilisateur.",
+              },
+              {
+                title: "Cas limites : aucune validation",
+                body: "`page=0` ou `page=-3` produit un décalage nul ou négatif ; `par_page=1000000` renvoie toute la table ; rien ne vérifie que ces valeurs sont des entiers.",
+              },
+              {
+                title: "Sécurité : injection SQL",
+                body: "`nom` est collé dans la requête par une f-string. Avec la valeur `' OR 1=1 --`, la requête devient `… WHERE nom LIKE '%' OR 1=1 --%' LIMIT …` : la condition est toujours vraie et tout ce qui suit `--` est un commentaire, limite de pagination comprise. Tous les clients sortent. `par_page` et `debut` sont insérés de la même façon.",
+              },
+              {
+                title: "Sécurité : secret en dur",
+                body: "`API_KEY` est dans le code source : elle sera copiée dans le dépôt, son historique, et tout prompt où tu colleras ce fichier. Elle n'a d'ailleurs aucun rapport avec cette fonction.",
+              },
+              {
+                title: "Lisibilité et ressources",
+                body: "La connexion n'est jamais fermée. Et sans `ORDER BY`, l'ordre des lignes n'est pas garanti : un même client peut apparaître sur deux pages ou sur aucune.",
+              },
+              {
+                title: "Dépendances et tests",
+                body: "Dépendances : uniquement la bibliothèque standard, rien à signaler. Tests : aucun. Le bug de la page 1 aurait été attrapé par un seul test de trois lignes.",
+              },
             ],
           },
           {
             type: "code",
             lang: "python",
-            code: `import sqlite3
-
-PAR_PAGE_MAX = 100
-
-
-def chercher_clients(db_path, nom, page=1, par_page=20):
-    """Renvoie une page de clients dont le nom contient le texte donné."""
-    if not isinstance(page, int) or page < 1:
-        raise ValueError("page doit être un entier supérieur ou égal à 1")
-    if not isinstance(par_page, int) or not 1 <= par_page <= PAR_PAGE_MAX:
-        raise ValueError(f"par_page doit être un entier entre 1 et {PAR_PAGE_MAX}")
-
-    debut = (page - 1) * par_page
-    con = sqlite3.connect(db_path)
-    try:
-        cur = con.execute(
-            "SELECT id, nom, email FROM clients "
-            "WHERE nom LIKE ? ORDER BY id LIMIT ? OFFSET ?",
-            (f"%{nom}%", par_page, debut),
-        )
-        return cur.fetchall()
-    finally:
-        con.close()`,
+            code: "import sqlite3\n\nPAR_PAGE_MAX = 100\n\n\ndef chercher_clients(db_path, nom, page=1, par_page=20):\n    \"\"\"Renvoie une page de clients dont le nom contient le texte donné.\"\"\"\n    if not isinstance(page, int) or page < 1:\n        raise ValueError(\"page doit être un entier supérieur ou égal à 1\")\n    if not isinstance(par_page, int) or not 1 <= par_page <= PAR_PAGE_MAX:\n        raise ValueError(f\"par_page doit être un entier entre 1 et {PAR_PAGE_MAX}\")\n\n    debut = (page - 1) * par_page\n    con = sqlite3.connect(db_path)\n    try:\n        cur = con.execute(\n            \"SELECT id, nom, email FROM clients \"\n            \"WHERE nom LIKE ? ORDER BY id LIMIT ? OFFSET ?\",\n            (f\"%{nom}%\", par_page, debut),\n        )\n        return cur.fetchall()\n    finally:\n        con.close()",
             caption: "Version corrigée. Les valeurs passent par des paramètres (les « ? ») : la base les traite comme des données, jamais comme du SQL. La clé d'API a quitté le code pour une variable d'environnement, et l'ancienne a été révoquée.",
           },
+        ],
+      },
+      {
+        id: "parametres",
+        title: "Pourquoi les paramètres protègent",
+        blocks: [
           {
             type: "text",
             title: "Pourquoi les paramètres règlent l'injection",
-            body: "Avec une requête paramétrée, le texte SQL et les valeurs voyagent séparément. `' OR 1=1 --` n'est plus qu'une chaîne de caractères qu'on cherche dans la colonne `nom` ; elle ne trouve simplement aucun client. La documentation de Python le dit sans détour : toujours utiliser des paramètres plutôt que les opérations sur les chaînes pour insérer des valeurs dans une requête. Valider les entrées reste utile (les bornes de `page`), mais ne remplace pas les paramètres. Détail qui subsiste : dans un `LIKE`, les caractères `%` et `_` tapés par l'utilisateur gardent leur rôle de jokers. Ce n'est pas une injection, mais c'est un comportement à décider.",
+            body: "Avec une requête paramétrée, le texte SQL et les valeurs voyagent **séparément**. `' OR 1=1 --` devient une simple chaîne cherchée dans la colonne `nom` : elle ne trouve aucun client. La documentation de Python est nette : toujours des paramètres, jamais d'assemblage de chaînes. Valider les entrées (les bornes de `page`) reste utile, sans remplacer les paramètres. Un détail subsiste : dans un `LIKE`, `%` et `_` tapés par l'utilisateur restent des jokers. Ce n'est pas une injection, mais un comportement à décider.",
           },
           {
             type: "exercise",
@@ -761,7 +1019,11 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
           { id: "b", text: "Le plus petit code qui reproduit le problème" },
           { id: "c", text: "Le résultat attendu et le résultat obtenu" },
           { id: "d", text: "Ce que tu as déjà essayé" },
-          { id: "e", text: "L'intégralité du projet, pour ne rien oublier", feedback: "Trop de code noie le problème. On cherche l'exemple minimal, pas l'exhaustivité." },
+          {
+            id: "e",
+            text: "L'intégralité du projet, pour ne rien oublier",
+            feedback: "Trop de code noie le problème. On cherche l'exemple minimal, pas l'exhaustivité.",
+          },
         ],
         answer: ["a", "b", "c", "d"],
         explanation: "Ces quatre éléments remplacent les suppositions de l'assistant par des faits. Un exemple minimal vaut mieux qu'un projet entier.",
@@ -772,9 +1034,20 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
         concept: "hypotheses",
         prompt: "Pourquoi demander des hypothèses classées avant un correctif ?",
         options: [
-          { id: "a", text: "Pour vérifier la cause avant de modifier le code, et éviter un correctif qui masque le symptôme" },
-          { id: "b", text: "Pour que la réponse soit plus longue", feedback: "La longueur n'est pas le but. On cherche un diagnostic vérifiable." },
-          { id: "c", text: "Parce que l'assistant ne sait pas corriger du code directement", feedback: "Il sait, et c'est le piège : il corrige volontiers une cause supposée." },
+          {
+            id: "a",
+            text: "Pour vérifier la cause avant de modifier le code, et éviter un correctif qui masque le symptôme",
+          },
+          {
+            id: "b",
+            text: "Pour que la réponse soit plus longue",
+            feedback: "La longueur n'est pas le but. On cherche un diagnostic vérifiable.",
+          },
+          {
+            id: "c",
+            text: "Parce que l'assistant ne sait pas corriger du code directement",
+            feedback: "Il sait, et c'est le piège : il corrige volontiers une cause supposée.",
+          },
         ],
         answer: "a",
         explanation: "Un correctif sans diagnostic répond au bug le plus probable en général. Les hypothèses te donnent quelque chose à tester avant de toucher au code.",
@@ -791,7 +1064,11 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
           { id: "b", text: "La cause (des clients sans champ « email ») n'est ni expliquée ni traitée" },
           { id: "c", text: "Le test a été modifié pour éviter le cas qui échouait" },
           { id: "d", text: "`except Exception` masquera aussi toutes les autres erreurs futures" },
-          { id: "e", text: "Le correctif est bon puisque la fonction ne plante plus", feedback: "Ne plus planter n'est pas fonctionner : le symptôme a disparu, pas le bug." },
+          {
+            id: "e",
+            text: "Le correctif est bon puisque la fonction ne plante plus",
+            feedback: "Ne plus planter n'est pas fonctionner : le symptôme a disparu, pas le bug.",
+          },
         ],
         answer: ["a", "b", "c", "d"],
         explanation: "C'est le correctif cosmétique type. La bonne démarche : décider ce qui doit arriver pour un client sans e-mail, traiter ce cas explicitement, et garder un test qui le couvre.",
@@ -817,8 +1094,16 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
         prompt: "Laquelle de ces lignes Python est protégée contre l'injection SQL ?",
         options: [
           { id: "a", text: "`cur.execute(\"SELECT * FROM clients WHERE nom = ?\", (nom,))`" },
-          { id: "b", text: "`cur.execute(f\"SELECT * FROM clients WHERE nom = '{nom}'\")`", feedback: "La f-string colle la valeur dans le texte SQL : une apostrophe dans `nom` suffit à en changer le sens." },
-          { id: "c", text: "`cur.execute(\"SELECT * FROM clients WHERE nom = '\" + nom + \"'\")`", feedback: "La concaténation a exactement le même défaut que la f-string." },
+          {
+            id: "b",
+            text: "`cur.execute(f\"SELECT * FROM clients WHERE nom = '{nom}'\")`",
+            feedback: "La f-string colle la valeur dans le texte SQL : une apostrophe dans `nom` suffit à en changer le sens.",
+          },
+          {
+            id: "c",
+            text: "`cur.execute(\"SELECT * FROM clients WHERE nom = '\" + nom + \"'\")`",
+            feedback: "La concaténation a exactement le même défaut que la f-string.",
+          },
         ],
         answer: "a",
         explanation: "Avec le paramètre `?`, la valeur est transmise à part : la base la traite comme une donnée, quel que soit son contenu.",
@@ -858,9 +1143,41 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
         prompt: "L'assistant te propose un correctif de trois lignes que tu ne comprends pas, et les tests passent. Que fais-tu avant de l'accepter ? Réponds en deux phrases.",
         placeholder: "Avant de l'accepter, je…",
         criteria: [
-          { id: "expliquer", label: "Demander ou obtenir l'explication de la cause et du correctif", anyOf: ["expliqu", "comprend", "pourquoi", "cause", "ligne par ligne"] },
-          { id: "symptome", label: "Vérifier qu'il traite la cause et pas seulement le symptôme", anyOf: ["symptôme", "symptome", "masqu", "cach", "aval", "vraie cause", "cause réelle", "cause reelle", "contourn"] },
-          { id: "test", label: "S'appuyer sur un test de non-régression", anyOf: ["non-régression", "non-regression", "non régression", "non regression", "test qui échou", "test qui echou", "échouait avant", "echouait avant", "reprodui"] },
+          {
+            id: "expliquer",
+            label: "Demander ou obtenir l'explication de la cause et du correctif",
+            anyOf: ["expliqu", "comprend", "pourquoi", "cause", "ligne par ligne"],
+          },
+          {
+            id: "symptome",
+            label: "Vérifier qu'il traite la cause et pas seulement le symptôme",
+            anyOf: [
+              "symptôme",
+              "symptome",
+              "masqu",
+              "cach",
+              "aval",
+              "vraie cause",
+              "cause réelle",
+              "cause reelle",
+              "contourn",
+            ],
+          },
+          {
+            id: "test",
+            label: "S'appuyer sur un test de non-régression",
+            anyOf: [
+              "non-régression",
+              "non-regression",
+              "non régression",
+              "non regression",
+              "test qui échou",
+              "test qui echou",
+              "échouait avant",
+              "echouait avant",
+              "reprodui",
+            ],
+          },
         ],
         minCriteria: 2,
         modelAnswer: "Avant de l'accepter, je demande à l'assistant d'expliquer quelle était la cause et pourquoi ces lignes la traitent, pour m'assurer qu'elles ne masquent pas seulement le symptôme. Je vérifie aussi qu'un test de non-régression échouait avant le correctif et passe après.",
@@ -874,9 +1191,20 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
         concept: "rapport-de-bug",
         prompt: "Lequel de ces messages donne le plus de chances d'obtenir un diagnostic juste ?",
         options: [
-          { id: "a", text: "« Python 3.12. `moyenne([])` lève ZeroDivisionError (trace ci-dessous). Attendu : renvoyer None pour une liste vide. Code : … »" },
-          { id: "b", text: "« Ma fonction moyenne a un bug, tu peux regarder ? »", feedback: "Ni code, ni erreur, ni attendu : l'assistant ne peut que supposer." },
-          { id: "c", text: "« J'ai une erreur de division quelque part dans mon projet de 3 000 lignes, le voici. »", feedback: "L'erreur est résumée et le code n'est pas réduit : le signal est noyé." },
+          {
+            id: "a",
+            text: "« Python 3.12. `moyenne([])` lève ZeroDivisionError (trace ci-dessous). Attendu : renvoyer None pour une liste vide. Code : … »",
+          },
+          {
+            id: "b",
+            text: "« Ma fonction moyenne a un bug, tu peux regarder ? »",
+            feedback: "Ni code, ni erreur, ni attendu : l'assistant ne peut que supposer.",
+          },
+          {
+            id: "c",
+            text: "« J'ai une erreur de division quelque part dans mon projet de 3 000 lignes, le voici. »",
+            feedback: "L'erreur est résumée et le code n'est pas réduit : le signal est noyé.",
+          },
         ],
         answer: "a",
         explanation: "Environnement, appel exact, erreur complète, attendu, code minimal : tout ce qu'il faut pour raisonner sur le cas réel.",
@@ -904,7 +1232,11 @@ def chercher_clients(db_path, nom, page=1, par_page=20):
           { id: "a", text: "Elle est concaténée dans une requête SQL" },
           { id: "b", text: "Elle est insérée dans une commande système lancée par le programme" },
           { id: "c", text: "Elle est ajoutée à un chemin de fichier sans vérification" },
-          { id: "d", text: "Elle est transmise comme paramètre d'une requête paramétrée", feedback: "C'est justement la protection : la valeur reste une donnée." },
+          {
+            id: "d",
+            text: "Elle est transmise comme paramètre d'une requête paramétrée",
+            feedback: "C'est justement la protection : la valeur reste une donnée.",
+          },
         ],
         answer: ["a", "b", "c"],
         explanation: "Même famille de failles : une donnée collée dans un texte que le système interprète. La parade est de séparer données et instructions, ou de n'accepter que des valeurs autorisées.",

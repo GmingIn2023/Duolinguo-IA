@@ -4,7 +4,8 @@ import type { Goal } from "./goals";
 /** What the level test hands over to /signup: read back by SignupForm, re-graded on the server. */
 export const ONBOARDING_KEY = "gusgus.onboarding";
 export type PlacementAnswer = { id: string; answer: Answer | null };
-export type OnboardingPayload = { placement: PlacementAnswer[]; goal: Goal | null; track: TrackId };
+/** `tested`: the track the answers are a test of; `track`: the track the learner starts on (they may differ). */
+export type OnboardingPayload = { placement: PlacementAnswer[]; goal: Goal | null; tested: TrackId | null; track: TrackId };
 
 /** Stores the payload for the signup page. Returns false when storage is unavailable (private window, blocked data). */
 export function saveOnboarding(payload: OnboardingPayload, storage?: Pick<Storage, "setItem">): boolean {

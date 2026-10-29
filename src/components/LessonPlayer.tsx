@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { ArrowLeft, ArrowRight, BookmarkPlus, Clock, ExternalLink, Flame, NotebookPen, Target, X, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookmarkPlus, Clock, ExternalLink, NotebookPen, Target, X } from "lucide-react";
 import { addNote, completeLesson, saveResume } from "@/app/actions";
 import { DIFFICULTY_LABEL } from "@/content/curriculum";
 import type { Answer, Lesson, TrackId } from "@/content/types";
-import { Avatar, MascotSays } from "@/components/Avatar";
+import { Avatar } from "@/components/Avatar";
+import { Celebration } from "@/components/Celebration";
+import { LearnerPrefs } from "@/components/LearnerPrefs";
 import { BlockView } from "@/components/lesson/BlockView";
 import { NoteCard, NoteComposer, useNotes } from "@/components/notes/NoteBits";
 import { QuizRunner } from "@/components/quiz/QuizRunner";
@@ -24,6 +26,7 @@ export function LessonPlayer({
   notes: initialNotes,
   next,
   completedBefore,
+  prefs = { sounds: false, motion: "full", textSize: "normal" },
 }: {
   lesson: Lesson;
   track: TrackId;
@@ -31,6 +34,7 @@ export function LessonPlayer({
   notes: Note[];
   next: { id: string; title: string } | null;
   completedBefore: boolean;
+  prefs?: { sounds: boolean; motion: "full" | "calm"; textSize: "normal" | "large" };
 }) {
   const [phase, setPhase] = useState<Phase>({ kind: "intro" });
   const [quizProgress, setQuizProgress] = useState(0);
@@ -69,10 +73,11 @@ export function LessonPlayer({
   const section = phase.kind === "section" ? sections[phase.index] : null;
 
   return (
-    <div data-track={track} data-theme={lesson.theme} className="min-h-dvh" ref={top}>
+    <LearnerPrefs.Provider value={{ sounds: prefs.sounds }}>
+    <div data-track={track} data-theme={lesson.theme} data-motion={prefs.motion} data-text={prefs.textSize} className="min-h-dvh" ref={top}>
       <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-3xl items-center gap-3 px-4">
-          <Link href="/map" className="icon-btn" aria-label="Quitter le cours">
+          <Link href="/learn" className="icon-btn" aria-label="Quitter le cours">
             <X className="size-6" aria-hidden />
           </Link>
           <div className="h-3.5 flex-1 overflow-hidden rounded-full bg-sunk" role="progressbar" aria-label="Avancement du cours" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
@@ -111,7 +116,7 @@ export function LessonPlayer({
         )}
 
         {phase.kind === "done" && (
-          <Done lesson={lesson} track={track} saving={saving} error={error} result={result} next={next} onRetrySave={() => answers && save(answers)} />
+          <Done lesson={lesson} track={track} saving={saving} error={error} result={result} next={next} sounds={prefs.sounds} onRetrySave={() => answers && save(answers)} />
         )}
       </main>
 
@@ -127,6 +132,7 @@ export function LessonPlayer({
         />
       )}
     </div>
+    </LearnerPrefs.Provider>
   );
 }
 
@@ -154,7 +160,7 @@ function Intro({ lesson, track, resumeAt, completedBefore, onStart }: { lesson: 
         ))}
         <li className="flex items-center gap-3 text-ink-2">
           <span className="grid size-7 flex-none place-items-center rounded-full bg-th text-sm font-semibold">Q</span>
-          Fiche à retenir, puis quiz de {lesson.questions.length} questions
+          L&apos;essentiel, puis {lesson.questions.length} questions
         </li>
       </ol>
 
@@ -168,7 +174,10 @@ function Intro({ lesson, track, resumeAt, completedBefore, onStart }: { lesson: 
           <button className="btn btn-primary btn-lg" onClick={() => onStart(0)}>{completedBefore ? "Revoir le cours" : "Commencer"}</button>
         )}
       </div>
-      <MascotSays track={track} line={mascotLine(track, resumable ? "welcome" : "idle")} />
+      <div className="flex items-end gap-3">
+        <Avatar track={track} size={120} animate />
+        <p className="bubble pop-in mb-6">{mascotLine(track, resumable ? "welcome" : "idle")}</p>
+      </div>
     </div>
   );
 }
@@ -220,8 +229,8 @@ function Summary({ lesson, onPrev, onQuiz }: { lesson: Lesson; onPrev: () => voi
   return (
     <div className="page-in grid gap-8">
       <header className="grid gap-2">
-        <h1 className="display display-m">L&apos;essentiel de « {lesson.title} »</h1>
-        <p className="meta">Fiche à retenir · {lesson.summary.length} points</p>
+        <h1 className="display display-m">L&apos;essentiel</h1>
+        <p className="meta">{lesson.title}</p>
       </header>
       <ol className="note grid gap-4 p-6 sm:p-8" data-note="canary">
         {lesson.summary.map((s, i) => (
@@ -297,13 +306,14 @@ function NotesDrawer({ lesson, sectionId, notes, onAdded, onChange, onDelete, on
   );
 }
 
-function Done({ lesson, track, saving, error, result, next, onRetrySave }: {
+function Done({ lesson, track, saving, error, result, next, sounds, onRetrySave }: {
   lesson: Lesson;
   track: TrackId;
   saving: boolean;
   error: string | null;
   result: LessonResult | null;
   next: { id: string; title: string } | null;
+  sounds: boolean;
   onRetrySave: () => void;
 }) {
   if (error) {
@@ -320,50 +330,36 @@ function Done({ lesson, track, saving, error, result, next, onRetrySave }: {
   }
   if (saving || !result) {
     return (
-      <div className="grid gap-4 py-16" aria-busy="true" aria-live="polite">
-        <div className="skeleton h-28 w-64" />
+      <div className="grid justify-items-center gap-4 py-16" aria-busy="true" aria-live="polite">
+        <Avatar track={track} mood="think" size={96} animate />
         <p className="text-muted">Enregistrement de ta progression…</p>
       </div>
     );
   }
   const perfect = result.correct === result.total;
   return (
-    <div className="grid gap-10 py-6">
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <h1 className="display text-[clamp(4.5rem,16vw,10rem)] leading-[0.85]" aria-label={`${result.xpEarned} XP gagnés`}>
-            <span className="reveal-line"><span>+{result.xpEarned}</span></span>
-            <span className="reveal-line"><span>XP</span></span>
-          </h1>
-          <p className="mt-4 text-lg font-semibold">Cours terminé : {lesson.title}</p>
-        </div>
-        <Avatar track={track} mood="cheer" size={96} />
-      </div>
-      <p className="bubble w-fit">{mascotLine(track, perfect ? "perfect" : "done", result.totalXp)}</p>
-      <dl className="fade-in grid grid-cols-3 gap-3 [animation-delay:500ms]">
-        <div className="tile p-4">
-          <dt className="text-sm text-muted">Du premier coup</dt>
-          <dd className="tabular mt-1 text-xl font-semibold">{result.correct}/{result.total}</dd>
-        </div>
-        <div className="tile p-4">
-          <dt className="flex items-center gap-1 text-sm text-muted"><Flame className="size-4" aria-hidden />Série</dt>
-          <dd className="tabular mt-1 text-xl font-semibold">{result.streak} j</dd>
-        </div>
-        <div className="tile p-4">
-          <dt className="flex items-center gap-1 text-sm text-muted"><Zap className="size-4" aria-hidden />Total</dt>
-          <dd className="tabular mt-1 text-xl font-semibold">{result.totalXp}</dd>
-        </div>
-      </dl>
-      <section className="fade-in grid gap-3 [animation-delay:600ms]">
-        <h2 className="font-semibold">{result.firstCompletion ? "Compétences acquises" : "Compétences renforcées"}</h2>
+    <div className="grid gap-8 py-4">
+      <Celebration
+        track={track}
+        xp={result.xpEarned}
+        title={perfect ? "Sans faute !" : "Cours terminé !"}
+        line={mascotLine(track, perfect ? "perfect" : "done", result.totalXp)}
+        sounds={sounds}
+        stats={[
+          { label: "Du premier coup", value: `${result.correct}/${result.total}` },
+          { label: "Série", value: `${result.streak} j`, icon: "streak" },
+          { label: "Total", value: String(result.totalXp), icon: "xp" },
+        ]}
+      />
+      <section className="fade-in grid gap-2 [animation-delay:700ms]">
+        <h2 className="text-sm font-semibold text-muted">Ce que tu sais faire maintenant</h2>
         <ul className="flex flex-wrap gap-2">
           {lesson.skills.map((s) => <li key={s} className="chip chip-th">{s}</li>)}
         </ul>
-        <p className="text-[0.9375rem] text-ink-2">Ces notions reviendront dans tes révisions, au moment où tu risques de les oublier, parfois sous une autre question.</p>
       </section>
-      <div className="fade-in flex flex-wrap gap-3 [animation-delay:700ms]">
+      <div className="fade-in grid gap-3 [animation-delay:800ms] sm:flex sm:flex-wrap">
         {next && <Link href={`/lesson/${next.id}`} className="btn btn-primary btn-lg" aria-label={`Cours suivant : ${next.title}`}>Cours suivant<ArrowRight className="size-5" aria-hidden /></Link>}
-        <Link href="/map" className={`btn btn-lg ${next ? "btn-secondary" : "btn-primary"}`}>Voir la carte</Link>
+        <Link href="/learn" className={`btn btn-lg ${next ? "btn-secondary" : "btn-primary"}`}>Retour au chemin</Link>
       </div>
     </div>
   );

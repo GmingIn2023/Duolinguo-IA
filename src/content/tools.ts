@@ -18,7 +18,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Un « Temporary chat » n'apparaît pas dans l'historique et ne sert pas à l'entraînement tant qu'il reste temporaire.",
       "Fichiers, images, voix et analyse de données ont des limites d'usage séparées, plus strictes sur l'offre gratuite que sur les offres payantes.",
     ],
-    lastVerified: "2026-10-13",
+    lastVerified: "2026-10-29",
     reviewEveryDays: 7,
     sources: [
       "https://help.openai.com/en/articles/7730893-data-controls-in-chatgpt",
@@ -30,14 +30,14 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     id: "claude",
     name: "Claude",
     maker: "Anthropic (États-Unis)",
-    summary: "Assistant généraliste d'Anthropic. L'offre gratuite inclut la recherche web, la création de fichiers et l'exécution de code ; les offres payantes ajoutent surtout plus d'usage, d'autres modèles, les projets et Claude Code.",
+    summary: "Assistant généraliste d'Anthropic. L'offre gratuite inclut la recherche web, la création de fichiers et l'exécution de code ; les offres payantes ajoutent surtout plus d'usage, d'autres modèles (dont Opus), des projets sans limite et Claude Code.",
     goodFor: ["Rédiger et reformuler", "Travailler à partir de fichiers joints", "Écrire ou relire du code"],
     watchOut: [
       "Les limites d'utilisation dépendent de l'offre choisie, et les fichiers joints comptent dans cet usage.",
       "Le réglage « Model Improvement » (paramètres de confidentialité) décide si tes conversations servent à améliorer Claude. Les conversations Incognito n'y servent pas.",
       "Donner un pouce haut ou bas enregistre la conversation entière, qui peut alors servir à l'entraînement ; une conversation signalée pour un contrôle de sécurité peut aussi être utilisée.",
     ],
-    lastVerified: "2026-10-13",
+    lastVerified: "2026-10-29",
     reviewEveryDays: 7,
     sources: [
       "https://privacy.claude.com/en/articles/10023580-is-my-data-used-for-model-training",
@@ -53,10 +53,10 @@ export const TOOLS: Record<ToolId, ToolFact> = {
     goodFor: ["Agir dans tes services Google connectés (résumer des e-mails, par exemple)", "Analyser des documents, photos ou vidéos que tu envoies", "Partir d'une recherche Google"],
     watchOut: [
       "Avec le réglage « Keep Activity » activé, tes conversations sont conservées et une partie est relue par des humains : Google demande de ne pas y mettre d'informations confidentielles.",
-      "Même avec ce réglage désactivé, les conversations restent conservées quelques jours ; celles qui ont été relues par des humains le sont beaucoup plus longtemps.",
+      "Même avec ce réglage désactivé, les conversations restent conservées 72 heures ; celles qui ont été relues par des humains peuvent l'être jusqu'à trois ans.",
       "Les applications connectées disponibles varient selon le pays, la langue, l'appareil et le type de compte.",
     ],
-    lastVerified: "2026-10-13",
+    lastVerified: "2026-10-29",
     reviewEveryDays: 7,
     sources: [
       "https://support.google.com/gemini/answer/13594961",
@@ -74,7 +74,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Selon sa politique de confidentialité, les données du service en ligne sont collectées et stockées en Chine, et peuvent servir à entraîner ses modèles (droit de refus prévu, à exercer par e-mail auprès de l'éditeur).",
       "Le 30 janvier 2025, l'autorité italienne de protection des données a ordonné en urgence la limitation du traitement des données des utilisateurs italiens : évite de mettre des informations sensibles dans le service en ligne.",
     ],
-    lastVerified: "2026-10-13",
+    lastVerified: "2026-10-29",
     reviewEveryDays: 7,
     sources: [
       "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
@@ -92,7 +92,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Une source citée peut être peu fiable ou mal résumée : l'éditeur lui-même invite à revérifier les sources. Ouvre toujours les liens.",
       "Le résumé peut mélanger des informations venant de sources différentes.",
     ],
-    lastVerified: "2026-10-13",
+    lastVerified: "2026-10-29",
     reviewEveryDays: 7,
     sources: [
       "https://www.perplexity.ai/help-center/en/articles/10352895-how-does-perplexity-work",

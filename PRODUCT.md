@@ -1,35 +1,37 @@
 # Gusgus — Way of Learning AI
 
 ## Product
-A web/mobile learning platform that teaches people to understand and use AI through short, progressive lessons and quizzes (Duolingo-like loop, premium execution). French-language content.
+A web learning platform (responsive, mobile web) that teaches people to understand and use AI through short lessons, quizzes that explain mistakes, and spaced reviews. Duolingo-like loop, premium execution. French-language content. Live at https://duolinguo-ia.onrender.com.
 
 ## Users and jobs
-- **Bird — complete beginners**: understand what AI is, stop being intimidated, use it safely.
-- **Gecko — studies and work**: use AI to learn (not to cheat), write and summarise well, check sources, revise, automate daily tasks.
-- **Fox — technical and advanced**: understand the mechanics and build with it: APIs, agents, MCP, RAG, code, an end-to-end document assistant. (Source of truth: `src/content/curriculum.ts`.)
+Three separate tracks; a learner follows one at a time and only sees their own path.
+- **Découvrir (Bird) — complete beginners**: understand what AI is, stop being intimidated, use it safely. Lessons of 3–5 min, one paragraph per screen, no writing exercises.
+- **Pratiquer (Gecko) — studies and work**: learn with AI (not cheat with it), write and summarise, check and protect, organise and automate. Lessons of 4–8 min.
+- **Construire (Fox) — technical**: tokens and models, evaluation, APIs, agents and MCP, RAG, coding with AI, an end-to-end document assistant project. Lessons of 8–15 min.
 
-Core loop: onboarding questions → level estimate → suggested track (changeable) → track map → lesson → quiz with error correction → XP → saved progress → spaced-repetition reviews (daily due items + ~10-minute weekly review of the week's lessons).
+Source of truth for tracks and chapters: `src/content/curriculum.ts`. 47 lessons; each belongs to exactly one chapter of one track, and each track ends with a project.
+
+## Core loop
+Goal question → 10-question placement test on that track (3–4 common questions + one per chapter) → result with validated chapters and a starting chapter (or a suggestion to take the next / previous track's test) → Duolingo-style path, top to bottom, one chapter at a time → lesson (intro, short screens with small checks, summary) → quiz with explanations → XP, streak, daily goal → spaced reviews (daily due items, weekly review). Switching track goes through the mascot switcher, with a warning.
+
+Beta: « L'atelier du prompt », a mini-game where the learner builds a request from cards and sees the likely answer change. Marked only with a small « bêta » badge.
 
 ## Mechanism / position
-Concepts first, tools second. Lessons teach durable mental models (next-token prediction, hallucinations, prompting, privacy) before tool-specific lessons (ChatGPT, Claude, Gemini, DeepSeek, Perplexity). Tool facts live in one versioned file with `lastVerified` dates so they can be re-checked weekly.
+Concepts first, tools second. Durable mental models (next-token prediction, hallucinations, prompting, privacy, evaluation) before tool-specific advice. Volatile tool facts live in one dated file (`src/content/tools.ts`, re-checked weekly with `npm run content:check`).
 
 ## Constraints
-- Content must be pedagogically sound, not padded. Volatile tool facts are isolated and dated.
-- Desktop first for iteration 1, excellent mobile adaptation required.
-- Light theme primarily.
+- Content must be accurate, sourced and short; key notions in bold, human tone, no AI disclaimers in the product.
+- Strict lesson format per track, enforced by `src/content/content.test.ts`.
+- Mobile as good as desktop. Light theme.
+- XP and progress are written only by the server (secret key); learners can read, not write, their progress.
 
-## Platform
-web (responsive, mobile web).
+## Platform and stack
+Web. Next.js 16 (App Router) + TypeScript + Tailwind 4 + Supabase (auth, Postgres, RLS). Hosted on Render (free plan, auto-deploy from `main`).
 
-## Stack
-Next.js 16 (App Router) + TypeScript + Tailwind 4 + Supabase (auth, Postgres, RLS). Decided by the build lead per brief ("idéalement Next.js + TypeScript + Tailwind + Supabase").
-
-## Brand commitments (from the brief)
-- Name: "Gusgus — Way of Learning AI".
-- Mascot families per track: Bird (beginner), Gecko (studies and work), Fox (technical). Simple for MVP.
-- White / black / very clean greys; colour only where it does a job. Strong typography, large compositions, crafted cards, generous space, sober but memorable motion.
+## Brand
+- Name: "Gusgus — Way of Learning AI". Visual system in `DESIGN.md` ("The Tile Table": pressed-edge tiles, Archivo display + Geist).
+- One mascot per track (bird, gecko, fox) that reacts to right/wrong answers and celebrates the end of a lesson.
 - Not a generic SaaS UI.
 
-## Assumptions (inferred, not confirmed)
-- Audience is French-speaking (brief written in French).
-- No payments or social features in the MVP.
+## Non-goals (for now)
+Payments, social features, AI-generated feedback in production.

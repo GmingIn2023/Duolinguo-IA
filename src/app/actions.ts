@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { findCheckpoint, getLesson, isTrackId } from "@/content";
-import type { Answer } from "@/content/types";
-import { isKnown, isUnlocked } from "@/lib/board";
+import { TRACKS, findChapter, getLesson, isTrackId, lessonPlace } from "@/content";
+import type { Answer, TrackId } from "@/content/types";
+import { canOpenLesson, lessonKnown } from "@/lib/path";
 import { checkpointQuestions, DAILY_LIMIT, getDueItems, getKnowledge, getViewer, getWeeklyPlan, serveItems } from "@/lib/data";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeAnswer } from "@/lib/grading";
-import { gradePlacement, legacyLevel, placementLevel } from "@/lib/placement";
+import { gradePlacement, legacyLevel } from "@/lib/placement";
 import { parsePreferences } from "@/lib/prefs";
 import { supabaseProgressDb } from "@/lib/progressDb.supabase";
 import { completeLessonCore, gradeReviewAnswers, submitReviewCore, type Learner } from "@/lib/progressService";
@@ -41,7 +41,7 @@ function syncProfile(viewer: Viewer, learner: Learner) {
 }
 
 function revalidateApp() {
-  for (const p of ["/learn", "/map", "/courses", "/review", "/profile"]) revalidatePath(p);
+  for (const p of ["/learn", "/learn/chapitres", "/courses", "/review", "/profile"]) revalidatePath(p);
 }
 
 export async function completeLesson(lessonId: string, firstAnswers: Record<string, Answer>): Promise<LessonResult> {
@@ -50,9 +50,10 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
   if (!isRecord(firstAnswers)) throw new Error("Réponses invalides.");
   const viewer = await viewerOrThrow();
 
-  // prerequisites are enforced here too, not only in the page that renders the lesson
+  // the path is enforced here too, not only in the page that renders the lesson
   const { knowledge } = await getKnowledge();
-  if (!isUnlocked(lesson, knowledge, getLesson)) throw new Error("Ce cours est encore verrouillé.");
+  const place = lessonPlace(lesson.id);
+  if (!canOpenLesson(lesson.id, viewer.profile.track_id ?? "bird", place ? TRACKS[place.track] : undefined, knowledge, getLesson).ok) throw new Error("Ce cours est encore verrouillé.");
 
   const graded = lesson.questions.map((q) => ({
     questionId: q.id,
@@ -74,12 +75,12 @@ async function allowedQuestions(mode: ReviewMode): Promise<Set<string>> {
   if (mode === "daily") return new Set(serveItems((await getDueItems()).slice(0, DAILY_LIMIT)).map((s) => s.question.id));
   if (mode === "weekly") return new Set(serveItems((await getWeeklyPlan()).items).map((s) => s.question.id));
   if (!mode.startsWith("checkpoint:")) throw new Error("Révision inconnue.");
-  const checkpoint = findCheckpoint(mode.slice("checkpoint:".length));
-  if (!checkpoint) throw new Error("Bilan introuvable.");
+  const found = findChapter(mode.slice("checkpoint:".length));
+  if (!found || found.chapter.project) throw new Error("Bilan introuvable.");
   const { knowledge } = await getKnowledge();
-  const covers = checkpoint.node.covers ?? [];
-  if (!covers.every((id) => { const l = getLesson(id); return l && isKnown(l, knowledge); })) throw new Error("Ce bilan est encore verrouillé.");
-  return new Set(checkpointQuestions(covers).map((q) => q.id));
+  const lessons = found.chapter.lessons;
+  if (!lessons.every((id) => lessonKnown(id, found.chapter.id, knowledge))) throw new Error("Ce bilan est encore verrouillé.");
+  return new Set(checkpointQuestions(lessons).map((q) => q.id));
 }
 
 export async function submitReview(mode: ReviewMode, firstAnswers: Record<string, Answer>): Promise<ReviewResult> {
@@ -100,29 +101,50 @@ export async function chooseTrack(formData: FormData) {
   const { error } = await supabase.from("profiles").update({ track_id: track }).eq("id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
-  redirect("/map");
+  redirect("/learn");
 }
 
-/** Stores validated preferences. Unknown values fall back to defaults, so a forged payload cannot store junk. */
+/** The placements already stored, which preference saves must carry over untouched. */
+const storedPlacements = (preferences: unknown) =>
+  isRecord(preferences) && isRecord(preferences.placements) ? preferences.placements : {};
+
+/**
+ * Stores validated preferences. Unknown values fall back to defaults, so a forged payload cannot store junk,
+ * and the placements are copied from the stored row: the browser can never write a test result.
+ */
 export async function savePreferences(raw: unknown): Promise<void> {
-  const { user } = await viewerOrThrow();
-  const { error } = await createAdminClient().from("profiles").update({ preferences: parsePreferences(raw), updated_at: new Date().toISOString() }).eq("id", user.id);
+  const { user, profile } = await viewerOrThrow();
+  const preferences = { ...parsePreferences(raw), placements: storedPlacements(profile.preferences) };
+  const { error } = await createAdminClient().from("profiles").update({ preferences, updated_at: new Date().toISOString() }).eq("id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
 }
 
-/** Placement test taken while signed in: answers are re-graded here and the level is computed on the server. */
-export async function savePlacement(answers: { id: string; answer: Answer | null }[]): Promise<{ level10: number }> {
-  if (!Array.isArray(answers)) throw new Error("Test invalide.");
-  const { user } = await viewerOrThrow();
-  const level10 = placementLevel(gradePlacement(answers));
+/**
+ * A track's placement test taken while signed in: graded here, stored for that track, and the learner moves
+ * to that track when `adopt` is set.
+ */
+export async function savePlacement(track: TrackId, answers: unknown, adopt: boolean): Promise<{ score: number; chapters: string[] }> {
+  if (!isTrackId(track) || !Array.isArray(answers)) throw new Error("Test invalide.");
+  const { user, profile } = await viewerOrThrow();
+  const result = gradePlacement(track, answers);
+  const preferences = {
+    ...parsePreferences(profile.preferences),
+    placements: { ...storedPlacements(profile.preferences), [track]: result },
+  };
   const { error } = await createAdminClient()
     .from("profiles")
-    .update({ level10, placement_level: legacyLevel(level10), updated_at: new Date().toISOString() })
+    .update({
+      preferences,
+      level10: result.score,
+      placement_level: legacyLevel(result.score),
+      ...(adopt ? { track_id: track } : {}),
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
-  return { level10 };
+  return { score: result.score, chapters: result.chapters };
 }
 
 export async function saveResume(lessonId: string, sectionIndex: number): Promise<void> {

@@ -178,11 +178,11 @@ components:
 
 **Creative North Star: "The Tile Table"**
 
-Learning AI is handled like physical objects on a cool grey table. Every lesson, panel and answer is a tile: a flat, opaque slab with a visible pressed underside that collapses when you push it. Progress is a column of tiles you work down, not a winding path of bubbles and not a SaaS card grid. The table is quiet (cool paper, white, true black); colour appears only as the flat field of the track you are in.
+Learning AI is handled like physical objects on a cool grey table. Every lesson, panel and answer is a tile: a flat, opaque slab with a visible pressed underside that collapses when you push it. Progress is a winding path of round, pressable stops (lesson, chapter chest, project flag) inside the track colour, read top to bottom; chapters are separated by a labelled divider and summarised in a chapter list with gauges. Never a SaaS card grid. The table is quiet (cool paper, white, true black); colour appears only as the flat field of the track you are in.
 
 Type does the shouting. Archivo, set expanded and extra-bold, runs enormous on the landing and lesson-complete screens and at title scale everywhere else; Geist carries all UI and reading text calmly. Compositions are large and spare: one strong headline, one column of tiles, generous gaps. Motion is sober and physical: tiles lift 2px on hover and sink 4px on press, display lines rise out of a mask, wrong answers shake once.
 
-The world refuses the category default of round lesson bubbles on a winding path, gradient fills, and blurred floating cards. Depth is a solid edge, never a glow.
+The path is the one place the world borrows the language-app convention, on purpose: learners asked for it, and a single stop per lesson keeps prerequisites obvious. Everything else refuses gradient fills and blurred floating cards. Depth is a solid edge, never a glow.
 
 **Key Characteristics:**
 - Cool paper ground, white tiles, true black ink; one track colour per screen, used as flat fields.
@@ -344,7 +344,7 @@ Display lines rise from below a clipping mask (900ms, 90ms stagger per line). Us
 - **Don't** use blurred, coloured-glow or x-offset shadows; depth is a solid edge or nothing.
 - **Don't** put kickers, eyebrows or small labels above a title.
 - **Don't** set labels in uppercase or with wide letter-spacing.
-- **Don't** draw progress as a winding path of round lesson bubbles; the track is a column of tiles.
+- **Don't** show another track's path on the home screen; switching track goes through the mascot switcher and its warning.
 - **Don't** use gradients on surfaces, buttons or text (the loading skeleton's grey shimmer is the only gradient).
 - **Don't** mix two track colours on one screen outside the landing's track stack.
 - **Don't** set text lighter than Stone (`muted`) on white or paper.

@@ -1,22 +1,23 @@
 import { describe, expect, it } from "vitest";
+import { TRACKS } from "@/content";
 import { buildPreviews } from "./landingPreview";
 
 describe("landing previews come from real content", () => {
   const p = buildPreviews();
 
-  it("finds a real annotated brief with its three short parts", () => {
-    expect(p.brief).not.toBeNull();
-    expect(p.brief!.lessonTitle.length).toBeGreaterThan(3);
-    expect(p.brief!.parts.map((x) => x.label)).toEqual(["Tâche", "Critère de réussite", "Format"]);
-    for (const part of p.brief!.parts) {
-      expect(part.text.length).toBeGreaterThan(10);
-      expect(part.detail.length).toBeGreaterThan(10);
-    }
+  it("shows a short lesson screen with bold key words", () => {
+    expect(p.excerpt.body.match(/\*\*/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(p.excerpt.body.split(/\s+/).length).toBeLessThanOrEqual(45);
   });
 
-  it("uses a real true/false question with its explanation", () => {
-    expect(p.quiz?.statement).toContain("information fausse");
-    expect(p.quiz?.explanation.length).toBeGreaterThan(20);
+  it("uses a real true/false question and highlights part of its explanation", () => {
+    expect(p.quiz?.statement).toContain("assurance");
+    expect(p.quiz?.mark.length).toBeGreaterThan(5);
+  });
+
+  it("names real chapters in the example result", () => {
+    const names = TRACKS.gecko.chapters.map((c) => c.name);
+    for (const n of [...p.example.validated, p.example.start]) expect(names).toContain(n);
   });
 
   it("derives the review schedule from the real Leitner intervals", () => {

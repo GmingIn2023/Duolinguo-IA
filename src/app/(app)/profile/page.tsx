@@ -5,17 +5,18 @@ import { PreferencesForm } from "@/components/PreferencesForm";
 import { signOut } from "@/app/actions";
 import { TRACKS, getLesson } from "@/content";
 import { getKnowledge, requireViewer } from "@/lib/data";
-import { levelName } from "@/lib/placement";
+import { levelName } from "@/lib/placementRules";
 
 export const metadata: Metadata = { title: "Profil" };
 
 export default async function ProfilePage() {
-  const [{ profile, user }, { progress, prefs, level10 }] = await Promise.all([requireViewer(), getKnowledge()]);
+  const [{ profile, user }, { progress, prefs, placements }] = await Promise.all([requireViewer(), getKnowledge()]);
   const done = [...progress.values()].sort((a, b) => b.last_completed_at.localeCompare(a.last_completed_at));
   const skills = [...new Set(done.flatMap((p) => getLesson(p.lesson_id)?.skills ?? []))];
   const track = profile.track_id ? TRACKS[profile.track_id] : null;
+  const test = track ? placements[track.id] : undefined;
   const stats = [
-    { k: "Niveau", v: `${level10}/10`, sub: levelName(level10) },
+    { k: track ? `Test ${track.name}` : "Test", v: test ? `${test.score}/10` : "–", sub: test ? levelName(test.score) : "Pas encore passé" },
     { k: "XP", v: String(profile.xp) },
     { k: "Jours de série", v: String(profile.streak_days) },
     { k: "Cours terminés", v: String(done.length) },
@@ -41,11 +42,11 @@ export default async function ProfilePage() {
             </div>
           ))}
         </dl>
-        <p className="text-[0.9375rem] text-ink-2">Ton niveau a changé ? <Link href="/onboarding?retake=1" className="font-semibold text-ink underline">Refaire le test de niveau</Link> (10 questions, environ 3 minutes).</p>
+        <p className="text-[0.9375rem] text-ink-2">Ton niveau a changé ? <Link href={`/onboarding?track=${track?.id ?? "bird"}`} className="font-semibold text-ink underline">Refaire le test</Link> (10 questions, 3 minutes).</p>
       </div>
 
       <section className="grid gap-6" aria-labelledby="prefs">
-        <h2 id="prefs" className="display display-s">Réglages d&apos;apprentissage</h2>
+        <h2 id="prefs" className="display display-s">Réglages</h2>
         <PreferencesForm initial={prefs} />
       </section>
 

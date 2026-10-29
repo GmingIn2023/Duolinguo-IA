@@ -31,7 +31,7 @@ export default async function Home() {
     name: TRACKS[id].name,
     animal: TRACKS[id].animal,
     audience: TRACKS[id].audience,
-    lessons: TRACKS[id].nodes.filter((n) => n.lessonId).length,
+    lessons: TRACKS[id].chapters.reduce((n, c) => n + c.lessons.length, 0),
   }));
 
   return (
@@ -56,7 +56,7 @@ export default async function Home() {
           <div className="flex flex-wrap items-center gap-3">
             <Link href={viewer ? cta.href : "#depart"} className="btn btn-primary btn-lg">{cta.label}</Link>
           </div>
-          {!viewer && <p className="text-sm text-muted">{PLACEMENT_LENGTH} questions qui s&apos;adaptent à toi, un niveau sur 10, aucun compte pour commencer.</p>}
+          {!viewer && <p className="text-sm text-muted">{PLACEMENT_LENGTH} questions, environ 3 minutes, aucun compte pour commencer.</p>}
         </div>
         <div className="lg:col-span-5">
           <HeroScene guides={guides} href={viewer ? cta.href : "#depart"} />
@@ -67,7 +67,6 @@ export default async function Home() {
       {!viewer && (
         <section id="depart" className="mx-auto max-w-[90rem] scroll-mt-6 px-4 pb-20 sm:px-8 lg:pb-28">
           <div className="mb-10 grid max-w-[40rem] gap-3">
-            <p className="eyebrow">Par où commencer ?</p>
             <h2 className="display display-l">Fais le point en {PLACEMENT_LENGTH} questions, ou choisis toi-même.</h2>
           </div>
           <LandingPlacement guides={guides} />
@@ -78,7 +77,6 @@ export default async function Home() {
       <section id="comment" className="how-band">
         <div className="mx-auto max-w-[90rem] px-4 py-20 sm:px-8 lg:py-28">
           <div className="mb-14 grid max-w-[42rem] gap-4">
-            <p className="eyebrow">Comment ça marche</p>
             <h2 className="display display-l">Tu essaies, tu te trompes, tu comprends. Puis ça revient.</h2>
             <p className="lede">Voici ce que tu verras, étape par étape. Descends : le fil se dessine avec toi.</p>
           </div>
@@ -92,7 +90,6 @@ export default async function Home() {
       {/* One idea made visible: a chatbot picks its next word */}
       <section className="mx-auto grid max-w-[90rem] items-center gap-10 px-4 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
         <div className="grid content-start gap-4 lg:col-span-5">
-          <p className="eyebrow">Cours « Comment un chatbot écrit ses réponses »</p>
           <h2 className="display display-l">Regarde-le choisir ses mots.</h2>
           <p className="lede">Un chatbot n&apos;a pas de fiche de faits sous les yeux. À chaque mot, il tire parmi les suites possibles : souvent la plus probable, pas toujours.</p>
           <p className="hand text-ink-2">probabilités données pour l&apos;exemple, pas mesurées</p>
@@ -118,7 +115,7 @@ export default async function Home() {
           </figure>
           <ul className="facts" aria-label="Gusgus en chiffres">
             {[
-              [String(plan.uniqueLessons), "cours, du premier prompt aux agents", "bg-surface"],
+              [String(plan.totalLessons), "cours, du premier prompt aux agents", "bg-surface"],
               [String(plan.themes.length), "thèmes", "bg-sky-soft"],
               [String(TRACK_IDS.length), "parcours, un guide chacun", "bg-gecko-soft"],
               [String(PLACEMENT_LENGTH), "questions pour te placer", "bg-rose-soft"],
@@ -134,7 +131,6 @@ export default async function Home() {
 
       {/* The assistants taught in the lessons */}
       <section className="mx-auto grid max-w-[90rem] justify-items-center gap-5 px-4 py-16 text-center sm:px-8 lg:py-24">
-        <p className="eyebrow">Les outils</p>
         <h2 className="display display-m max-w-[40rem]">Des assistants qu&apos;on apprend à utiliser correctement, à leur plein potentiel.</h2>
         <ul className="flex flex-wrap justify-center gap-3" translate="no" aria-label="Les assistants abordés">
           {TOOLS.map((t, i) => (

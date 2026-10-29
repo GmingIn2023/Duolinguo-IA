@@ -1,30 +1,54 @@
-import type { Lesson, MapNode, Question, ThemeId, TrackId } from "./types";
-import { comprendreLessons } from "./lessons/comprendre";
-import { promptLessons } from "./lessons/prompt";
-import { confianceLessons } from "./lessons/confiance";
-import { outilsLessons } from "./lessons/outils";
-import { workflowsLessons } from "./lessons/workflows";
-import { agentsLessons } from "./lessons/agents";
-import { devLessons } from "./lessons/dev";
-import { apiLessons } from "./lessons/api";
-import { ragLessons } from "./lessons/rag";
-import { projetsLessons } from "./lessons/projets";
+import type { Chapter, Lesson, Question, ThemeId, TrackId } from "./types";
 import { THEMES, THEME_IDS, TRACKS as RAW_TRACKS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId } from "./curriculum";
+import { birdChapter1 } from "./lessons/bird/b1";
+import { birdChapter2 } from "./lessons/bird/b2";
+import { birdChapter3 } from "./lessons/bird/b3";
+import { birdChapter4 } from "./lessons/bird/b4";
+import { birdChapter5 } from "./lessons/bird/b5";
+import { birdChapter6 } from "./lessons/bird/b6";
+import { geckoChapter1 } from "./lessons/gecko/g1";
+import { geckoChapter2 } from "./lessons/gecko/g2";
+import { geckoChapter3 } from "./lessons/gecko/g3";
+import { geckoChapter4 } from "./lessons/gecko/g4";
+import { geckoChapter5 } from "./lessons/gecko/g5";
+import { geckoChapter6 } from "./lessons/gecko/g6";
+import { foxTokens } from "./lessons/fox/tokens";
+import { foxChapter1 } from "./lessons/fox/f1";
+import { foxChapter2 } from "./lessons/fox/f2";
+import { foxChapter3 } from "./lessons/fox/f3";
+import { foxChapter4 } from "./lessons/fox/f4";
+import { foxOrchestrer } from "./lessons/fox/orchestrer";
+import { foxChapter5 } from "./lessons/fox/f5";
+import { foxEvaluerRag } from "./lessons/fox/evaluer-un-rag";
+import { foxChapter6 } from "./lessons/fox/f6";
+import { foxChapter7 } from "./lessons/fox/f7";
 import { typesetContent } from "../lib/typo";
 
 export { THEMES, THEME_IDS, TRACK_IDS, DIFFICULTY_LABEL, isThemeId, isTrackId };
 
 export const LESSONS: Lesson[] = typesetContent([
-  ...comprendreLessons,
-  ...promptLessons,
-  ...confianceLessons,
-  ...outilsLessons,
-  ...workflowsLessons,
-  ...agentsLessons,
-  ...devLessons,
-  ...apiLessons,
-  ...ragLessons,
-  ...projetsLessons,
+  ...birdChapter1,
+  ...birdChapter2,
+  ...birdChapter3,
+  ...birdChapter4,
+  ...birdChapter5,
+  ...birdChapter6,
+  ...geckoChapter1,
+  ...geckoChapter2,
+  ...geckoChapter3,
+  ...geckoChapter4,
+  ...geckoChapter5,
+  ...geckoChapter6,
+  ...foxTokens,
+  ...foxChapter1,
+  ...foxChapter2,
+  ...foxChapter3,
+  ...foxChapter4,
+  ...foxOrchestrer,
+  ...foxChapter5,
+  ...foxEvaluerRag,
+  ...foxChapter6,
+  ...foxChapter7,
 ]);
 
 const byId = new Map(LESSONS.map((l) => [l.id, l]));
@@ -32,41 +56,31 @@ export const getLesson = (id: string) => byId.get(id);
 
 export const TRACKS = typesetContent(RAW_TRACKS);
 
-/** The lessons of a track, in board order (column, then lane). */
+/** Where a lesson sits: its track, its chapter, and its position in the chapter. */
+export type LessonPlace = { track: TrackId; chapter: Chapter; chapterIndex: number; index: number };
+
+const places = new Map<string, LessonPlace>();
+for (const track of TRACK_IDS) {
+  TRACKS[track].chapters.forEach((chapter, chapterIndex) => {
+    chapter.lessons.forEach((id, index) => places.set(id, { track, chapter, chapterIndex, index }));
+  });
+}
+export const lessonPlace = (id: string) => places.get(id);
+
+/** The lessons of a track, in path order. */
 export function trackLessons(trackId: TrackId): Lesson[] {
-  return TRACKS[trackId].nodes
-    .filter((n) => n.lessonId)
-    .sort((a, b) => a.col - b.col || a.lane - b.lane)
-    .map((n) => byId.get(n.lessonId!)!)
-    .filter(Boolean);
+  return TRACKS[trackId].chapters.flatMap((c) => c.lessons.map((id) => byId.get(id)!).filter(Boolean));
 }
 
-export const getNode = (trackId: TrackId, nodeId: string): MapNode | undefined => TRACKS[trackId].nodes.find((n) => n.id === nodeId);
-
-/** A checkpoint anywhere in the curriculum, by id. */
-export function findCheckpoint(id: string): { node: MapNode; track: TrackId } | undefined {
+/** A chapter anywhere in the curriculum, by id. */
+export function findChapter(id: string): { chapter: Chapter; track: TrackId; index: number } | undefined {
   for (const track of TRACK_IDS) {
-    const node = TRACKS[track].nodes.find((n) => n.kind === "checkpoint" && n.id === id);
-    if (node) return { node, track };
+    const index = TRACKS[track].chapters.findIndex((c) => c.id === id);
+    if (index !== -1) return { chapter: TRACKS[track].chapters[index], track, index };
   }
 }
 
 export const lessonsByTheme = (theme: ThemeId) => LESSONS.filter((l) => l.theme === theme);
-
-/** Every prerequisite of a lesson, transitively, in learning order (deepest first). */
-export function prerequisiteChain(lessonId: string): Lesson[] {
-  const seen = new Set<string>();
-  const out: Lesson[] = [];
-  const visit = (id: string) => {
-    const l = byId.get(id);
-    if (!l || seen.has(id)) return;
-    seen.add(id);
-    l.prerequisites.forEach(visit);
-    out.push(l);
-  };
-  byId.get(lessonId)?.prerequisites.forEach(visit);
-  return out;
-}
 
 type Indexed = { question: Question; lesson: Lesson; pool: "quiz" | "review" | "check" };
 

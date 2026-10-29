@@ -6,7 +6,9 @@ import type { Answer, Question, TrackId } from "@/content/types";
 import { gradeAnswer } from "@/lib/grading";
 import { mascotLine } from "@/lib/mascot";
 import { seededShuffle, shuffleAway } from "@/lib/shuffle";
-import { MascotSays } from "@/components/Avatar";
+import { Avatar } from "@/components/Avatar";
+import { useLearnerPrefs } from "@/components/LearnerPrefs";
+import { playSound } from "@/lib/sound";
 import { renderInline } from "@/components/Rich";
 import { QuestionView, correctAnswerText, isDraftComplete, optionFeedback, type Draft, type Reveal } from "./QuestionView";
 
@@ -24,6 +26,8 @@ export function initialOrder(q: Question): string[] {
       return shuffleAway(q.items.map((i) => i.id), q.id);
     case "match":
       return seededShuffle(q.right.map((r) => r.id), q.id);
+    case "sort":
+      return seededShuffle(q.items.map((i) => i.id), q.id);
     default:
       return [];
   }
@@ -32,6 +36,7 @@ export function initialOrder(q: Question): string[] {
 export function initialDraft(q: Question): Draft {
   if (q.type === "ordering" || q.type === "ranking") return initialOrder(q);
   if (q.type === "match") return q.left.map(() => "");
+  if (q.type === "sort") return q.items.map(() => "");
   return null;
 }
 
@@ -44,6 +49,8 @@ function keyHint(q: Question): string {
       return "Astuce : touche un élément, puis son partenaire. Entrée pour valider.";
     case "written":
       return "Astuce : Ctrl + Entrée pour valider.";
+    case "sort":
+      return "Astuce : range chaque carte, puis Entrée pour valider.";
     default: {
       const n = "options" in q ? q.options.length : 2;
       return `Astuce : touches 1 à ${n} pour choisir, Entrée pour valider.`;
@@ -79,6 +86,7 @@ export function QuizRunner({
   const [streak, setStreak] = useState(0);
   const [line, setLine] = useState("");
   const [retryNotice, setRetryNotice] = useState(false);
+  const { sounds } = useLearnerPrefs();
   const sheet = useRef<HTMLDivElement>(null);
   const [sheetHeight, setSheetHeight] = useState(0);
 
@@ -113,10 +121,26 @@ export function QuizRunner({
     setStreak(nextStreak);
     setLine(mascotLine(track, moment, index));
     setReveal({ correct });
+    if (sounds) playSound(correct ? "right" : "wrong");
+    // inside a lesson, the correction is enough: the lesson's own "Suivant" moves on
+    if (compact) onDone({ ...firstAnswers, [step.question.id]: answer });
     if (!(step.question.id in firstAnswers)) setFirstAnswers((f) => ({ ...f, [step.question.id]: answer }));
     if (correct) setSolved((s) => s + 1);
     else if (!compact) setQueue((q) => [...q, { question: step.question, retry: true }]);
-  }, [reveal, step, draft, firstAnswers, streak, track, index, compact]);
+  }, [reveal, step, draft, firstAnswers, streak, track, index, compact, sounds, onDone]);
+
+  /** A written question can be passed: it counts as missed, shows the model answer, and does not come back. */
+  const skip = useCallback(() => {
+    if (reveal) return;
+    if (compact) {
+      onDone(firstAnswers);
+      return;
+    }
+    setStreak(0);
+    setLine("On passe. Voici une réponse possible.");
+    setReveal({ correct: false, skipped: true });
+    if (!(step.question.id in firstAnswers)) setFirstAnswers((f) => ({ ...f, [step.question.id]: "" }));
+  }, [reveal, compact, onDone, firstAnswers, step]);
 
   const next = useCallback(() => {
     if (!reveal) return;
@@ -173,9 +197,11 @@ export function QuizRunner({
   const feedback = reveal && !reveal.correct && draft !== null ? optionFeedback(q, draft as Answer) : undefined;
   const written = q.type === "written";
   const verdict = reveal
-    ? reveal.correct
-      ? written ? "Les idées y sont." : "Juste !"
-      : written ? "Il manque des idées." : "Pas tout à fait."
+    ? reveal.skipped
+      ? "Question passée."
+      : reveal.correct
+        ? written ? "Les idées y sont." : "Juste !"
+        : written ? "Il manque des idées." : "Pas tout à fait."
     : "";
 
   const tone = !reveal ? "border-line bg-paper" : reveal.correct ? "sheet-in border-transparent bg-good-soft" : "sheet-in border-transparent bg-bad-soft";
@@ -185,11 +211,16 @@ export function QuizRunner({
     <div className={compact ? "grid gap-4" : "mx-auto flex max-w-3xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-end sm:justify-between"}>
       {reveal ? (
         <div className={`grid gap-2 ${compact ? "" : "max-h-[38dvh] overflow-y-auto sm:max-h-[45dvh]"}`}>
-          <MascotSays track={track} mood={reveal.correct ? "cheer" : "oops"} line={line} size={44} />
-          <p className={`flex items-center gap-2 text-lg font-bold ${reveal.correct ? "text-good" : "text-bad"}`}>
-            {reveal.correct ? <CircleCheck className="size-6" aria-hidden /> : <CircleX className="size-6" aria-hidden />}
-            {verdict}
-          </p>
+          <div className="flex items-center gap-3">
+            <Avatar track={track} mood={reveal.correct ? "cheer" : reveal.skipped ? "think" : "oops"} size={compact ? 48 : 64} animate />
+            <div className="grid gap-0.5">
+              <p className={`flex items-center gap-2 text-xl font-bold ${reveal.correct ? "text-good" : "text-bad"}`}>
+                {reveal.correct ? <CircleCheck className="size-6" aria-hidden /> : <CircleX className="size-6" aria-hidden />}
+                {verdict}
+              </p>
+              {line && line !== verdict && <p className="font-medium text-ink-2">{line}</p>}
+            </div>
+          </div>
           {!reveal.correct && !written && (
             <div className="text-[0.9375rem]">
               <p className="font-semibold">Bonne réponse :</p>
@@ -203,13 +234,22 @@ export function QuizRunner({
         !compact && <p className="hidden text-sm text-muted sm:block">{keyHint(q)}</p>
       )}
       {reveal ? (
-        <button className={`btn btn-lg flex-none sm:min-w-44 ${blockBtn} ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
-          Continuer
-        </button>
+        !compact && (
+          <button className={`btn btn-lg flex-none sm:min-w-44 ${blockBtn} ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
+            Continuer
+          </button>
+        )
       ) : (
-        <button className={`btn btn-primary btn-lg flex-none sm:min-w-44 ${blockBtn}`} onClick={check} disabled={!isDraftComplete(q, draft)}>
-          Vérifier
-        </button>
+        <div className={`flex flex-none flex-wrap items-center gap-2 ${compact ? "" : "sm:flex-row-reverse"}`}>
+          <button className={`btn btn-primary btn-lg flex-none sm:min-w-44 ${blockBtn}`} onClick={check} disabled={!isDraftComplete(q, draft)}>
+            Vérifier
+          </button>
+          {(written || compact) && (
+            <button className="btn btn-ghost" onClick={skip}>
+              {compact ? "Passer" : "Passer la question"}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

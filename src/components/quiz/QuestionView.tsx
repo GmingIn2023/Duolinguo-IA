@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { ArrowDown, ArrowUp, Bot, Check, CircleCheck, CircleDashed, UserRound } from "lucide-react";
-import type { Answer, Item, Option, Question } from "@/content/types";
+import type { Answer, Item, Option, Question, QuestionVisual } from "@/content/types";
 import { WRITTEN_MAX, metCriteria } from "@/lib/grading";
 import { Rich, renderInline } from "@/components/Rich";
 
 export type Draft = Answer | null;
-export type Reveal = null | { correct: boolean };
+export type Reveal = null | { correct: boolean; skipped?: boolean };
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 const WRITTEN_MIN = 3;
@@ -31,6 +31,7 @@ export function QuestionView({
   const long = heading.length > 60 && question.type !== "true_false";
   return (
     <div className="grid gap-6">
+      {question.visual && <Visual visual={question.visual} />}
       <div className="grid gap-2">
         <h2 className={`display ${long ? "display-s sm:text-[1.875rem]" : "display-m"}`}>{renderInline(heading)}</h2>
         {question.type === "true_false" && <p className="text-[1.0625rem] text-ink-2">Cette affirmation est-elle vraie ?</p>}
@@ -128,8 +129,103 @@ export function QuestionView({
         />
       )}
 
+      {question.type === "sort" && (
+        <SortBins
+          items={order(question.items, displayOrder)}
+          allItems={question.items}
+          bins={question.bins}
+          answer={question.answer}
+          draft={Array.isArray(draft) && draft.length === question.items.length ? draft : question.items.map(() => "")}
+          setDraft={setDraft}
+          reveal={reveal}
+        />
+      )}
+
       {question.type === "written" && <WrittenField question={question} value={typeof draft === "string" ? draft : ""} setDraft={setDraft} reveal={reveal} />}
     </div>
+  );
+}
+
+/** "Same question, two answers": a tiny chat and the odds of the next word, drawn as bars. */
+function Visual({ visual }: { visual: QuestionVisual }) {
+  const max = Math.max(...visual.bars.map((b) => b.p));
+  return (
+    <figure className="tile grid gap-4 p-4 sm:grid-cols-[1.15fr_1fr] sm:gap-6 sm:p-5">
+      <div className="grid content-start gap-2.5">
+        <p className="w-fit max-w-full rounded-2xl rounded-bl-md bg-sunk px-3.5 py-2 text-[0.9375rem] font-medium">{visual.ask}</p>
+        {visual.answers.map((a, i) => (
+          <p key={a} className="ml-auto flex w-fit max-w-full items-center gap-2 rounded-2xl rounded-br-md bg-ink px-3.5 py-2 text-[0.9375rem] text-paper">
+            <span className="rounded-md bg-paper/15 px-1.5 text-xs font-semibold">{i === 0 ? "1er essai" : "2e essai"}</span>
+            {a}
+          </p>
+        ))}
+      </div>
+      <div className="grid content-start gap-2">
+        <figcaption className="text-sm font-semibold text-ink-2">Mots possibles juste après</figcaption>
+        <ul className="grid gap-1.5" aria-label="Probabilité de chaque mot">
+          {visual.bars.map((b) => (
+            <li key={b.label} className="grid grid-cols-[4.5rem_1fr_2.5rem] items-center gap-2 text-sm">
+              <span className="font-medium">{b.label}</span>
+              <span className="h-3 overflow-hidden rounded-full bg-sunk" aria-hidden>
+                <span className="block h-full rounded-full bg-accent" style={{ width: `${(b.p / max) * 100}%` }} />
+              </span>
+              <span className="tabular text-right text-muted">{b.p} %</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </figure>
+  );
+}
+
+/** Each card goes in one of two bins. `draft[i]` is "0", "1" or "" for `allItems[i]`. */
+function SortBins({
+  items,
+  allItems,
+  bins,
+  answer,
+  draft,
+  setDraft,
+  reveal,
+}: {
+  items: Item[];
+  allItems: Item[];
+  bins: [string, string];
+  answer: (0 | 1)[];
+  draft: string[];
+  setDraft: (d: Draft) => void;
+  reveal: Reveal;
+}) {
+  const locked = reveal !== null;
+  return (
+    <ul className="grid gap-3" aria-label="Cartes à ranger">
+      {items.map((item) => {
+        const i = allItems.findIndex((x) => x.id === item.id);
+        const value = draft[i];
+        const state = reveal ? (value === String(answer[i]) ? "correct" : "wrong") : undefined;
+        return (
+          <li key={item.id} className="choice !grid !cursor-default gap-3 sm:!grid-cols-[1fr_auto] sm:items-center" data-state={state}>
+            <span className="text-[1.0625rem] font-medium leading-snug">{renderInline(item.text)}</span>
+            <span className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={`Ranger « ${item.text} »`}>
+              {bins.map((bin, b) => (
+                <button
+                  key={bin}
+                  type="button"
+                  role="radio"
+                  aria-checked={value === String(b)}
+                  disabled={locked}
+                  onClick={() => setDraft(draft.map((v, j) => (j === i ? String(b) : v)))}
+                  className="chip !min-h-11 justify-center !whitespace-normal !px-3 text-center leading-tight"
+                >
+                  {bin}
+                </button>
+              ))}
+            </span>
+            {reveal && state === "wrong" && <span className="text-sm font-semibold text-bad sm:col-span-2">Ici : {bins[answer[i]]}</span>}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -462,6 +558,8 @@ export function correctAnswerText(q: Question): string {
       return q.answer.map((id) => `• ${text(q.options, id)}`).join("\n");
     case "match":
       return q.left.map((l, i) => `${l.text} → ${text(q.right, q.answer[i])}`).join("\n");
+    case "sort":
+      return q.bins.map((bin, b) => `${bin} : ${q.items.filter((_, i) => q.answer[i] === b).map((x) => x.text).join(", ")}`).join("\n");
     case "written":
       return q.modelAnswer;
   }
@@ -490,6 +588,8 @@ export function isDraftComplete(q: Question, draft: Draft): boolean {
       return Array.isArray(draft) && draft.length > 0;
     case "match":
       return Array.isArray(draft) && draft.length === q.left.length && draft.every(Boolean);
+    case "sort":
+      return Array.isArray(draft) && draft.length === q.items.length && draft.every(Boolean);
     case "written":
       return typeof draft === "string" && draft.trim().length >= WRITTEN_MIN;
     default:

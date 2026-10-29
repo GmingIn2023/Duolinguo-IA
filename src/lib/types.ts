@@ -8,6 +8,8 @@ export type Profile = {
   /** Estimated level out of 10; null for accounts created before the placement test existed. */
   level10: number | null;
   preferences: unknown;
+  /** Copied from the signup metadata: the goal and the first placement test. */
+  onboarding: unknown;
   xp: number;
   streak_days: number;
   last_active_date: string | null;

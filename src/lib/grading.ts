@@ -38,6 +38,8 @@ export function gradeAnswer(q: Question, answer: Answer): boolean {
     case "ai_analysis":
     case "multi":
       return isStringArray(answer) && sameSet(answer, q.answer);
+    case "sort":
+      return isStringArray(answer) && sameSequence(answer, q.answer.map(String));
     case "written":
       return typeof answer === "string" && answer.length <= WRITTEN_MAX && metCriteria(q, answer).length >= q.minCriteria;
   }

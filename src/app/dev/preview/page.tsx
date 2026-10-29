@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
-import { Board } from "@/components/Board";
 import { LessonPlayer } from "@/components/LessonPlayer";
-import { LESSONS, TRACKS, getLesson, isTrackId } from "@/content";
-import { boardView } from "@/lib/boardView";
+import { Atelier } from "@/components/atelier/Atelier";
+import { ATELIER } from "@/content/atelier";
+import { PathView } from "@/components/path/PathView";
+import { LESSONS, TRACKS, getLesson, isTrackId, trackLessons } from "@/content";
+import { knowledgeFrom, trackPath } from "@/lib/path";
 import type { Block, Question } from "@/content/types";
 import { Gallery, type GalleryBlock, type GalleryQuestion } from "./Gallery";
 import { QuizPreview } from "./QuizPreview";
@@ -20,6 +22,8 @@ export default async function Preview(props: { searchParams: Promise<Record<stri
     const lesson = getLesson(sp.id ?? "") ?? LESSONS[0];
     return <LessonPlayer lesson={lesson} track={trackId} resumeAt={sp.resume ? Number(sp.resume) : null} notes={[]} next={null} completedBefore={false} />;
   }
+
+  if (sp.view === "jeu") return <Atelier track={trackId} missions={ATELIER[trackId]} sounds={false} motion="full" />;
 
   if (sp.view === "gallery") {
     const blocks = new Map<Block["type"], GalleryBlock>();
@@ -44,13 +48,14 @@ export default async function Preview(props: { searchParams: Promise<Record<stri
     return <QuizPreview questions={picked.length ? picked : all.slice(0, 3)} track={trackId} theme={lesson?.theme ?? "prompt"} />;
   }
 
-  const done = Number(sp.done ?? 5);
-  const track = TRACKS[trackId];
-  const completed = new Set(track.nodes.filter((n) => n.lessonId).slice(0, done).map((n) => n.lessonId!));
-  const { items } = boardView(track, { completed, level10: Number(sp.level ?? 0) }, [], new Map());
+  // ?view=path&track=gecko&done=3&test=g1,g3
+  const done = Number(sp.done ?? 3);
+  const completed = trackLessons(trackId).slice(0, done).map((l) => l.id);
+  const chapters = (sp.test ?? "").split(",").filter(Boolean);
+  const path = trackPath(TRACKS[trackId], knowledgeFrom(completed, chapters.length ? { [trackId]: { score: 6, chapters, at: "" } } : {}), getLesson);
   return (
-    <div data-track={trackId} className="min-h-dvh p-4 sm:p-10">
-      <Board track={track} items={items} mascot={trackId} />
+    <div data-track={trackId} className="mx-auto min-h-dvh max-w-xl p-4 sm:p-10">
+      <PathView track={trackId} chapters={path.chapters} tested={chapters.length > 0} />
     </div>
   );
 }

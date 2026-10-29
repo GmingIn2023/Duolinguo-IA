@@ -79,7 +79,7 @@ html:has(.landing) { background: #fbf6ec; }
 .landing-scene .bubble-say[data-on="true"] { opacity: 1; transform: none; }
 
 /* Eyes lean toward the pointer (set by HeroScene as --gx / --gy, in SVG units) */
-.mascot-look { transform: translate(calc(var(--gx, 0) * 1px), calc(var(--gy, 0) * 1px)); transition: transform 120ms linear; }
+.m-look { transform: translate(calc(var(--gx, 0) * 1px), calc(var(--gy, 0) * 1px)); transition: transform 120ms linear; }
 
 @media (max-width: 640px) {
   .landing-scene .bubble-say { font-size: 0.78rem; padding: 0.45rem 0.65rem; }
@@ -90,14 +90,23 @@ html:has(.landing) { background: #fbf6ec; }
 @media (prefers-reduced-motion: reduce) {
   .landing .hl::after { animation: none; transform: scaleX(1); }
   .landing-scene .blob-main, .landing-scene .guide-body { animation: none; }
-  .mascot-look { transition: none; }
+  .m-look { transition: none; }
 }
 
-/* ───────── Plan des parcours ───────── */
-.landing .stop { cursor: pointer; outline: none; transform-box: fill-box; transform-origin: center; animation: landing-stop-in 500ms var(--ease-out) backwards; animation-delay: calc(var(--k, 0) * 18ms); transition: opacity 250ms; }
-@keyframes landing-stop-in { from { transform: scale(0.6); } }
-.landing .stop .stop-body { transition: transform var(--dur-hover) var(--ease-out); transform-box: fill-box; transform-origin: center; }
-.landing .stop:hover .stop-body, .landing .stop:focus-visible .stop-body { transform: scale(1.12); }
-.landing .stop-halo { fill: none; stroke: transparent; stroke-width: 2.4; }
-.landing .stop:focus-visible .stop-halo { stroke: var(--ink); }
-@media (prefers-reduced-motion: reduce) { .landing .stop { animation: none; } }
+/* ───────── Plan des parcours : trois colonnes séparées ───────── */
+.landing .plan-col { display: grid; align-content: start; gap: 1rem; padding: 1.25rem 1.25rem 1rem; border-radius: 24px; background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent-deep) 30%, transparent); }
+.landing .plan-col .bubble { background: var(--surface); }
+@media (max-width: 767.98px) { .landing .plan-col[data-mobile-hidden] { display: none; } }
+.landing .plan-chapters { display: grid; gap: 0.7rem; position: relative; }
+.landing .plan-chapters li { display: grid; grid-template-columns: 1.75rem 1fr; gap: 0.7rem; align-items: start; position: relative; }
+/* the thread between chapters: a quiet line behind the numbers */
+.landing .plan-chapters li:not(:last-child)::before { content: ""; position: absolute; left: 0.85rem; top: 1.75rem; bottom: -0.7rem; width: 2px; background: color-mix(in srgb, var(--accent-deep) 35%, transparent); }
+.landing .plan-num { position: relative; z-index: 1; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background: var(--accent); box-shadow: inset 0 -2px 0 var(--accent-deep); font: 800 0.8rem var(--font-archivo), sans-serif; }
+.landing .plan-dot { width: 1.15rem; height: 1.15rem; border-radius: 999px; background: var(--th); box-shadow: inset 0 -2px 0 var(--th-deep), 0 0 0 1.5px var(--surface); cursor: pointer; transition: transform 160ms var(--ease-out), opacity 200ms; }
+.landing i.plan-dot { display: inline-block; cursor: default; }
+.landing .plan-dot[data-theme="projets"] { background: var(--ink); }
+@media (hover: hover) { .landing button.plan-dot:hover { transform: scale(1.25); } }
+.landing .plan-dot[aria-pressed="true"] { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+.landing .plan-dot[data-dim] { opacity: 0.18; }
+.landing .plan-tab { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0 0.85rem 0 0.4rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line); }
+.landing .plan-tab[aria-selected="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }

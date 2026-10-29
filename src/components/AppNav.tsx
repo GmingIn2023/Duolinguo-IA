@@ -2,16 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Home, Map, NotebookPen, RotateCcw, User } from "lucide-react";
+import { BookOpen, Home, NotebookPen, RotateCcw, User } from "lucide-react";
 
 const ITEMS = [
   { href: "/learn", label: "Accueil", icon: Home, bar: true },
-  { href: "/map", label: "Carte", icon: Map, bar: true },
   { href: "/courses", label: "Cours", icon: BookOpen, bar: true },
   { href: "/review", label: "Révisions", icon: RotateCcw, bar: true },
   { href: "/notes", label: "Carnet", icon: NotebookPen, bar: true },
-  { href: "/profile", label: "Profil", icon: User, bar: false },
+  { href: "/profile", label: "Profil", icon: User, bar: true },
 ];
+
+/** The mobile top bar, hidden on the path: the path has its own bar (track, streak, XP, goal). */
+export function MobileTopBar({ children }: { children: React.ReactNode }) {
+  const path = usePathname();
+  if (path === "/learn" || path.startsWith("/learn/")) return null;
+  return <>{children}</>;
+}
 
 export function AppNav({ dueCount, variant }: { dueCount: number; variant: "rail" | "bar" }) {
   const path = usePathname();
