@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { LESSONS, TRACKS, trackLessons } from "../src/content";
 import { answerCorrectly } from "./quiz";
 
 // The landing page: public, no account needed.
@@ -115,12 +116,11 @@ test.describe("how it works: the thread and its four stops", () => {
     await expect(steps).toHaveCount(4);
     await page.locator(".how-again").scrollIntoViewIfNeeded();
     await expect(page.locator(".how-step.is-reached")).toHaveCount(4);
-    await expect(page.getByText("Une IA peut affirmer une information fausse avec beaucoup d'assurance.")).toBeVisible();
-    await expect(page.getByText("Parcours conseillé selon ton objectif")).toBeVisible();
-    const brief = page.locator(".how-brief button");
-    await expect(brief).toHaveCount(3);
-    await page.getByRole("button", { name: "Format", exact: true }).click();
-    await expect(page.locator(".how-why").first()).toContainText("Format.");
+    await expect(page.locator(".how-chapters li.is-start")).toContainText("Tu commences ici");
+    // the course excerpt asks a real true/false question and answers it on the spot
+    await page.getByRole("radiogroup", { name: "Vrai ou faux" }).getByRole("radio", { name: "Vrai" }).click();
+    await expect(page.locator(".how-try-why")).toContainText(/Juste\.|Pas tout à fait\./);
+    await expect(page.locator(".how-mark-hl")).toBeVisible();
   });
 
   test("reduced motion: the thread is already drawn and every card is readable at rest", async ({ browser }) => {
@@ -135,47 +135,44 @@ test.describe("how it works: the thread and its four stops", () => {
 });
 
 test.describe("themes and plan, drawn from the real curriculum", () => {
-  test("ten theme tiles, the real number of lessons, and a tile filters the plan", async ({ page }) => {
+  test("ten theme tiles, one dot per lesson, and a tile lights its lessons in every track", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("list", { name: "Les dix thèmes" }).getByRole("button")).toHaveCount(10);
-    await expect(page.getByText("34 cours au total")).toBeVisible();
-    // Découvrir has no "Agents IA" lesson: the plan moves to the first track that does
-    await expect(page.getByRole("tab", { name: "Découvrir" })).toHaveAttribute("aria-selected", "true");
-    await page.getByRole("button", { name: /Agents IA/ }).click();
-    await expect(page.getByRole("tab", { name: "Pratiquer" })).toHaveAttribute("aria-selected", "true");
-    const chip = page.getByRole("button", { name: /Agents IA : \d+ cours ici/ });
-    await expect(chip).toBeVisible();
-    await chip.click();
-    await expect(chip).toBeHidden();
+    await expect(page.locator("#plan button.plan-dot")).toHaveCount(LESSONS.length);
+    const agents = page.getByRole("button", { name: /Agents IA/ });
+    await agents.click();
+    await expect(agents).toHaveAttribute("aria-pressed", "true");
+    // Découvrir has no agents lesson; Construire does
+    await expect(page.locator("#plan-bird button.plan-dot:not([data-dim])")).toHaveCount(0);
+    expect(await page.locator("#plan-fox button.plan-dot:not([data-dim])").count()).toBeGreaterThan(0);
+    await page.getByRole("button", { name: "Afficher tous les thèmes" }).click();
+    await expect(page.locator("#plan button.plan-dot[data-dim]")).toHaveCount(0);
   });
 
-  test("each stop can be reached and read with the keyboard", async ({ page }) => {
+  test("a lesson dot can be reached and read with the keyboard", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle"); // the plan reacts to focus only once the page is hydrated
-    const plan = page.locator("#plan-panel");
-    await plan.scrollIntoViewIfNeeded();
-    const stops = plan.getByRole("button", { name: /^Cours : / });
-    await stops.first().focus();
-    await expect(plan.getByText("Cours · Comprendre", { exact: true })).toBeVisible();
-    await page.keyboard.press("ArrowRight");
-    await expect(plan.getByText("Comment un chatbot écrit ses réponses", { exact: true })).toBeVisible();
+    await page.waitForLoadState("networkidle"); // the plan reacts only once the page is hydrated
+    const col = page.locator("#plan-bird");
+    await col.scrollIntoViewIfNeeded();
+    const first = col.locator("button.plan-dot").first();
+    await first.focus();
+    await page.keyboard.press("Enter");
+    await expect(col.locator("p[aria-live] strong")).toHaveText((await first.getAttribute("aria-label"))!);
   });
 
-  test("the three tracks each draw their own map", async ({ page }) => {
+  test("the three tracks each draw their own chapters", async ({ page }) => {
     await page.goto("/");
-    const counts: number[] = [];
-    for (const name of ["Découvrir", "Pratiquer", "Construire"]) {
-      await page.getByRole("tab", { name }).click();
-      counts.push(await page.locator("#plan-panel").getByRole("button", { name: /^(Cours : )?/ }).count());
+    for (const t of ["bird", "gecko", "fox"] as const) {
+      const col = page.locator(`#plan-${t}`);
+      await expect(col.locator(".plan-chapters > li")).toHaveCount(TRACKS[t].chapters.length);
+      await expect(col.locator("button.plan-dot")).toHaveCount(trackLessons(t).length);
     }
-    expect(counts[0]).toBeLessThan(counts[1]);
-    expect(counts[1]).toBeLessThan(counts[2]);
   });
 });
 
 test.describe("level test inside the landing page", () => {
   test("the question bank (with its answers) is only downloaded when the test starts", async ({ page }) => {
-    const MARK = "jeu de test plut"; // ASCII part of a bank question, absent from every other module
+    const MARK = "dans une base de r"; // ASCII part of a bank question, absent from every other module
     const holders: string[] = [];
     page.on("response", async (res) => {
       if (!res.url().includes("/_next/") || !res.url().endsWith(".js")) return;
@@ -186,52 +183,54 @@ test.describe("level test inside the landing page", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
     // the whole landing is on screen and usable, yet the bank has not been downloaded
-    await expect(page.getByRole("button", { name: "Commencer le test" })).toBeVisible();
+    const goals = page.getByRole("radiogroup", { name: "Ton objectif" });
+    await expect(goals).toBeVisible();
     expect(holders, `bank found in: ${holders.join(", ")}`).toEqual([]);
-    await page.getByRole("button", { name: "Commencer le test" }).click();
-    await page.getByRole("radio", { name: /Construire avec l'IA/ }).click();
-    await expect(page.getByText("Question 1 sur 10")).toBeVisible({ timeout: 20_000 });
+    await goals.getByRole("radio", { name: /Construire avec l'IA/ }).click();
+    await expect(page.locator("#test").getByRole("button", { name: "Je ne sais pas" })).toBeVisible({ timeout: 20_000 });
     expect(holders.length).toBeGreaterThan(0);
   });
 
-  test("everything right: 10/10, the stated goal decides the suggested track, answers travel to signup", async ({ page }) => {
+  test("everything right on the Construire test: 10/10, straight to the final project, answers travel to signup", async ({ page }) => {
     await page.goto("/");
     const box = page.locator("#test");
-    await box.getByRole("button", { name: "Commencer le test" }).click();
     await box.getByRole("radio", { name: /Construire avec l'IA/ }).click();
     for (let i = 1; i <= 10; i++) {
-      await expect(box.getByText(`Question ${i} sur 10`)).toBeVisible({ timeout: 20_000 });
+      await expect(box.getByRole("progressbar", { name: "Avancement du test" })).toHaveAttribute("aria-valuenow", String(i - 1), { timeout: 20_000 });
       await answerCorrectly(box);
-      await box.getByRole("button", { name: "Valider" }).click();
+      await box.getByRole("button", { name: /^Valider/ }).click();
     }
-    await expect(box.getByText("Ton niveau estimé : 10/10")).toBeAttached();
-    const fox = box.getByRole("radio", { name: /Construire/ });
-    await expect(fox).toHaveAttribute("aria-checked", "true");
-    await expect(fox).toContainText("Conseillé pour toi");
-    await box.getByRole("radio", { name: /Pratiquer/ }).click();
+    await expect(box.locator("p", { hasText: "Ton score" })).toContainText("10/10");
+    // every tested chapter is validated; the final project is never skipped by a test
+    await expect(box.getByRole("heading", { name: `Tu commences au chapitre ${TRACKS.fox.chapters.length} : ${TRACKS.fox.chapters.at(-1)!.name}` })).toBeVisible();
     await box.getByRole("button", { name: "Créer mon compte et commencer" }).click();
-    await expect(page).toHaveURL(/\/signup\?track=gecko/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/signup\?track=fox/, { timeout: 30_000 });
     const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
     expect(stored.placement).toHaveLength(10);
     expect(stored.goal).toBe("build");
-    expect(stored.track).toBe("gecko");
+    expect(stored.tested).toBe("fox");
+    expect(stored.track).toBe("fox");
   });
 
-  test("« Je ne sais pas » everywhere: 0/10 and the beginner track", async ({ page }) => {
+  test("« Je ne sais pas » everywhere on Découvrir: 0/10, start at chapter 1, and a warning when picking another track", async ({ page }) => {
     await page.goto("/");
     const box = page.locator("#test");
-    await box.getByRole("button", { name: "Commencer le test" }).click();
     await box.getByRole("radio", { name: /Comprendre ce qu'est l'IA/ }).click();
     for (let i = 0; i < 10; i++) await box.getByRole("button", { name: "Je ne sais pas" }).click({ timeout: 20_000 });
-    await expect(box.getByText("Ton niveau estimé : 0/10")).toBeAttached();
-    await expect(box.getByRole("radio", { name: /Découvrir/ })).toHaveAttribute("aria-checked", "true");
+    await expect(box.locator("p", { hasText: "Ton score" })).toContainText("0/10");
+    await expect(box.getByRole("heading", { name: /Tu commences au chapitre 1/ })).toBeVisible();
+    await box.getByRole("button", { name: "Choisir un autre parcours" }).click();
+    await box.getByRole("radio", { name: /Pratiquer/ }).click();
+    await expect(box.getByRole("alert")).toContainText("Ton test portait sur Découvrir");
+    await box.getByRole("button", { name: /Revenir à Découvrir/ }).click();
+    await expect(box.getByRole("alert")).toHaveCount(0);
     await box.getByRole("button", { name: "Refaire le test" }).click();
-    await expect(box.getByRole("button", { name: "Commencer le test" })).toBeVisible();
+    await expect(box.getByRole("button", { name: "Je ne sais pas" })).toBeVisible();
   });
 
   test("choosing a track directly skips the test and still reaches signup", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: /Pratiquer · 21 cours/ }).click();
+    await page.locator("#depart").getByRole("button", { name: /Pratiquer/ }).click();
     const panel = page.getByRole("status").filter({ hasText: "Tu pars sur Pratiquer" });
     await expect(panel).toBeVisible();
     await panel.getByRole("button", { name: "Créer mon compte et commencer" }).click();

@@ -121,7 +121,6 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
 
       <article className={stepClass(0)}>
         <div className="how-copy">
-          <span className="how-n">Étape 1 · Test de niveau</span>
           <h3>On voit ce que tu sais déjà.</h3>
           <p>Dix questions sur le parcours qui t&apos;intéresse. Ce que tu sais est validé, et tu commences au bon chapitre.</p>
         </div>
@@ -148,7 +147,6 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
 
       <article className={stepClass(1)}>
         <div className="how-copy">
-          <span className="how-n">Étape 2 · Des cours courts</span>
           <h3>Une idée par écran, puis tu essaies.</h3>
           <p>Peu de texte, les mots qui comptent en gras, et tout de suite une petite question pour vérifier.</p>
         </div>
@@ -158,7 +156,6 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
 
       <article className={stepClass(2)}>
         <div className="how-copy">
-          <span className="how-n">Étape 3 · Quiz qui explique</span>
           <h3>Tu te trompes, on te dit <em className="how-why-word">pourquoi</em>.</h3>
           <p>Tu vois la bonne réponse et la raison, pas seulement une croix rouge.</p>
         </div>
@@ -190,7 +187,6 @@ export function HowItWorks({ previews }: { previews: LandingPreviews }) {
 
       <article className={stepClass(3)}>
         <div className="how-copy">
-          <span className="how-n">Étape 4 · Révisions</span>
           <h3>Ce que tu rates revient avant l&apos;oubli.</h3>
           <p>Une notion ratée revient plus tard, puis de plus en plus espacée. Ton carnet garde aussi tes notes.</p>
         </div>

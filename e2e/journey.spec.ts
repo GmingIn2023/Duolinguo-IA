@@ -5,7 +5,7 @@ import { answerSectionChecks, finishQuiz } from "./quiz";
 
 // The real journey of a brand-new learner, on a real account created through the signup form:
 // placement test → signup → home → course (sections, in-lesson checks, notebook, summary) → quiz with a miss
-// → XP saved → map → notebook → settings → daily review → XP still locked against the learner.
+// → XP saved → path → notebook → settings → daily review → XP still locked against the learner.
 // Needs SUPABASE_SECRET_KEY (to backdate due reviews and delete the account afterwards)
 // and "Confirm email" turned off in Supabase Auth (otherwise the signup waits for an email).
 
@@ -44,7 +44,7 @@ test.afterAll(async () => {
 });
 
 const xpOnScreen = async (page: Page) => Number(await page.getByTitle("points d'expérience").first().locator(".tabular").innerText());
-const earnedOnScreen = async (page: Page) => Number((await page.getByRole("heading", { name: /XP gagnés/ }).getAttribute("aria-label"))!.match(/\d+/)![0]);
+const earnedOnScreen = async (page: Page) => Number((await page.getByLabel(/XP gagnés/).first().getAttribute("aria-label"))!.match(/\d+/)![0]);
 
 test("new learner: placement → signup → course → quiz → XP → notes → settings → review", async ({ page }, info) => {
   test.skip(!secret, "SUPABASE_SECRET_KEY not set");
@@ -55,8 +55,9 @@ test("new learner: placement → signup → course → quiz → XP → notes →
   // 1. placement test (beginner) + real signup
   await page.goto("/onboarding");
   await page.getByRole("radio", { name: /M'en servir pour étudier ou travailler/ }).click();
-  await page.getByRole("button", { name: "Commencer le test" }).click();
   for (let i = 0; i < 10; i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
+  // 0/10 on Pratiquer suggests the Découvrir test; the learner stays
+  await page.getByRole("button", { name: "Continuer sur Pratiquer" }).click();
   await page.getByRole("button", { name: "Créer mon compte et commencer" }).click();
   await expect(page).toHaveURL(/\/signup\?track=gecko/);
   await page.getByLabel("Prénom").fill("Journey");
@@ -76,7 +77,8 @@ test("new learner: placement → signup → course → quiz → XP → notes →
   // 2. home → next step
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Journey");
   expect(await xpOnScreen(page)).toBe(0);
-  await page.getByRole("link", { name: /Commencer/ }).first().click();
+  await page.locator('[data-step-node][data-status="current"]').click();
+  await page.locator("[data-step-card]").getByRole("link", { name: "Commencer" }).click();
   await expect(page).toHaveURL(/\/lesson\//);
   await page.getByRole("button", { name: "Commencer", exact: true }).click();
 
@@ -86,7 +88,7 @@ test("new learner: placement → signup → course → quiz → XP → notes →
   await page.getByRole("button", { name: "Ajouter" }).click();
   await expect(page.getByText("Note de test E2E")).toBeVisible();
   await page.getByRole("button", { name: "Fermer", exact: true }).first().click();
-  for (let s = 0; s < 8; s++) {
+  for (let s = 0; s < 14; s++) {
     await answerSectionChecks(page);
     const next = page.getByRole("button", { name: /^(Suivant|Fiche à retenir)/ });
     const label = await next.innerText();
@@ -101,9 +103,9 @@ test("new learner: placement → signup → course → quiz → XP → notes →
   await finishQuiz(page, /XP gagnés/, { missOne: true });
   const earned = await earnedOnScreen(page);
   expect(earned).toBeGreaterThan(0);
-  await page.getByRole("link", { name: "Voir la carte" }).click();
-  await expect(page).toHaveURL(/\/map/);
-  await expect(page.getByRole("button", { name: /\. Terminé$/ }).first()).toBeVisible();
+  await page.getByRole("link", { name: "Retour au chemin" }).click();
+  await expect(page).toHaveURL(/\/learn$/);
+  await expect(page.locator('[data-step-node][data-status="completed"]').first()).toBeVisible();
   expect(await xpOnScreen(page)).toBe(earned);
 
   // 5. notebook: the free note and the saved summary
@@ -125,7 +127,7 @@ test("new learner: placement → signup → course → quiz → XP → notes →
   });
   expect(due.ok(), await due.text()).toBeTruthy();
   await page.goto("/review");
-  await page.getByRole("link", { name: "Réviser maintenant" }).click();
+  await page.getByRole("link", { name: "Réviser", exact: true }).click();
   await finishQuiz(page, /XP gagnés/);
   const reviewEarned = await earnedOnScreen(page);
   expect(reviewEarned).toBeGreaterThan(0);

@@ -28,15 +28,13 @@ export function Celebration({
   stats: { label: string; value: string; icon?: "xp" | "streak" }[];
   sounds: boolean;
 }) {
-  const [shown, setShown] = useState(0);
+  // shown only after a lesson ends, so always in the browser: no count-up when motion is reduced
+  const [still] = useState(() => typeof window === "undefined" || xp <= 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches || !!document.querySelector('[data-motion="calm"]'));
+  const [shown, setShown] = useState(still ? xp : 0);
 
   useEffect(() => {
     if (sounds) playSound("done");
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.querySelector('[data-motion="calm"]');
-    if (reduce || xp <= 0) {
-      setShown(xp);
-      return;
-    }
+    if (still) return;
     const start = performance.now();
     let raf = 0;
     const tick = (t: number) => {
@@ -46,7 +44,7 @@ export function Celebration({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [xp, sounds]);
+  }, [xp, sounds, still]);
 
   return (
     <div className="grid justify-items-center gap-5 text-center">

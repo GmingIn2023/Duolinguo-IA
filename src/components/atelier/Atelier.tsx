@@ -266,9 +266,8 @@ export function Atelier({ track, missions, sounds, motion }: { track: TrackId; m
               <p className="meta max-lg:hidden">{canSend(mission, picked) ? "Prêt ? Envoie ta demande." : "Ajoute au moins une carte Tâche."}</p>
             )}
             {!result && (
-              <a href="#reponse" className="btn btn-secondary btn-lg flex-none px-0 max-sm:w-[3.75rem] sm:px-6 lg:hidden" aria-label="Voir la réponse probable">
+              <a href="#reponse" className="grid size-[3.75rem] flex-none place-items-center rounded-full bg-surface shadow-[inset_0_0_0_1.5px_var(--ink)] transition-transform active:translate-y-0.5 lg:hidden" aria-label="Voir la réponse probable">
                 <Eye className="size-5" aria-hidden />
-                <span className="max-sm:sr-only">Voir la réponse</span>
               </a>
             )}
             {result ? (

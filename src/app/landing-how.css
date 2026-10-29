@@ -16,7 +16,6 @@
 .how-step:nth-of-type(even) .how-copy { order: 3; }
 .how-step:nth-of-type(even) .how-card { order: 1; }
 .how-step:nth-of-type(odd) .how-copy { text-align: right; justify-items: end; }
-.how-n { font-size: 0.875rem; font-weight: 600; color: var(--mint); }
 .how-copy h3 { order: -1; }
 .how-copy h3 { font-family: var(--font-archivo), sans-serif; font-weight: 800; font-stretch: 118%; letter-spacing: -0.03em; line-height: 1; font-size: clamp(1.5rem, 2.4vw, 2rem); text-wrap: balance; }
 .how-copy p { color: #e4f1ea; max-width: 24rem; }
@@ -24,7 +23,7 @@
 .how-step.is-reached .how-dot { background: var(--bird); border-color: var(--bird); color: var(--ink); transform: translateX(var(--dx, 0)) scale(1.12); }
 .how-card { background: var(--paper); color: var(--ink); border-radius: 22px; padding: 1.2rem; box-shadow: 0 6px 0 #0c2019; display: grid; gap: 0.8rem; min-width: 0; transform: translateY(12px); transition: transform 600ms var(--ease-out); }
 .how-step.is-reached .how-card { transform: none; }
-.how-cap { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.how-cap { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--muted); }
 .how-level { font: 800 2rem/1 var(--font-archivo), sans-serif; font-stretch: 125%; letter-spacing: -0.04em; }
 .how-level small { font: 500 0.95rem var(--font-geist), sans-serif; letter-spacing: 0; color: var(--muted); }
 .how-gauge { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; }

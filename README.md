@@ -1,6 +1,6 @@
 # Gusgus — Way of Learning AI
 
-Apprendre l'IA : 34 cours sourcés sur 10 thèmes, 3 cartes ramifiées (Découvrir, Pratiquer, Construire), un test de niveau adaptatif, des quiz à 9 types de questions, des révisions qui reviennent sous une autre forme, un carnet de notes.
+Apprendre l'IA : 47 cours sourcés sur 10 thèmes, 3 parcours séparés en chapitres (Découvrir, Pratiquer, Construire), un test de niveau par parcours, un mini-jeu en bêta (L'atelier du prompt), des quiz à 10 types de questions, des révisions qui reviennent sous une autre forme, un carnet de notes.
 
 **Stack** : Next.js 16 · TypeScript · Tailwind 4 · Supabase (auth, Postgres + RLS).
 
@@ -19,7 +19,7 @@ npm test               # logique (notation, XP, répétition espacée, placement
 npm run build && npm start
 npm run test:e2e       # parcours complets desktop + mobile (serveur lancé sur :3000, ou BASE_URL=…)
 E2E_SWEEP=1 BASE_URL=http://localhost:3000 npx playwright test content-sweep --project=desktop
-                       # avec `npm run dev` : joue chaque question des 34 cours dans la vraie interface
+                       # avec `npm run dev` : joue chaque question des 47 cours dans la vraie interface
 npm run content:check  # infos outils à revérifier (aussi chaque lundi en CI)
 ```
 
@@ -29,8 +29,8 @@ Les tests connectés demandent un compte de test confirmé, passé par l'environ
 
 ## Où modifier
 
-- **Cours et quiz** : `src/content/lessons/*.ts` · cartes et thèmes : `src/content/curriculum.ts`
-- **Aperçu de développement** (404 en production) : `/dev/preview?view=gallery` (les 17 blocs et 9 types de questions), `?view=lesson&id=…`, `?view=quiz&type=…`
+- **Cours et quiz** : `src/content/lessons/*.ts` · parcours, chapitres et thèmes : `src/content/curriculum.ts` · mini-jeu : `src/content/atelier.ts`
+- **Aperçu de développement** (404 en production) : `/dev/preview?view=gallery` (les 17 blocs et 10 types de questions), `?view=lesson&id=…`, `?view=quiz&type=…`
 - **Infos sur ChatGPT, Claude, Gemini, DeepSeek, Perplexity** : `src/content/tools.ts` (seul endroit, avec `lastVerified`)
 - **Schéma de base** : `supabase/migrations/`
 - **Design system** : `DESIGN.md` et `src/app/globals.css`

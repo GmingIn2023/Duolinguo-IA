@@ -39,6 +39,8 @@ const visibleTexts = (q: Question): string[] => {
       return q.items.map((i) => i.text);
     case "match":
       return q.left.map((i) => i.text);
+    case "sort":
+      return q.items.map((i) => i.text);
     default:
       return [];
   }
@@ -103,6 +105,9 @@ export async function answerCorrectly(scope: Locator) {
         await scope.getByRole("list", { name: "Éléments à associer" }).getByRole("button").nth(i).click();
         await clickByText(scope.getByRole("list", { name: "Partenaires possibles" }).getByRole("button"), q.right.find((r) => r.id === q.answer[i])!.text);
       }
+      return;
+    case "sort":
+      for (let i = 0; i < q.items.length; i++) await scope.getByRole("radiogroup", { name: `Ranger « ${q.items[i].text} »` }).getByRole("radio", { name: q.bins[q.answer[i]], exact: true }).click();
       return;
     case "written":
       // the first fragment of every criterion: graded on ideas, so this meets them all

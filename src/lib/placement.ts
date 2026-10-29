@@ -497,8 +497,9 @@ export const CHAPTER_POOL: PlacementQuestion[] = [
   }),
 ];
 
-const ALL = [TWO_ANSWERS, ...COMMON_POOL, ...CHAPTER_POOL];
-const byId = new Map(ALL.map((q) => [q.id, q]));
+/** Every question the placement test can show. */
+export const PLACEMENT_POOL: PlacementQuestion[] = [TWO_ANSWERS, ...COMMON_POOL, ...CHAPTER_POOL];
+const byId = new Map(PLACEMENT_POOL.map((q) => [q.id, q]));
 export const getPlacementQuestion = (id: string) => byId.get(id);
 
 

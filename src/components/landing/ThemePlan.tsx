@@ -98,7 +98,7 @@ function TrackColumn({ track, theme, hiddenOnMobile }: { track: LandingTrack; th
   const all = track.chapters.flatMap((c) => c.lessons);
   const label = all.find((l) => l.id === shown);
   return (
-    <article id={`plan-${track.track}`} data-track={track.track} className={`plan-col ${hiddenOnMobile ? "max-md:hidden" : ""}`} aria-label={`Parcours ${track.name}`}>
+    <article id={`plan-${track.track}`} data-track={track.track} className="plan-col" data-mobile-hidden={hiddenOnMobile ? "" : undefined} aria-label={`Parcours ${track.name}`}>
       <header className="flex items-end gap-3">
         <Avatar track={track.track} size={64} animate />
         <p className="bubble mb-3 text-[0.875rem]">{SAYS[track.track]}</p>

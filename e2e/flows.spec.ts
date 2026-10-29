@@ -10,31 +10,29 @@ test("landing: thesis and the three guides lead into the level test", async ({ p
   await expect(guides).toHaveCount(3);
   await guides.first().getByRole("link").click();
   await expect(page).toHaveURL(/#depart$/);
-  await expect(page.getByRole("button", { name: "Commencer le test" })).toBeVisible();
+  await expect(page.getByRole("radiogroup", { name: "Ton objectif" })).toBeVisible();
 });
 
-test("placement test adapts, scores 10/10 when everything is right, and leads to signup", async ({ page }) => {
+test("placement test: 10/10 on Construire, then another track with a warning, and signup", async ({ page }) => {
   await page.goto("/onboarding");
   await page.getByRole("radio", { name: /Construire avec l'IA/ }).click();
-  await page.getByRole("button", { name: "Commencer le test" }).click();
   const main = page.locator("main");
   for (let i = 1; i <= 10; i++) {
-    await expect(page.getByText(`${i}/10`, { exact: true })).toBeVisible();
+    await expect(main.getByRole("progressbar", { name: "Avancement du test" })).toHaveAttribute("aria-valuenow", String(i - 1));
     await answerCorrectly(main);
-    await page.getByRole("button", { name: "Valider" }).click();
+    await page.getByRole("button", { name: /^Valider/ }).click();
   }
-  await expect(page.getByText("Ton niveau estimé", { exact: true })).toBeVisible();
-  await expect(main.getByRole("heading", { level: 1 })).toContainText("10");
-  const fox = page.getByRole("radio", { name: /Construire/ });
-  await expect(fox).toHaveAttribute("aria-checked", "true");
-  await expect(fox).toContainText("Conseillé pour toi");
+  await expect(main.locator("p", { hasText: "Ton score" })).toContainText("10/10");
+  await page.getByRole("button", { name: "Choisir un autre parcours" }).click();
   await page.getByRole("radio", { name: /Pratiquer/ }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Ton test portait sur Construire" })).toBeVisible();
   await page.getByRole("button", { name: "Créer mon compte et commencer" }).click();
   await expect(page).toHaveURL(/\/signup\?track=gecko/);
   await expect(page.getByText("Parcours choisi")).toContainText("Pratiquer");
   // the answers travel with the form and are graded again on the server
   const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
   expect(stored.placement).toHaveLength(10);
+  expect(stored.tested).toBe("fox");
   await page.getByLabel("Prénom").fill("Test");
   await page.getByLabel("Email").fill("someone@gusgus.test");
   await page.getByLabel("Mot de passe").fill("short");
@@ -42,18 +40,16 @@ test("placement test adapts, scores 10/10 when everything is right, and leads to
   await expect(page.getByRole("alert").filter({ hasText: "8 caractères" })).toBeVisible();
 });
 
-test("« Je ne sais pas » everywhere gives 0/10 and the beginner map", async ({ page }) => {
+test("« Je ne sais pas » everywhere on Découvrir: 0/10, start at chapter 1", async ({ page }) => {
   await page.goto("/onboarding");
   await page.getByRole("radio", { name: /Comprendre ce qu'est l'IA/ }).click();
-  await page.getByRole("button", { name: "Commencer le test" }).click();
   for (let i = 0; i < 10; i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
-  await expect(page.getByText("Ton niveau estimé", { exact: true })).toBeVisible();
-  await expect(page.locator("main").getByRole("heading", { level: 1 })).toContainText("0");
-  await expect(page.getByRole("radio", { name: /Découvrir/ })).toHaveAttribute("aria-checked", "true");
+  await expect(page.locator("main p", { hasText: "Ton score" })).toContainText("0/10");
+  await expect(page.getByRole("heading", { name: /Tu commences au chapitre 1/ })).toBeVisible();
 });
 
 test("protected pages redirect to login; bad credentials show a clear error", async ({ page }) => {
-  for (const path of ["/learn", "/map", "/courses", "/review", "/notes", "/profile", "/lesson/premier-prompt"]) {
+  for (const path of ["/learn", "/learn/chapitres", "/map", "/courses", "/jeu", "/review", "/notes", "/profile", "/lesson/premier-prompt"]) {
     await page.goto(path);
     await expect(page, path).toHaveURL((url) => url.pathname === "/login" && url.searchParams.get("next") === path);
   }
