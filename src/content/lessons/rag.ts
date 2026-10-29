@@ -17,7 +17,6 @@ export const ragLessons: Lesson[] = [
       "Décrire le rôle d'un index vectoriel et d'une recherche de plus proches voisins",
       "Prévoir les cas où la recherche vectorielle échoue",
     ],
-    prerequisites: ["api-cest-quoi"],
     sections: [
       {
         id: "mots-cles",
@@ -472,7 +471,6 @@ CREATE INDEX ON fiches USING hnsw (embedding vector_cosine_ops);`,
       "Rédiger un prompt de génération ancré dans les passages",
       "Distinguer une panne de recherche d'une panne de génération",
     ],
-    prerequisites: ["embeddings-et-recherche"],
     sections: [
       {
         id: "pourquoi",

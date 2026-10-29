@@ -15,7 +15,6 @@ export const outilsLessons: Lesson[] = [
       "Comparer deux outils sur des critères durables",
       "Revérifier une information datée à la source officielle",
     ],
-    prerequisites: ["premier-prompt"],
     volatile: { toolIds: ["chatgpt", "claude", "gemini", "deepseek", "perplexity"] },
     sections: [
       {
@@ -370,7 +369,6 @@ export const outilsLessons: Lesson[] = [
       "Écarter un outil inadapté à des données sensibles",
       "Comparer deux outils avec un protocole simple",
     ],
-    prerequisites: ["panorama-outils"],
     volatile: { toolIds: ["chatgpt", "claude", "gemini", "deepseek", "perplexity"] },
     sections: [
       {
@@ -773,7 +771,6 @@ export const outilsLessons: Lesson[] = [
       "Faire corriger son propre raisonnement plutôt que demander la solution",
       "Appliquer les règles d'intégrité de son établissement",
     ],
-    prerequisites: ["premier-prompt"],
     sections: [
       {
         id: "le-cas",
@@ -1159,7 +1156,6 @@ export const outilsLessons: Lesson[] = [
       "Planifier des révisions espacées",
       "Vérifier une fiche générée",
     ],
-    prerequisites: ["tuteur-pas-copieur"],
     sections: [
       {
         id: "recherche",
@@ -1604,7 +1600,6 @@ export const outilsLessons: Lesson[] = [
       "Faire rédiger un premier jet à partir de ses propres idées",
       "Faire réécrire un texte dans son style",
     ],
-    prerequisites: ["prompt-de-travail"],
     sections: [
       {
         id: "cadrer-resume",

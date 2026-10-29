@@ -16,7 +16,6 @@ export const comprendreLessons: Lesson[] = [
       "Reconnaître les grandes familles d'IA au quotidien",
       "Écarter les idées reçues sur ce que « sait » une IA",
     ],
-    prerequisites: [],
     sections: [
       {
         id: "regles-ou-exemples",
@@ -395,7 +394,6 @@ export const comprendreLessons: Lesson[] = [
     durationMin: 10,
     xp: 30,
     skills: ["Expliquer la prédiction du token suivant", "Savoir ce qu'est un token", "Distinguer plausible et vrai"],
-    prerequisites: [],
     sections: [
       {
         id: "prediction",
@@ -760,7 +758,6 @@ export const comprendreLessons: Lesson[] = [
       "Gérer une longue conversation ou un long document dans la fenêtre de contexte",
       "Fournir au modèle ce qui lui manque",
     ],
-    prerequisites: ["comment-ecrit-un-chatbot"],
     sections: [
       {
         id: "deux-temps",
@@ -1193,7 +1190,6 @@ export const comprendreLessons: Lesson[] = [
       "Évaluer le niveau de risque d'une demande",
       "Vérifier une affirmation avant de s'en servir",
     ],
-    prerequisites: ["comment-ecrit-un-chatbot"],
     sections: [
       {
         id: "le-cas",
@@ -1603,7 +1599,6 @@ export const comprendreLessons: Lesson[] = [
       "Distinguer poids ouverts et accès par API ou application",
       "Séparer ce qui vient du modèle de ce qui vient du produit",
     ],
-    prerequisites: ["entrainement-et-limites"],
     sections: [
       {
         id: "taille",

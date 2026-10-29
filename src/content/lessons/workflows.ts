@@ -16,7 +16,6 @@ export const workflowsLessons: Lesson[] = [
       "Placer des points de contrôle humains",
       "Distinguer ce qu'on délègue de ce qu'on décide soi-même",
     ],
-    prerequisites: ["ameliorer-une-reponse"],
     sections: [
       {
         id: "tout-dun-coup",
@@ -384,7 +383,6 @@ export const workflowsLessons: Lesson[] = [
       "Décider quand ne pas automatiser",
       "Prévoir tests, erreurs et journal avant la mise en service",
     ],
-    prerequisites: ["decouper-une-tache"],
     sections: [
       {
         id: "anatomie",

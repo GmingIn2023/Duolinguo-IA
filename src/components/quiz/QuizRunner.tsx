@@ -24,6 +24,8 @@ export function initialOrder(q: Question): string[] {
       return shuffleAway(q.items.map((i) => i.id), q.id);
     case "match":
       return seededShuffle(q.right.map((r) => r.id), q.id);
+    case "sort":
+      return seededShuffle(q.items.map((i) => i.id), q.id);
     default:
       return [];
   }
@@ -32,6 +34,7 @@ export function initialOrder(q: Question): string[] {
 export function initialDraft(q: Question): Draft {
   if (q.type === "ordering" || q.type === "ranking") return initialOrder(q);
   if (q.type === "match") return q.left.map(() => "");
+  if (q.type === "sort") return q.items.map(() => "");
   return null;
 }
 
@@ -44,6 +47,8 @@ function keyHint(q: Question): string {
       return "Astuce : touche un élément, puis son partenaire. Entrée pour valider.";
     case "written":
       return "Astuce : Ctrl + Entrée pour valider.";
+    case "sort":
+      return "Astuce : range chaque carte, puis Entrée pour valider.";
     default: {
       const n = "options" in q ? q.options.length : 2;
       return `Astuce : touches 1 à ${n} pour choisir, Entrée pour valider.`;

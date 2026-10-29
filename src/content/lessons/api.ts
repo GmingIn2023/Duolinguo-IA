@@ -17,7 +17,6 @@ export const apiLessons: Lesson[] = [
       "Protéger une clé d'API",
       "Interpréter une raison d'arrêt et une erreur de débit",
     ],
-    prerequisites: ["prompts-avances", "entrainement-et-limites"],
     sections: [
       {
         id: "app-vs-api",
@@ -522,7 +521,6 @@ export const apiLessons: Lesson[] = [
       "Rédiger une définition d'outil que le modèle utilise correctement",
       "Valider les arguments avant d'exécuter",
     ],
-    prerequisites: ["api-cest-quoi"],
     sections: [
       {
         id: "texte-libre",
@@ -1046,7 +1044,6 @@ export const apiLessons: Lesson[] = [
       "Relier MCP à la boucle d'appel d'outils",
       "Évaluer les risques d'un serveur MCP avant de le brancher",
     ],
-    prerequisites: ["sorties-structurees-et-outils"],
     sections: [
       {
         id: "probleme",

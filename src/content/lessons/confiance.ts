@@ -16,7 +16,6 @@ export const confianceLessons: Lesson[] = [
       "Généraliser une demande avant de l'envoyer",
       "Trouver les réglages de confidentialité d'un outil",
     ],
-    prerequisites: ["comment-ecrit-un-chatbot"],
     volatile: { toolIds: ["chatgpt", "claude", "gemini"] },
     sections: [
       {
@@ -430,7 +429,6 @@ export const confianceLessons: Lesson[] = [
       "Pratiquer la lecture latérale",
       "Proportionner l'effort de vérification au risque",
     ],
-    prerequisites: ["hallucinations"],
     volatile: { toolIds: ["perplexity"] },
     sections: [
       {
@@ -869,7 +867,6 @@ export const confianceLessons: Lesson[] = [
       "Pseudonymiser un document de travail",
       "Savoir à qui poser la question dans son organisation",
     ],
-    prerequisites: ["vie-privee"],
     sections: [
       {
         id: "cas",
@@ -1315,7 +1312,6 @@ export const confianceLessons: Lesson[] = [
       "Choisir entre vérifier et réécrire",
       "Attribuer correctement ce que tu reprends",
     ],
-    prerequisites: ["hallucinations"],
     sections: [
       {
         id: "fluidite",
@@ -1692,7 +1688,6 @@ export const confianceLessons: Lesson[] = [
       "Comparer deux versions en évitant les biais d'un juge LLM",
       "Mettre en place une vérification de non-régression",
     ],
-    prerequisites: ["prompts-avances", "relire-ia"],
     sections: [
       {
         id: "pourquoi",

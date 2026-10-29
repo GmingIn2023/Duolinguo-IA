@@ -41,6 +41,11 @@
   --peach-deep: #d98420;
   --peach-soft: #ffeeda;
 
+  /* warm grey: quiet navigation (the test's arrows) */
+  --stone: #e8e3d8;
+  --stone-deep: #cfc7b6;
+  --stone-ink: #5c564b;
+
   --good: #137a3a;
   --good-soft: #e2f5e8;
   --bad: #c22a1b;
@@ -277,6 +282,10 @@ button.chip, a.chip { cursor: pointer; }
 .field-area { width: 100%; padding: 0.875rem 1rem; border-radius: 12px; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line); font-size: 1rem; line-height: 1.5; resize: vertical; min-height: 6.5rem; transition: box-shadow 120ms; }
 .field-area:focus { outline: none; box-shadow: inset 0 0 0 2px var(--ink); }
 .field-area::placeholder { color: var(--muted); }
+.nav-arrow { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; flex: none; border-radius: 999px; background: var(--stone); color: var(--stone-ink); box-shadow: 0 3px 0 var(--stone-deep); transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), opacity 120ms; }
+@media (hover: hover) { .nav-arrow:hover:not(:disabled) { background: #ddd7ca; } }
+.nav-arrow:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--stone-deep); }
+.nav-arrow:disabled { opacity: 0.35; cursor: not-allowed; }
 .icon-btn { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; flex: none; border-radius: 999px; transition: background-color 120ms, transform 120ms var(--ease-out); }
 @media (hover: hover) { .icon-btn:hover { background: var(--sunk); } }
 .icon-btn:active { transform: scale(0.94); }
@@ -328,12 +337,52 @@ button.chip, a.chip { cursor: pointer; }
 .swatch[aria-checked="true"] { outline: 2.5px solid var(--ink); outline-offset: 2px; }
 
 /* ───────────────────────── Mascots ───────────────────────── */
-.mascot-hop { animation: hop 620ms var(--ease-out); transform-origin: 50% 100%; }
-@keyframes hop { 0% { transform: translateY(0) scaleY(1); } 25% { transform: translateY(2px) scaleY(0.92); } 55% { transform: translateY(-9px) scaleY(1.04); } 100% { transform: none; } }
-.mascot-droop { animation: droop 520ms var(--ease-out) both; transform-origin: 50% 100%; }
-@keyframes droop { 0% { transform: rotate(0); } 35% { transform: rotate(-7deg) translateY(2px); } 100% { transform: rotate(-3deg) translateY(1px); } }
-.mascot-blink { animation: blink 4.6s infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+/* Every move plays once and settles; only the breath and the blink loop. Calm mode and reduced motion stop all of it. */
+.m { overflow: visible; }
+.m .m-body, .m .m-wing, .m .m-ear, .m .m-sparkles path, .m .m-drop, .m .m-zzz { transform-box: fill-box; }
+.m .m-body { transform-origin: 50% 100%; }
+.m-alive .m-body { animation: m-breathe 3.2s ease-in-out infinite; }
+@keyframes m-breathe { 50% { transform: scale(1.015, 0.985); } }
+.m .m-blink { transform-box: fill-box; transform-origin: center; animation: m-blink 5.2s infinite; }
+@keyframes m-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.08); } }
+
+.m-cheer .m-body { animation: m-hop 760ms var(--ease-out) both; }
+@keyframes m-hop {
+  0% { transform: none; }
+  18% { transform: translateY(2%) scale(1.08, 0.9); }
+  45% { transform: translateY(-16%) scale(0.95, 1.06); }
+  72% { transform: translateY(0) scale(1.05, 0.95); }
+  100% { transform: none; }
+}
+.m-cheer .m-wing-l { transform-origin: 100% 0; animation: m-flap-l 380ms ease-in-out 2 both; }
+.m-cheer .m-wing-r { transform-origin: 0 0; animation: m-flap-r 380ms ease-in-out 2 both; }
+@keyframes m-flap-l { 50% { transform: rotate(38deg); } }
+@keyframes m-flap-r { 50% { transform: rotate(-38deg); } }
+.m-sparkles path { transform-origin: center; animation: m-spark 900ms var(--ease-out) both; }
+.m-sparkles path:nth-child(2) { animation-delay: 90ms; }
+.m-sparkles path:nth-child(3) { animation-delay: 180ms; }
+@keyframes m-spark { 0% { scale: 0; rotate: -40deg; } 55% { scale: 1.25; } 100% { scale: 1; rotate: 0deg; } }
+
+.m-oops .m-body { animation: m-shake 620ms var(--ease-out) both; }
+@keyframes m-shake {
+  0% { transform: none; }
+  15% { transform: translateX(-5%) rotate(-5deg); }
+  35% { transform: translateX(4%) rotate(4deg); }
+  55% { transform: translateX(-2.5%) rotate(-2deg); }
+  75% { transform: translateX(1%) rotate(1deg); }
+  100% { transform: translateY(1.5%) rotate(-2deg); }
+}
+.m-drop { animation: m-drop 900ms ease-in 200ms both; }
+@keyframes m-drop { 0% { opacity: 0; transform: translateY(-6px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
+.m-think .m-body { animation: m-tilt 1.6s var(--ease-out) both; transform-origin: 50% 100%; }
+@keyframes m-tilt { 40%, 100% { transform: rotate(-4deg); } }
+.m-wow .m-body { animation: m-jolt 420ms var(--ease-out) both; }
+@keyframes m-jolt { 30% { transform: translateY(-6%) scale(1.04); } }
+.m-zzz { animation: m-float 2.8s ease-in-out infinite; }
+@keyframes m-float { 50% { transform: translate(2px, -4px); opacity: 0.6; } }
+
+[data-motion="calm"] .m *, [data-motion="calm"] .m { animation: none !important; }
+
 .bubble { position: relative; background: var(--surface); border-radius: 14px; padding: 0.5rem 0.875rem; font-weight: 600; font-size: 0.9375rem; line-height: 1.3; box-shadow: 0 3px 0 var(--edge); }
 .bubble::before { content: ""; position: absolute; left: -5px; bottom: 12px; width: 13px; height: 13px; background: inherit; rotate: 45deg; border-radius: 3px; }
 

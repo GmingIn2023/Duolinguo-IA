@@ -3,9 +3,9 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { LESSONS, getLesson, getQuestion, reviewVariant } from "@/content";
 import type { Question } from "@/content/types";
-import type { Knowledge } from "@/lib/board";
-import { fromLegacyLevel } from "@/lib/placement";
-import { effectiveLevel, parsePreferences } from "@/lib/prefs";
+import { knowledgeFrom } from "@/lib/path";
+import { parsePreferences, readPlacements } from "@/lib/prefs";
+import { todayKey } from "@/lib/streak";
 import { createClient } from "@/lib/supabase/server";
 import type { LessonProgressRow, Note, Profile, ReviewItemRow } from "@/lib/types";
 import { isoWeekKey, pickWeeklyReview, WEEKLY_TARGET, type WeeklyCandidate } from "@/lib/weekly";
@@ -16,7 +16,7 @@ export const getViewer = cache(async () => {
   if (!auth.user) return null;
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, display_name, track_id, placement_level, level10, preferences, xp, streak_days, last_active_date")
+    .select("id, display_name, track_id, placement_level, level10, preferences, onboarding, xp, streak_days, last_active_date")
     .eq("id", auth.user.id)
     .single<Profile>();
   if (error) throw new Error(`Profil introuvable : ${error.message}`);
@@ -29,9 +29,6 @@ export async function requireViewer() {
   if (!viewer) redirect("/login");
   return viewer;
 }
-
-/** The learner's level out of 10 (accounts older than the placement test fall back to their 1-3 level). */
-export const profileLevel = (profile: Profile) => profile.level10 ?? fromLegacyLevel(profile.placement_level);
 
 export const getProgress = cache(async (): Promise<Map<string, LessonProgressRow>> => {
   const { supabase, user } = await requireViewer();
@@ -65,14 +62,25 @@ export const getCheckpointsDone = cache(async (): Promise<Set<string>> => {
   return new Set((data ?? []).map((r) => String(r.ref).slice("checkpoint:".length)));
 });
 
-/** Everything the board, the catalogue and the lesson gate need to decide what is open. */
+/** Everything the path, the catalogue and the lesson gate need to decide what is open. */
 export const getKnowledge = cache(async () => {
   const { profile } = await requireViewer();
   const [progress, checkpoints] = await Promise.all([getProgress(), getCheckpointsDone()]);
   const prefs = parsePreferences(profile.preferences);
-  const level10 = profileLevel(profile);
-  const knowledge: Knowledge = { completed: new Set(progress.keys()), level10: effectiveLevel(level10, prefs.pace), checkpoints };
-  return { knowledge, prefs, progress, level10 };
+  const placements = readPlacements(profile.onboarding, profile.preferences);
+  const knowledge = knowledgeFrom(progress.keys(), placements, { checkpoints, free: prefs.mode === "free" });
+  return { knowledge, prefs, progress, placements };
+});
+
+/** XP earned today (Europe/Paris), for the daily goal ring. */
+export const getTodayXp = cache(async (): Promise<number> => {
+  const { supabase, user } = await requireViewer();
+  const today = todayKey();
+  // a day in Paris starts between 22:00 and 23:00 UTC the day before: read from there, then keep only today's events
+  const since = new Date(Date.parse(`${today}T00:00:00Z`) - 3 * 3_600_000).toISOString();
+  const { data, error } = await supabase.from("xp_events").select("amount, created_at").eq("user_id", user.id).gte("created_at", since);
+  if (error) throw new Error(error.message);
+  return (data ?? []).filter((e) => todayKey(new Date(e.created_at)) === today).reduce((sum, e) => sum + (e.amount ?? 0), 0);
 });
 
 export type Served = { scheduledId: string; question: Question };
@@ -118,11 +126,12 @@ export const getWeeklyPlan = cache(async () => {
   return { lessonIds, items: picked.map((id) => byId.get(id)!), bonusClaimed: Boolean(bonus?.length) };
 });
 
-/** A checkpoint's questions: two per covered lesson, review forms first so notions come back differently. */
-export function checkpointQuestions(covers: string[]): Question[] {
-  return covers.flatMap((id) => {
+/** A chapter review's questions: two or three per lesson, review forms first so notions come back differently. */
+export function checkpointQuestions(lessonIds: string[]): Question[] {
+  const per = lessonIds.length <= 2 ? 3 : 2;
+  return lessonIds.flatMap((id) => {
     const l = getLesson(id);
-    return l ? [...l.reviewQuestions, ...l.questions].slice(0, 2) : [];
+    return l ? [...l.reviewQuestions, ...l.questions].slice(0, per) : [];
   });
 }
 

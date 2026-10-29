@@ -6,7 +6,7 @@ import { ONBOARDING_KEY, saveOnboarding } from "./onboardingStorage";
 describe("saveOnboarding", () => {
   it("stores the payload under the key the signup page reads", () => {
     const bag = new Map<string, string>();
-    const payload = { placement: [{ id: "p1a", answer: "a" }, { id: "p1b", answer: null }], goal: "build" as const, track: "fox" as const };
+    const payload = { placement: [{ id: "p1a", answer: "a" }, { id: "p1b", answer: null }], goal: "build" as const, tested: "fox" as const, track: "fox" as const };
     expect(saveOnboarding(payload, { setItem: (k, v) => void bag.set(k, v) })).toBe(true);
     expect(JSON.parse(bag.get(ONBOARDING_KEY)!)).toEqual(payload);
   });
@@ -17,7 +17,7 @@ describe("saveOnboarding", () => {
         throw new Error("blocked");
       },
     };
-    expect(saveOnboarding({ placement: [], goal: null, track: "bird" }, blocked)).toBe(false);
+    expect(saveOnboarding({ placement: [], goal: null, tested: null, track: "bird" }, blocked)).toBe(false);
   });
 
   it("uses the same literal key as the signup form that reads it", () => {

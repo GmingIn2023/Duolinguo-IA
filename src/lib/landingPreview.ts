@@ -1,38 +1,47 @@
-import { LESSONS } from "@/content";
+import { getLesson } from "@/content";
 import { INTERVAL_DAYS } from "./srs";
-import { getPlacementQuestion, levelName } from "./placement";
+import { getPlacementQuestion } from "./placement";
 
 /** The real content behind the "Comment ça marche" previews, so the landing shows what the product really shows. */
 export type LandingPreviews = {
-  /** An annotated brief from a real prompt lesson: only the short, self-contained parts. */
-  brief: { lessonTitle: string; parts: { label: string; text: string; detail: string }[] } | null;
-  /** A real question and its real explanation. */
-  quiz: { statement: string; explanation: string } | null;
-  /** The example result shown in step 1, labelled with the real level names. */
-  exampleLevel: { level10: number; label: string };
+  /** A short lesson screen: one paragraph (with its bold words) and the quick question that follows it. */
+  excerpt: { lessonTitle: string; body: string; statement: string; answer: boolean; why: string };
+  /** A real true/false question and its explanation, split around the words worth highlighting. */
+  quiz: { statement: string; answer: boolean; before: string; mark: string; after: string } | null;
+  /** The example result of step 1: a score, the chapters it validated, where the learner starts. */
+  example: { score: number; trackName: string; validated: string[]; start: string };
   /** Days since a miss at which the question comes back, given right answers each time (Leitner boxes 1 to 4). */
   reviewDays: number[];
 };
 
-const BRIEF_LABELS = ["Tâche", "Critère de réussite", "Format"];
+const MARK = "ne dit rien de l'exactitude";
 
 export function buildPreviews(): LandingPreviews {
-  let brief: LandingPreviews["brief"] = null;
-  for (const lesson of LESSONS) {
-    for (const section of lesson.sections) {
-      for (const block of section.blocks) {
-        if (block.type !== "anatomy" || brief) continue;
-        const parts = BRIEF_LABELS.map((label) => block.segments.find((s) => s.label === label)).filter((s): s is NonNullable<typeof s> => Boolean(s?.label && s.detail));
-        if (parts.length === BRIEF_LABELS.length) brief = { lessonTitle: lesson.title, parts: parts.map((s) => ({ label: s.label!, text: s.text.trim(), detail: s.detail! })) };
-      }
-    }
-  }
+  const lesson = getLesson("hallucinations");
+  const excerpt = {
+    lessonTitle: lesson?.title ?? "Quand l'IA invente",
+    body: "Une IA ne cherche pas la réponse dans une liste de faits. Elle **prédit les mots les plus probables**. Quand elle ne sait pas, elle peut **inventer une réponse** qui sonne juste. On appelle ça une **hallucination**.",
+    statement: "Une réponse dite avec assurance est forcément juste.",
+    answer: false,
+    why: "Le ton sûr de lui ne prouve rien : vérifie les faits importants.",
+  };
 
-  const q = getPlacementQuestion("p1b");
-  const quiz = q && q.type === "true_false" ? { statement: q.statement, explanation: q.explanation } : null;
+  const q = getPlacementQuestion("c-assurance");
+  let quiz: LandingPreviews["quiz"] = null;
+  if (q && q.type === "true_false") {
+    const at = q.explanation.indexOf(MARK);
+    quiz =
+      at === -1
+        ? { statement: q.statement, answer: q.answer, before: q.explanation, mark: "", after: "" }
+        : { statement: q.statement, answer: q.answer, before: q.explanation.slice(0, at), mark: MARK, after: q.explanation.slice(at + MARK.length) };
+  }
 
   let total = 0;
   const reviewDays = [1, 2, 3, 4].map((box) => (total += INTERVAL_DAYS[box]));
-  const level10 = 6;
-  return { brief, quiz, exampleLevel: { level10, label: levelName(level10) }, reviewDays };
+  return {
+    excerpt,
+    quiz,
+    example: { score: 7, trackName: "Pratiquer", validated: ["Le bon brief", "Étudier"], start: "Écrire et résumer" },
+    reviewDays,
+  };
 }

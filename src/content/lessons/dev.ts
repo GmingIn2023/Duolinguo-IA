@@ -16,7 +16,6 @@ export const devLessons: Lesson[] = [
       "Avancer par petites modifications en lisant chaque diff",
       "Repérer code plausible mais faux, dépendances inventées et fuites de secrets",
     ],
-    prerequisites: ["prompts-avances"],
     sections: [
       {
         id: "familles",
@@ -482,7 +481,6 @@ def duree_en_minutes(texte: str) -> int:
       "Verrouiller un correctif par un test de non-régression",
       "Relire du code généré : correction, cas limites, sécurité, lisibilité, dépendances, tests",
     ],
-    prerequisites: ["coder-avec-ia"],
     sections: [
       {
         id: "rapporter",

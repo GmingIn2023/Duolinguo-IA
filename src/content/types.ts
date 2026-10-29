@@ -18,9 +18,21 @@ export type ThemeId =
 export type Option = { id: string; text: string; feedback?: string };
 export type Item = { id: string; text: string };
 
+/**
+ * A small picture shown above a question. "two-answers": the same question asked twice, two different
+ * replies, and the next-word odds that explain why.
+ */
+export type QuestionVisual = {
+  kind: "two-answers";
+  ask: string;
+  answers: [string, string];
+  bars: { label: string; p: number }[];
+};
+
 type QuestionBase = {
   id: string;
   explanation: string;
+  visual?: QuestionVisual;
   /**
    * The notion this question checks, shared by questions that test the same idea in a different form.
    * Reviews use it to bring a notion back under another shape.
@@ -72,6 +84,14 @@ export type Question = QuestionBase &
         left: Item[];
         right: Item[];
         answer: string[];
+      }
+    | {
+        /** Put each card in one of two bins. `answer[i]` is the bin (0 or 1) of `items[i]`. */
+        type: "sort";
+        prompt: string;
+        bins: [string, string];
+        items: Item[];
+        answer: (0 | 1)[];
       }
     | {
         /**
@@ -165,8 +185,6 @@ export type Lesson = {
   durationMin: number;
   xp: number;
   skills: string[];
-  /** Lesson ids that must be completed (or covered by the placement test) first. */
-  prerequisites: string[];
   sections: Section[];
   /** Fiche de notes: the 3 to 6 things to remember. */
   summary: string[];
@@ -181,25 +199,18 @@ export type Lesson = {
 
 export type Theme = { id: ThemeId; name: string; short: string; pitch: string };
 
-export type MapNodeKind = "lesson" | "checkpoint" | "finale";
-
-export type MapNode = {
+/**
+ * A chapter of a track: lessons played in order, then an optional review (the "bilan").
+ * The last chapter of a track is its project.
+ */
+export type Chapter = {
   id: string;
-  kind: MapNodeKind;
-  /** For lesson and finale nodes. */
-  lessonId?: string;
-  /** Checkpoints: the title shown and the lessons whose questions come back. */
-  title?: string;
-  covers?: string[];
-  /** Position on the board: column (left to right) and lane (0 = centre, negative = up). */
-  col: number;
-  lane: number;
-  unit: string;
-  /** Extra visual links (prerequisites inside the track are linked automatically). */
-  after?: string[];
+  name: string;
+  /** One short line, shown under the name. */
+  blurb: string;
+  lessons: string[];
+  project?: boolean;
 };
-
-export type Unit = { id: string; name: string; blurb: string };
 
 export type Track = {
   id: TrackId;
@@ -207,8 +218,7 @@ export type Track = {
   name: string;
   audience: string;
   pitch: string;
-  units: Unit[];
-  nodes: MapNode[];
+  chapters: Chapter[];
 };
 
 export type ToolId = "chatgpt" | "claude" | "gemini" | "deepseek" | "perplexity";

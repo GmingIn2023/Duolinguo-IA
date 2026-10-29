@@ -16,7 +16,6 @@ export const projetsLessons: Lesson[] = [
       "Tester un prompt sur plusieurs cas et l'améliorer",
       "Décider ce qu'on vérifie et ce qu'on ne confie pas",
     ],
-    prerequisites: ["ameliorer-une-reponse", "vie-privee", "choisir-le-bon-outil"],
     sections: [
       {
         id: "choisir",
@@ -463,7 +462,6 @@ Je ne confie pas : prénoms, adresse, détails médicaux
       "Définir un critère de réussite mesurable et une version minimale",
       "Repérer les données sensibles et prévoir des garde-fous",
     ],
-    prerequisites: ["decouper-une-tache"],
     sections: [
       {
         id: "probleme",
@@ -869,7 +867,6 @@ Je ne confie pas : prénoms, adresse, détails médicaux
       "Itérer sur un prompt en mesurant l'effet de chaque changement",
       "Définir un protocole de vérification des réponses d'un assistant",
     ],
-    prerequisites: ["cadrer-un-projet-ia", "prompts-avances", "verifier-sources"],
     sections: [
       {
         id: "principe",
@@ -1433,7 +1430,6 @@ QUAND LE METTRE À JOUR
       "Construire un jeu d'évaluation qui sépare recherche et génération",
       "Analyser les risques d'injection, de fuite de données, de coût et de latence",
     ],
-    prerequisites: ["rag", "concevoir-un-agent", "evaluer-un-modele", "cadrer-un-projet-ia"],
     sections: [
       {
         id: "cadrage",

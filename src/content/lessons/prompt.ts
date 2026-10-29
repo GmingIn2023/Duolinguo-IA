@@ -15,7 +15,6 @@ export const promptLessons: Lesson[] = [
       "Rédiger une demande avec contexte, tâche, format et contraintes",
       "Formuler une question de suivi ciblée",
     ],
-    prerequisites: ["comment-ecrit-un-chatbot"],
     sections: [
       {
         id: "vague",
@@ -426,7 +425,6 @@ export const promptLessons: Lesson[] = [
       "Préciser le public et le critère de réussite",
       "Fournir un exemple de référence et dire quoi en retenir",
     ],
-    prerequisites: ["premier-prompt"],
     sections: [
       {
         id: "collegue",
@@ -895,7 +893,6 @@ Si une date ou un montant n'est pas clair dans mes notes, écris
       "Montrer un exemple de ce qu'on veut",
       "Utiliser l'autocritique du modèle en connaissant ses limites",
     ],
-    prerequisites: ["premier-prompt"],
     sections: [
       {
         id: "diagnostic",
@@ -1374,7 +1371,6 @@ Si une date ou un montant n'est pas clair dans mes notes, écris
       "Décider quand faire raisonner par étapes ou enchaîner plusieurs prompts",
       "Tester un prompt sur plusieurs cas et repérer les anti-patterns",
     ],
-    prerequisites: ["prompt-de-travail", "ameliorer-une-reponse"],
     sections: [
       {
         id: "structure",

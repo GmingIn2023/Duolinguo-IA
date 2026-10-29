@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { LESSONS, TRACKS, TRACK_IDS, getLesson, getQuestion, reviewVariant } from ".";
+import { LESSONS, TRACKS, TRACK_IDS, getLesson, getQuestion, lessonPlace, reviewVariant, trackLessons } from ".";
 import { THEME_IDS } from "./curriculum";
 import { TOOLS } from "./tools";
 import type { Block, Lesson, Question } from "./types";
-import { PLACEMENT_POOL } from "@/lib/placement";
+import { CHAPTER_POOL, COMMON_POOL, getPlacementQuestion, testedChapters } from "@/lib/placement";
 
 /** Problems with a question's shape; empty when it is coherent. */
 function questionProblems(q: Question): string[] {
@@ -35,6 +35,11 @@ function questionProblems(q: Question): string[] {
       if (!q.answer.every((a) => q.right.some((r) => r.id === a))) p.push("answer ids not among right items");
       if (!unique(q.left.map((i) => i.id)) || !unique(q.right.map((i) => i.id))) p.push("duplicate ids");
       break;
+    case "sort":
+      if (q.answer.length !== q.items.length) p.push("one bin per item");
+      if (!q.answer.includes(0) || !q.answer.includes(1)) p.push("both bins must be used");
+      if (!unique(q.items.map((i) => i.id))) p.push("duplicate item ids");
+      break;
     case "written":
       if (q.minCriteria < 1 || q.minCriteria > q.criteria.length) p.push("minCriteria out of range");
       if (q.criteria.some((c) => !c.anyOf.length || c.anyOf.some((f) => f.trim().length < 3))) p.push("criterion fragments too short");
@@ -54,45 +59,37 @@ describe("curriculum", () => {
     for (const t of THEME_IDS) expect(LESSONS.some((l) => l.theme === t), t).toBe(true);
   });
 
-  it("every track node points to an existing lesson, and nodes have unique ids and positions", () => {
+  it("every lesson belongs to exactly one track, and every chapter lesson exists", () => {
+    const seen = new Map<string, string>();
     for (const id of TRACK_IDS) {
-      const t = TRACKS[id];
-      expect(new Set(t.nodes.map((n) => n.id)).size, id).toBe(t.nodes.length);
-      expect(new Set(t.nodes.map((n) => `${n.col}:${n.lane}`)).size, `${id} overlapping nodes`).toBe(t.nodes.length);
-      for (const n of t.nodes) {
-        if (n.lessonId) expect(getLesson(n.lessonId), `${id} → ${n.lessonId}`).toBeDefined();
-        for (const c of n.covers ?? []) expect(t.nodes.some((m) => m.lessonId === c), `${id}: ${n.id} covers ${c}`).toBe(true);
-        expect(t.units.some((u) => u.id === n.unit), `${id}: unit ${n.unit}`).toBe(true);
-      }
-    }
-  });
-
-  it("every track is closed under prerequisites, and a prerequisite sits in an earlier column", () => {
-    for (const id of TRACK_IDS) {
-      const nodes = TRACKS[id].nodes;
-      for (const n of nodes.filter((x) => x.lessonId)) {
-        for (const pre of getLesson(n.lessonId!)!.prerequisites) {
-          const at = nodes.find((m) => m.lessonId === pre);
-          expect(at, `${id}: ${n.lessonId} needs ${pre}`).toBeDefined();
-          expect(at!.col, `${id}: ${pre} before ${n.lessonId}`).toBeLessThan(n.col);
+      for (const c of TRACKS[id].chapters) {
+        expect(c.lessons.length, `${id}/${c.id} is empty`).toBeGreaterThan(0);
+        expect(c.blurb.length, `${id}/${c.id} blurb too long`).toBeLessThanOrEqual(60);
+        for (const l of c.lessons) {
+          expect(getLesson(l), `${id}/${c.id} → ${l}`).toBeDefined();
+          expect(seen.get(l), `${l} is in ${seen.get(l)} and ${id}`).toBeUndefined();
+          seen.set(l, id);
         }
       }
     }
+    expect([...seen.keys()].sort()).toEqual(LESSONS.map((l) => l.id).sort());
   });
 
-  it("prerequisites exist and form no cycle", () => {
-    const state = new Map<string, "visiting" | "done">();
-    const visit = (id: string, path: string[]) => {
-      expect(state.get(id), `cycle: ${[...path, id].join(" → ")}`).not.toBe("visiting");
-      if (state.get(id) === "done") return;
-      state.set(id, "visiting");
-      for (const pre of getLesson(id)!.prerequisites) {
-        expect(getLesson(pre), `${id} needs unknown ${pre}`).toBeDefined();
-        visit(pre, [...path, id]);
-      }
-      state.set(id, "done");
-    };
-    for (const l of LESSONS) visit(l.id, []);
+  it("chapter ids are unique, and each track ends with its project", () => {
+    const ids = TRACK_IDS.flatMap((id) => TRACKS[id].chapters.map((c) => c.id));
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of TRACK_IDS) {
+      const chapters = TRACKS[id].chapters;
+      expect(chapters.at(-1)?.project, `${id} ends with a project`).toBe(true);
+      expect(chapters.filter((c) => c.project).length, id).toBe(1);
+    }
+  });
+
+  it("every tested chapter has two placement forms", () => {
+    for (const id of TRACK_IDS) {
+      for (const c of testedChapters(id)) expect(CHAPTER_POOL.filter((q) => q.chapter === c).length, c).toBe(2);
+    }
+    for (const q of CHAPTER_POOL) expect(TRACK_IDS.some((id) => testedChapters(id).includes(q.chapter!)), `${q.id} → ${q.chapter}`).toBe(true);
   });
 });
 
@@ -127,7 +124,7 @@ describe("lessons", () => {
   });
 
   it("question ids are unique across the whole curriculum and the placement test", () => {
-    const ids = [...LESSONS.flatMap((l) => allQuestions(l).map((q) => q.id)), ...PLACEMENT_POOL.map((q) => q.id)];
+    const ids = [...LESSONS.flatMap((l) => allQuestions(l).map((q) => q.id)), ...COMMON_POOL.map((q) => q.id), ...CHAPTER_POOL.map((q) => q.id), "c-deux"];
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
     expect(dupes).toEqual([]);
   });
@@ -145,5 +142,55 @@ describe("lessons", () => {
     expect(reviewVariant(base.id, 1)?.id).toBe(base.id);
     expect(reviewVariant(base.id, 2)?.id).not.toBe(base.id);
     expect(getQuestion(l.reviewQuestions[0].id)?.pool).toBe("review");
+  });
+});
+
+describe("placement questions", () => {
+  it("are coherent", () => {
+    for (const q of [...COMMON_POOL, ...CHAPTER_POOL, getPlacementQuestion("c-deux")!]) expect(questionProblems(q), q.id).toEqual([]);
+  });
+  it("never ask the learner to write", () => {
+    for (const q of [...COMMON_POOL, ...CHAPTER_POOL]) expect(q.type, q.id).not.toBe("written");
+  });
+});
+
+/**
+ * Each track has a strict lesson format: short pages, few paragraphs, interaction early and often.
+ * "Prose" counts paragraphs: a text, a definition or a mistake is one, a keypoint is half.
+ */
+const TEMPLATE = {
+  bird: { minutes: [3, 5], projectMinutes: 8, sections: [4, 6], prose: 1, words: 45, quiz: [4, 4], interactiveShare: 0.75, written: false },
+  gecko: { minutes: [4, 8], projectMinutes: 20, sections: [5, 8], prose: 2, words: 60, quiz: [5, 5], interactiveShare: 0.5, written: true },
+  fox: { minutes: [8, 15], projectMinutes: 45, sections: [6, 12], prose: 3, words: 90, quiz: [6, 8], interactiveShare: 0.3, written: true },
+} as const;
+const INTERACTIVE = new Set(["check", "flow", "layers", "anatomy", "spectrum"]);
+const PROSE: Partial<Record<string, number>> = { text: 1, definition: 1, mistake: 1, keypoint: 0.5 };
+const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
+const proseText = (b: Block) => (b.type === "text" || b.type === "definition" || b.type === "keypoint" ? b.body : b.type === "mistake" ? `${b.why} ${b.fix}` : "");
+
+/** Lessons still in their v1 format, rewritten one by one. Must end empty. */
+const NOT_YET_REWRITTEN = new Set<string>(LESSONS.map((l) => l.id));
+
+describe("lesson templates", () => {
+  const rewritten = TRACK_IDS.flatMap((track) => trackLessons(track).filter((l) => !NOT_YET_REWRITTEN.has(l.id)).map((l) => [l.id, track, l] as const));
+  it("tracks how many lessons still use the v1 format", () => expect(NOT_YET_REWRITTEN.size).toBeLessThanOrEqual(LESSONS.length));
+  it.skipIf(!rewritten.length).each(rewritten.length ? rewritten : [["none", "bird", LESSONS[0]] as const])("%s follows the %s format", (_, track, l) => {
+    const t = TEMPLATE[track];
+    const project = lessonPlace(l.id)?.chapter.project;
+    expect(l.durationMin, "duration").toBeGreaterThanOrEqual(t.minutes[0]);
+    expect(l.durationMin, "duration").toBeLessThanOrEqual(project ? t.projectMinutes : t.minutes[1]);
+    expect(l.sections.length, "sections").toBeGreaterThanOrEqual(t.sections[0]);
+    expect(l.sections.length, "sections").toBeLessThanOrEqual(t.sections[1]);
+    expect(l.questions.length, "quiz").toBeGreaterThanOrEqual(t.quiz[0]);
+    expect(l.questions.length, "quiz").toBeLessThanOrEqual(t.quiz[1]);
+    for (const s of l.sections) {
+      const prose = s.blocks.reduce((n, b) => n + (PROSE[b.type] ?? 0), 0);
+      expect(prose, `${s.id}: paragraphs`).toBeLessThanOrEqual(t.prose);
+      for (const b of s.blocks) expect(words(proseText(b)), `${s.id}: paragraph length`).toBeLessThanOrEqual(t.words);
+    }
+    const interactive = l.sections.filter((s) => s.blocks.some((b) => INTERACTIVE.has(b.type))).length;
+    expect(interactive / l.sections.length, "interactive share").toBeGreaterThanOrEqual(t.interactiveShare);
+    if (!t.written) for (const q of allQuestions(l)) expect(q.type, `${q.id}: no writing in ${track}`).not.toBe("written");
+    expect(l.summary.length, "summary").toBeLessThanOrEqual(track === "bird" ? 3 : 5);
   });
 });

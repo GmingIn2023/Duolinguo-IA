@@ -1,4 +1,4 @@
-import type { Lesson, MapNode, Question, ThemeId, TrackId } from "./types";
+import type { Chapter, Lesson, Question, ThemeId, TrackId } from "./types";
 import { comprendreLessons } from "./lessons/comprendre";
 import { promptLessons } from "./lessons/prompt";
 import { confianceLessons } from "./lessons/confiance";
@@ -32,41 +32,31 @@ export const getLesson = (id: string) => byId.get(id);
 
 export const TRACKS = typesetContent(RAW_TRACKS);
 
-/** The lessons of a track, in board order (column, then lane). */
+/** Where a lesson sits: its track, its chapter, and its position in the chapter. */
+export type LessonPlace = { track: TrackId; chapter: Chapter; chapterIndex: number; index: number };
+
+const places = new Map<string, LessonPlace>();
+for (const track of TRACK_IDS) {
+  TRACKS[track].chapters.forEach((chapter, chapterIndex) => {
+    chapter.lessons.forEach((id, index) => places.set(id, { track, chapter, chapterIndex, index }));
+  });
+}
+export const lessonPlace = (id: string) => places.get(id);
+
+/** The lessons of a track, in path order. */
 export function trackLessons(trackId: TrackId): Lesson[] {
-  return TRACKS[trackId].nodes
-    .filter((n) => n.lessonId)
-    .sort((a, b) => a.col - b.col || a.lane - b.lane)
-    .map((n) => byId.get(n.lessonId!)!)
-    .filter(Boolean);
+  return TRACKS[trackId].chapters.flatMap((c) => c.lessons.map((id) => byId.get(id)!).filter(Boolean));
 }
 
-export const getNode = (trackId: TrackId, nodeId: string): MapNode | undefined => TRACKS[trackId].nodes.find((n) => n.id === nodeId);
-
-/** A checkpoint anywhere in the curriculum, by id. */
-export function findCheckpoint(id: string): { node: MapNode; track: TrackId } | undefined {
+/** A chapter anywhere in the curriculum, by id. */
+export function findChapter(id: string): { chapter: Chapter; track: TrackId; index: number } | undefined {
   for (const track of TRACK_IDS) {
-    const node = TRACKS[track].nodes.find((n) => n.kind === "checkpoint" && n.id === id);
-    if (node) return { node, track };
+    const index = TRACKS[track].chapters.findIndex((c) => c.id === id);
+    if (index !== -1) return { chapter: TRACKS[track].chapters[index], track, index };
   }
 }
 
 export const lessonsByTheme = (theme: ThemeId) => LESSONS.filter((l) => l.theme === theme);
-
-/** Every prerequisite of a lesson, transitively, in learning order (deepest first). */
-export function prerequisiteChain(lessonId: string): Lesson[] {
-  const seen = new Set<string>();
-  const out: Lesson[] = [];
-  const visit = (id: string) => {
-    const l = byId.get(id);
-    if (!l || seen.has(id)) return;
-    seen.add(id);
-    l.prerequisites.forEach(visit);
-    out.push(l);
-  };
-  byId.get(lessonId)?.prerequisites.forEach(visit);
-  return out;
-}
 
 type Indexed = { question: Question; lesson: Lesson; pool: "quiz" | "review" | "check" };
 

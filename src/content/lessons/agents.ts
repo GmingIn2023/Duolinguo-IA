@@ -16,7 +16,6 @@ export const agentsLessons: Lesson[] = [
       "Repérer une injection de prompt dans un contenu lu par un agent",
       "Régler permissions et confirmations selon la réversibilité des actions",
     ],
-    prerequisites: ["decouper-une-tache"],
     sections: [
       {
         id: "boucle",
@@ -456,7 +455,6 @@ export const agentsLessons: Lesson[] = [
       "Poser des garde-fous contre l'injection indirecte et l'exfiltration",
       "Évaluer un agent sur la réussite de la tâche et sa trajectoire",
     ],
-    prerequisites: ["agents-cest-quoi", "sorties-structurees-et-outils"],
     sections: [
       {
         id: "echelle",
