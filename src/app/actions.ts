@@ -7,11 +7,13 @@ import type { Answer, TrackId } from "@/content/types";
 import { canOpenLesson, lessonKnown } from "@/lib/path";
 import { checkpointQuestions, DAILY_LIMIT, getDueItems, getKnowledge, getViewer, getWeeklyPlan, serveItems } from "@/lib/data";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { gradeAnswer } from "@/lib/grading";
+import { gradeAnswer, isGraded } from "@/lib/grading";
 import { gradePlacement, legacyLevel } from "@/lib/placement";
 import { parsePreferences } from "@/lib/prefs";
 import { supabaseProgressDb } from "@/lib/progressDb.supabase";
-import { completeLessonCore, gradeReviewAnswers, submitReviewCore, type Learner } from "@/lib/progressService";
+import { completeLessonCore, gradeReviewAnswers, savedDailyReview, staleDailyReview, submitReviewCore, type Learner } from "@/lib/progressService";
+import { targetsOf, targetsOfQuestions, type Target } from "@/lib/reviewServe";
+import { isTimeZone, readTimezone, todayKey } from "@/lib/streak";
 import { NOTE_COLORS, NOTE_MAX, type LessonResult, type Note, type NoteColor, type ReviewMode, type ReviewResult } from "@/lib/types";
 
 type Viewer = NonNullable<Awaited<ReturnType<typeof getViewer>>>;
@@ -34,6 +36,9 @@ function learnerOf(viewer: Viewer): Learner {
   return { id: user.id, streakDays: profile.streak_days, lastActiveDate: profile.last_active_date, xp: profile.xp };
 }
 
+/** Today for this learner: the date in the timezone their browser reported. */
+const todayOf = (viewer: Viewer) => todayKey(new Date(), readTimezone(viewer.profile.preferences));
+
 function syncProfile(viewer: Viewer, learner: Learner) {
   viewer.profile.streak_days = learner.streakDays;
   viewer.profile.last_active_date = learner.lastActiveDate;
@@ -55,13 +60,14 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
   const place = lessonPlace(lesson.id);
   if (!canOpenLesson(lesson.id, viewer.profile.track_id ?? "bird", place ? TRACKS[place.track] : undefined, knowledge, getLesson).ok) throw new Error("Ce cours est encore verrouillé.");
 
-  const graded = lesson.questions.map((q) => ({
+  // written questions are self-assessed: they count neither in the score nor in the spaced repetition (see grading.ts)
+  const graded = lesson.questions.filter(isGraded).map((q) => ({
     questionId: q.id,
     lessonId,
     correct: Object.hasOwn(firstAnswers, q.id) && gradeAnswer(q, firstAnswers[q.id]),
   }));
   const learner = learnerOf(viewer);
-  const result = await completeLessonCore(supabaseProgressDb(viewer.supabase), learner, lesson, graded);
+  const result = await completeLessonCore(supabaseProgressDb(viewer.supabase), learner, lesson, graded, new Date(), todayOf(viewer));
   syncProfile(viewer, learner);
   // the lesson is finished: nothing left to resume (a failure here must not hide the result)
   await createAdminClient().from("lesson_resume").delete().eq("user_id", viewer.user.id).eq("lesson_id", lessonId);
@@ -69,26 +75,42 @@ export async function completeLesson(lessonId: string, firstAnswers: Record<stri
   return result;
 }
 
-/** The served question ids this learner is allowed to be graded on right now, for the given mode. */
-async function allowedQuestions(mode: ReviewMode): Promise<Set<string>> {
+/**
+ * The questions this learner may be graded on right now, for the given mode, each with the scheduled notion it stands for.
+ * Built by the same code as the page that served the session, so the two cannot disagree.
+ */
+async function reviewTargets(mode: ReviewMode): Promise<Map<string, Target>> {
   if (typeof mode !== "string") throw new Error("Révision inconnue.");
-  if (mode === "daily") return new Set(serveItems((await getDueItems()).slice(0, DAILY_LIMIT)).map((s) => s.question.id));
-  if (mode === "weekly") return new Set(serveItems((await getWeeklyPlan()).items).map((s) => s.question.id));
+  if (mode === "daily") return targetsOf(serveItems((await getDueItems()).slice(0, DAILY_LIMIT)));
+  if (mode === "weekly") return targetsOf(serveItems((await getWeeklyPlan()).items));
   if (!mode.startsWith("checkpoint:")) throw new Error("Révision inconnue.");
   const found = findChapter(mode.slice("checkpoint:".length));
   if (!found || found.chapter.project) throw new Error("Bilan introuvable.");
   const { knowledge } = await getKnowledge();
   const lessons = found.chapter.lessons;
   if (!lessons.every((id) => lessonKnown(id, found.chapter.id, knowledge))) throw new Error("Ce bilan est encore verrouillé.");
-  return new Set(checkpointQuestions(lessons).map((q) => q.id));
+  return targetsOfQuestions(checkpointQuestions(lessons));
 }
 
-export async function submitReview(mode: ReviewMode, firstAnswers: Record<string, Answer>): Promise<ReviewResult> {
+/** `attemptId`: drawn once per session by the browser and sent again on a retry, so a session already saved is recognised. */
+export async function submitReview(mode: ReviewMode, firstAnswers: Record<string, Answer>, attemptId?: string): Promise<ReviewResult> {
   if (!isRecord(firstAnswers)) throw new Error("Réponses invalides.");
   const viewer = await viewerOrThrow();
-  const allowed = await allowedQuestions(mode);
+  const db = supabaseProgressDb(viewer.supabase);
   const learner = learnerOf(viewer);
-  const result = await submitReviewCore(supabaseProgressDb(viewer.supabase), learner, { mode, answers: gradeReviewAnswers(firstAnswers, allowed), expected: allowed.size });
+  const today = todayOf(viewer);
+  if (mode === "daily") {
+    // the response of an earlier save got lost and the learner retried: show that result again, write nothing
+    const saved = await savedDailyReview(db, learner, attemptId, firstAnswers, today);
+    if (saved) return saved;
+  }
+  const targets = await reviewTargets(mode);
+  const answers = gradeReviewAnswers(firstAnswers, targets);
+  if (mode === "daily" && !answers.length) {
+    const stale = staleDailyReview(learner, firstAnswers, today);
+    if (stale) return stale;
+  }
+  const result = await submitReviewCore(db, learner, { mode, answers, expected: targets.size, attemptId }, new Date(), today);
   syncProfile(viewer, learner);
   revalidateApp();
   return result;
@@ -108,13 +130,32 @@ export async function chooseTrack(formData: FormData) {
 const storedPlacements = (preferences: unknown) =>
   isRecord(preferences) && isRecord(preferences.placements) ? preferences.placements : {};
 
+/** The stored timezone, carried over the same way (absent until the browser has reported one). */
+const storedTimezone = (preferences: unknown) =>
+  isRecord(preferences) && isTimeZone(preferences.timezone) ? { timezone: preferences.timezone } : {};
+
 /**
  * Stores validated preferences. Unknown values fall back to defaults, so a forged payload cannot store junk,
  * and the placements are copied from the stored row: the browser can never write a test result.
  */
 export async function savePreferences(raw: unknown): Promise<void> {
   const { user, profile } = await viewerOrThrow();
-  const preferences = { ...parsePreferences(raw), placements: storedPlacements(profile.preferences) };
+  const preferences = { ...parsePreferences(raw), ...storedTimezone(profile.preferences), placements: storedPlacements(profile.preferences) };
+  const { error } = await createAdminClient().from("profiles").update({ preferences, updated_at: new Date().toISOString() }).eq("id", user.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Stores the timezone the browser reports, so "today" (streak, daily goal) is the learner's own day and not the day in Paris.
+ * Only a timezone name the server knows is kept; the streak rules never let a change of timezone replay or skip a day
+ * (see activityDay in streak.ts).
+ */
+export async function saveTimezone(timezone: unknown): Promise<void> {
+  if (!isTimeZone(timezone)) return;
+  const { user, profile } = await viewerOrThrow();
+  if (readTimezone(profile.preferences) === timezone && isRecord(profile.preferences) && profile.preferences.timezone === timezone) return;
+  const preferences = { ...parsePreferences(profile.preferences), timezone, placements: storedPlacements(profile.preferences) };
   const { error } = await createAdminClient().from("profiles").update({ preferences, updated_at: new Date().toISOString() }).eq("id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/", "layout");
@@ -130,6 +171,7 @@ export async function savePlacement(track: TrackId, answers: unknown, adopt: boo
   const result = gradePlacement(track, answers);
   const preferences = {
     ...parsePreferences(profile.preferences),
+    ...storedTimezone(profile.preferences),
     placements: { ...storedPlacements(profile.preferences), [track]: result },
   };
   const { error } = await createAdminClient()

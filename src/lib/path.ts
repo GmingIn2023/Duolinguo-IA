@@ -2,9 +2,9 @@ import type { Chapter, Lesson, ThemeId, Track, TrackId } from "@/content/types";
 
 /** What the placement test of one track established. */
 export type Placement = {
-  /** Right answers out of 10. */
+  /** Share of the test answered right, out of 10. */
   score: number;
-  /** Chapters of that track validated by the test. */
+  /** Chapters of that track validated by the test (both of the chapter's questions right). */
   chapters: string[];
   /** ISO date of the test. */
   at: string;

@@ -6,12 +6,12 @@ import { Avatar } from "@/components/Avatar";
 import { QuestionView, isDraftComplete, type Draft } from "@/components/quiz/QuestionView";
 import { initialDraft, initialOrder } from "@/components/quiz/QuizRunner";
 import type { Answer, TrackId } from "@/content/types";
-import { PLACEMENT_LENGTH, gradePlacement, placementTest, type PlacementAnswer } from "@/lib/placement";
+import { gradePlacement, placementTest, type PlacementAnswer } from "@/lib/placement";
 
 export type PlacementResult = { track: TrackId; score: number; chapters: string[]; answers: PlacementAnswer[] };
 
 /**
- * One track's test: 10 questions in a fixed order. Nothing is corrected during the test. Arrows go back and
+ * One track's test: its questions in a fixed order (13 to 15, two per chapter). Nothing is corrected during the test. Arrows go back and
  * forth, an answer can be changed until the end, and "Je ne sais pas" is a real answer. The server grades
  * the answers again; the score here only drives the result screen. Loaded on demand: the question bank and
  * its answers stay out of the first download.
@@ -61,7 +61,7 @@ export default function PlacementRun({ track, onDone, compact = false }: { track
     <div ref={top} className="grid scroll-mt-24 gap-6" data-track={track}>
       <div className="flex items-center gap-3">
         <Avatar track={track} size={34} mood="think" decorative />
-        <div className="flex flex-1 gap-1" role="progressbar" aria-label="Avancement du test" aria-valuemin={0} aria-valuemax={PLACEMENT_LENGTH} aria-valuenow={answeredCount}>
+        <div className="flex flex-1 gap-1" role="progressbar" aria-label="Avancement du test" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={answeredCount}>
           {questions.map((x, i) => (
             <i
               key={x.id}
@@ -70,7 +70,7 @@ export default function PlacementRun({ track, onDone, compact = false }: { track
           ))}
         </div>
         <span className="tabular text-sm font-semibold" aria-live="polite">
-          {index + 1}/{PLACEMENT_LENGTH}
+          {index + 1}/{questions.length}
         </span>
       </div>
 

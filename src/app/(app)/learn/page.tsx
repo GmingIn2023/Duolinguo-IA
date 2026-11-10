@@ -9,6 +9,7 @@ import { PathView } from "@/components/path/PathView";
 import { TrackSwitcher } from "@/components/path/TrackSwitcher";
 import { TRACKS, TRACK_IDS, getLesson } from "@/content";
 import type { TrackId } from "@/content/types";
+import { profileStreak } from "@/lib/streak";
 import { DAILY_LIMIT, getDueItems, getKnowledge, getResume, getTodayXp, requireViewer } from "@/lib/data";
 import { trackPath } from "@/lib/path";
 import { NEXT_TRACK } from "@/lib/placementRules";
@@ -30,6 +31,7 @@ export default async function LearnPage() {
   const midChapter = path.chapters.find((c) => c.status === "current" && c.done > 0);
   const next = NEXT_TRACK[trackId];
   const reviews = Math.min(due.length, DAILY_LIMIT);
+  const streak = profileStreak(profile);
 
   return (
     <div className="mx-auto grid max-w-5xl gap-8 xl:grid-cols-[minmax(0,34rem)_17rem] xl:justify-center xl:gap-14" data-track={trackId}>
@@ -40,7 +42,7 @@ export default async function LearnPage() {
         <header className="sticky top-0 z-30 -mx-4 flex h-[3.75rem] items-center justify-between gap-3 bg-paper/95 px-3 backdrop-blur sm:-mx-8 sm:px-6 lg:static lg:mx-0 lg:h-auto lg:bg-transparent lg:px-0 lg:backdrop-blur-none">
           <TrackSwitcher current={trackId} tracks={tracks} chapterName={midChapter?.chapter.name ?? null} testedTrack={tested ?? null} />
           <div className="flex items-center gap-4 text-[1.0625rem] xl:hidden">
-            <Stat icon="streak" value={profile.streak_days} label="jours de série" />
+            <Stat icon="streak" value={streak} label="jours de série" />
             <Stat icon="xp" value={profile.xp} label="points d'expérience" />
             <GoalRing value={todayXp} goal={prefs.dailyGoal} size={34} />
           </div>
@@ -78,7 +80,7 @@ export default async function LearnPage() {
 
       <aside className="hidden content-start gap-4 xl:sticky xl:top-10 xl:grid">
         <div className="tile flex items-center justify-around p-4 text-lg">
-          <Stat icon="streak" value={profile.streak_days} label="jours de série" />
+          <Stat icon="streak" value={streak} label="jours de série" />
           <Stat icon="xp" value={profile.xp} label="points d'expérience" />
         </div>
         <div className="tile flex items-center gap-4 p-4">

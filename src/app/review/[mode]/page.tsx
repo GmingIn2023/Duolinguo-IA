@@ -6,6 +6,7 @@ import { findChapter, getLesson } from "@/content";
 import type { Question } from "@/content/types";
 import { lessonKnown } from "@/lib/path";
 import { DAILY_LIMIT, checkpointQuestions, getDueItems, getKnowledge, getWeeklyPlan, requireViewer, serveItems } from "@/lib/data";
+import { readTimezone, todayKey } from "@/lib/streak";
 import type { ReviewMode } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Révision" };
@@ -51,5 +52,7 @@ export default async function ReviewModePage(props: PageProps<"/review/[mode]">)
   } else notFound();
 
   if (!questions.length) redirect("/review");
-  return <ReviewSession mode={mode} title={title} questions={questions} track={track} prefs={prefs} />;
+  // answers are laid out differently from one day to the next: a notion that comes back is not recognised by its position
+  const seed = todayKey(new Date(), readTimezone(profile.preferences));
+  return <ReviewSession mode={mode} title={title} questions={questions} track={track} prefs={prefs} seed={seed} />;
 }

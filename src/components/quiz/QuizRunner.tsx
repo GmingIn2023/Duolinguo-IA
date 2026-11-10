@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CircleCheck, CircleX, RotateCcw } from "lucide-react";
 import type { Answer, Question, TrackId } from "@/content/types";
-import { gradeAnswer } from "@/lib/grading";
+import { gradeAnswer, isGraded } from "@/lib/grading";
 import { mascotLine } from "@/lib/mascot";
-import { seededShuffle, shuffleAway } from "@/lib/shuffle";
+import { initialDraft, initialOrder } from "@/lib/quizOrder";
 import { Avatar } from "@/components/Avatar";
 import { useLearnerPrefs } from "@/components/LearnerPrefs";
 import { playSound } from "@/lib/sound";
@@ -14,31 +14,7 @@ import { QuestionView, correctAnswerText, isDraftComplete, optionFeedback, type 
 
 type Step = { question: Question; retry: boolean };
 
-export function initialOrder(q: Question): string[] {
-  switch (q.type) {
-    case "mcq":
-    case "fill_choice":
-    case "ai_analysis":
-    case "multi":
-      return seededShuffle(q.options.map((o) => o.id), q.id);
-    case "ordering":
-    case "ranking":
-      return shuffleAway(q.items.map((i) => i.id), q.id);
-    case "match":
-      return seededShuffle(q.right.map((r) => r.id), q.id);
-    case "sort":
-      return seededShuffle(q.items.map((i) => i.id), q.id);
-    default:
-      return [];
-  }
-}
-
-export function initialDraft(q: Question): Draft {
-  if (q.type === "ordering" || q.type === "ranking") return initialOrder(q);
-  if (q.type === "match") return q.left.map(() => "");
-  if (q.type === "sort") return q.items.map(() => "");
-  return null;
-}
+export { initialDraft, initialOrder };
 
 function keyHint(q: Question): string {
   switch (q.type) {
@@ -70,16 +46,21 @@ export function QuizRunner({
   onDone,
   onProgress,
   compact = false,
+  seed = "",
 }: {
   questions: Question[];
   track: TrackId;
+  /** Changes the order of the answers from one session to the next (see initialOrder). */
+  seed?: string;
   onDone: (firstAnswers: Record<string, Answer>) => void;
   onProgress?: (fraction: number) => void;
   compact?: boolean;
 }) {
   const [queue, setQueue] = useState<Step[]>(() => questions.map((question) => ({ question, retry: false })));
   const [index, setIndex] = useState(0);
-  const [draft, setDraft] = useState<Draft>(() => initialDraft(questions[0]));
+  // a question that comes back after a miss is shuffled again: its answers do not sit where they were a minute ago
+  const saltOf = useCallback((s: Step) => (s.retry ? `${seed}|retry` : seed), [seed]);
+  const [draft, setDraft] = useState<Draft>(() => initialDraft(questions[0], seed));
   const [reveal, setReveal] = useState<Reveal>(null);
   const [firstAnswers, setFirstAnswers] = useState<Record<string, Answer>>({});
   const [solved, setSolved] = useState(0);
@@ -91,7 +72,7 @@ export function QuizRunner({
   const [sheetHeight, setSheetHeight] = useState(0);
 
   const step = queue[index];
-  const order = useMemo(() => initialOrder(step.question), [step.question]);
+  const order = useMemo(() => initialOrder(step.question, saltOf(step)), [step, saltOf]);
 
   useEffect(() => onProgress?.(solved / questions.length), [solved, questions.length, onProgress]);
 
@@ -115,6 +96,15 @@ export function QuizRunner({
   const check = useCallback(() => {
     if (reveal || !isDraftComplete(step.question, draft)) return;
     const answer = draft as Answer;
+    if (!isGraded(step.question)) {
+      // a written answer is not marked: the learner compares it with the model answer. It counts neither as right nor as
+      // wrong, is not sent for grading and does not come back at the end.
+      setLine("");
+      setReveal({ correct: true, self: true });
+      if (compact) onDone(firstAnswers);
+      else setSolved((s) => s + 1);
+      return;
+    }
     const correct = gradeAnswer(step.question, answer);
     const nextStreak = correct ? streak + 1 : 0;
     const moment = !correct ? "wrong" : nextStreak % 3 === 0 ? "streak" : "correct";
@@ -139,8 +129,8 @@ export function QuizRunner({
     setStreak(0);
     setLine("On passe. Voici une réponse possible.");
     setReveal({ correct: false, skipped: true });
-    if (!(step.question.id in firstAnswers)) setFirstAnswers((f) => ({ ...f, [step.question.id]: "" }));
-  }, [reveal, compact, onDone, firstAnswers, step]);
+    setSolved((s) => s + 1); // a passed question does not come back: the session can still reach its end
+  }, [reveal, compact, onDone, firstAnswers]);
 
   const next = useCallback(() => {
     if (!reveal) return;
@@ -152,9 +142,9 @@ export function QuizRunner({
     const nextStep = queue[nextIndex];
     if (nextStep.retry && !queue[index].retry) setRetryNotice(true);
     setIndex(nextIndex);
-    setDraft(initialDraft(nextStep.question));
+    setDraft(initialDraft(nextStep.question, saltOf(nextStep)));
     setReveal(null);
-  }, [reveal, index, queue, firstAnswers, onDone]);
+  }, [reveal, index, queue, firstAnswers, onDone, saltOf]);
 
   // Keyboard: digits pick an option, Enter checks / continues (Ctrl+Enter inside a text field).
   useEffect(() => {
@@ -199,12 +189,15 @@ export function QuizRunner({
   const verdict = reveal
     ? reveal.skipped
       ? "Question passée."
-      : reveal.correct
-        ? written ? "Les idées y sont." : "Juste !"
-        : written ? "Il manque des idées." : "Pas tout à fait."
+      : reveal.self
+        ? "À toi de comparer."
+        : reveal.correct
+          ? "Juste !"
+          : "Pas tout à fait."
     : "";
 
-  const tone = !reveal ? "border-line bg-paper" : reveal.correct ? "sheet-in border-transparent bg-good-soft" : "sheet-in border-transparent bg-bad-soft";
+  const neutral = Boolean(reveal && (reveal.self || reveal.skipped));
+  const tone = !reveal ? "border-line bg-paper" : neutral ? "sheet-in border-line bg-surface" : reveal.correct ? "sheet-in border-transparent bg-good-soft" : "sheet-in border-transparent bg-bad-soft";
   const blockBtn = compact ? "btn-block sm:w-auto" : "";
 
   const panel = (
@@ -212,12 +205,13 @@ export function QuizRunner({
       {reveal ? (
         <div className={`grid gap-2 ${compact ? "" : "max-h-[38dvh] overflow-y-auto sm:max-h-[45dvh]"}`}>
           <div className="flex items-center gap-3">
-            <Avatar track={track} mood={reveal.correct ? "cheer" : reveal.skipped ? "think" : "oops"} size={compact ? 48 : 64} animate />
+            <Avatar track={track} mood={neutral ? "think" : reveal.correct ? "cheer" : "oops"} size={compact ? 48 : 64} animate />
             <div className="grid gap-0.5">
-              <p className={`flex items-center gap-2 text-xl font-bold ${reveal.correct ? "text-good" : "text-bad"}`}>
-                {reveal.correct ? <CircleCheck className="size-6" aria-hidden /> : <CircleX className="size-6" aria-hidden />}
+              <p className={`flex items-center gap-2 text-xl font-bold ${neutral ? "text-ink" : reveal.correct ? "text-good" : "text-bad"}`}>
+                {!neutral && (reveal.correct ? <CircleCheck className="size-6" aria-hidden /> : <CircleX className="size-6" aria-hidden />)}
                 {verdict}
               </p>
+              {reveal.self && <p className="font-medium text-ink-2">Relis la réponse modèle : cette question ne compte pas dans ton score.</p>}
               {line && line !== verdict && <p className="font-medium text-ink-2">{line}</p>}
             </div>
           </div>
@@ -235,14 +229,14 @@ export function QuizRunner({
       )}
       {reveal ? (
         !compact && (
-          <button className={`btn btn-lg flex-none sm:min-w-44 ${blockBtn} ${reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
+          <button className={`btn btn-lg flex-none sm:min-w-44 ${blockBtn} ${neutral ? "btn-primary" : reveal.correct ? "bg-good text-white" : "bg-bad text-white"}`} onClick={next}>
             Continuer
           </button>
         )
       ) : (
         <div className={`flex flex-none flex-wrap items-center gap-2 ${compact ? "" : "sm:flex-row-reverse"}`}>
           <button className={`btn btn-primary btn-lg flex-none sm:min-w-44 ${blockBtn}`} onClick={check} disabled={!isDraftComplete(q, draft)}>
-            Vérifier
+            {written ? "Comparer" : "Vérifier"}
           </button>
           {(written || compact) && (
             <button className="btn btn-ghost" onClick={skip}>
@@ -259,7 +253,7 @@ export function QuizRunner({
       className={compact ? "grid gap-6" : reveal ? "pb-[26rem] sm:pb-80" : "pb-48"}
       style={!compact && reveal && sheetHeight ? { paddingBottom: sheetHeight + 32 } : undefined}
     >
-      <div key={`${q.id}-${index}`} className={`fade-in ${reveal && !reveal.correct ? "shake" : ""}`}>
+      <div key={`${q.id}-${index}`} className={`fade-in ${reveal && !reveal.correct && !neutral ? "shake" : ""}`}>
         <QuestionView question={q} draft={draft} setDraft={setDraft} reveal={reveal} displayOrder={order} />
         {step.retry && <p className="mt-5 text-sm font-medium text-ink-2">Deuxième essai. {mascotLine(track, "retry", index)}</p>}
       </div>

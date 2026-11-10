@@ -66,7 +66,7 @@ export function PlacementFlow({
       {stage === "goal" && (
         <div className="fade-in grid gap-5">
           <h3 className={`display ${compact ? "display-m" : "display-l"}`}>Qu&apos;est-ce que tu veux faire avec l&apos;IA ?</h3>
-          <p className="text-ink-2">Ta réponse choisit le test : 10 questions sur ce parcours, environ 3 minutes.</p>
+          <p className="text-ink-2">Ta réponse choisit le test : une quinzaine de questions sur ce parcours, environ 5 minutes.</p>
           <div className="grid gap-3" role="radiogroup" aria-label="Ton objectif">
             {GOALS.map((g) => (
               <button

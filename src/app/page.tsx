@@ -11,7 +11,6 @@ import { LESSONS, TRACKS, TRACK_IDS } from "@/content";
 import { getViewer } from "@/lib/data";
 import { buildLandingPlan } from "@/lib/landingBoard";
 import { buildPreviews } from "@/lib/landingPreview";
-import { PLACEMENT_LENGTH } from "@/lib/placement";
 import "./landing.css";
 import "./landing-how.css";
 import "./landing-close.css";
@@ -56,7 +55,7 @@ export default async function Home() {
           <div className="flex flex-wrap items-center gap-3">
             <Link href={viewer ? cta.href : "#depart"} className="btn btn-primary btn-lg">{cta.label}</Link>
           </div>
-          {!viewer && <p className="text-sm text-muted">{PLACEMENT_LENGTH} questions, environ 3 minutes, aucun compte pour commencer.</p>}
+          {!viewer && <p className="text-sm text-muted">Une quinzaine de questions, environ 5 minutes, aucun compte pour commencer.</p>}
         </div>
         <div className="lg:col-span-5">
           <HeroScene guides={guides} href={viewer ? cta.href : "#depart"} />
@@ -67,7 +66,7 @@ export default async function Home() {
       {!viewer && (
         <section id="depart" className="mx-auto max-w-[90rem] scroll-mt-6 px-4 pb-20 sm:px-8 lg:pb-28">
           <div className="mb-10 grid max-w-[40rem] gap-3">
-            <h2 className="display display-l">Fais le point en {PLACEMENT_LENGTH} questions, ou choisis toi-même.</h2>
+            <h2 className="display display-l">Fais le point en 5 minutes, ou choisis toi-même.</h2>
           </div>
           <LandingPlacement guides={guides} />
         </section>
@@ -118,7 +117,7 @@ export default async function Home() {
               [String(plan.totalLessons), "cours, du premier prompt aux agents", "bg-surface"],
               [String(plan.themes.length), "thèmes", "bg-sky-soft"],
               [String(TRACK_IDS.length), "parcours, un guide chacun", "bg-gecko-soft"],
-              [String(PLACEMENT_LENGTH), "questions pour te placer", "bg-rose-soft"],
+              ["15", "questions au plus pour te placer", "bg-rose-soft"],
             ].map(([n, label, bg]) => (
               <li key={label} className={`fact ${bg}`}>
                 <b>{n}</b>

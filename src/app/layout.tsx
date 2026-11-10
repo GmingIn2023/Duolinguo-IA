@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     siteName: "Gusgus",
     title: "Gusgus — Apprends l'IA comme une langue",
-    description: "Un test de niveau en 10 questions, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
+    description: "Un test de niveau en 5 minutes, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
   },
 };
 

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { LESSONS, TRACKS, trackLessons } from "../src/content";
+import { placementLength } from "../src/lib/placement";
 import { answerCorrectly } from "./quiz";
 
 // The landing page: public, no account needed.
@@ -195,7 +196,7 @@ test.describe("level test inside the landing page", () => {
     await page.goto("/");
     const box = page.locator("#test");
     await box.getByRole("radio", { name: /Construire avec l'IA/ }).click();
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= placementLength("fox"); i++) {
       await expect(box.getByRole("progressbar", { name: "Avancement du test" })).toHaveAttribute("aria-valuenow", String(i - 1), { timeout: 20_000 });
       await answerCorrectly(box);
       await box.getByRole("button", { name: /^Valider/ }).click();
@@ -206,7 +207,7 @@ test.describe("level test inside the landing page", () => {
     await box.getByRole("button", { name: "Créer mon compte et commencer" }).click();
     await expect(page).toHaveURL(/\/signup\?track=fox/, { timeout: 30_000 });
     const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
-    expect(stored.placement).toHaveLength(10);
+    expect(stored.placement).toHaveLength(placementLength("fox"));
     expect(stored.goal).toBe("build");
     expect(stored.tested).toBe("fox");
     expect(stored.track).toBe("fox");
@@ -216,7 +217,7 @@ test.describe("level test inside the landing page", () => {
     await page.goto("/");
     const box = page.locator("#test");
     await box.getByRole("radio", { name: /Comprendre ce qu'est l'IA/ }).click();
-    for (let i = 0; i < 10; i++) await box.getByRole("button", { name: "Je ne sais pas" }).click({ timeout: 20_000 });
+    for (let i = 0; i < placementLength("bird"); i++) await box.getByRole("button", { name: "Je ne sais pas" }).click({ timeout: 20_000 });
     await expect(box.locator("p", { hasText: "Ton score" })).toContainText("0/10");
     await expect(box.getByRole("heading", { name: /Tu commences au chapitre 1/ })).toBeVisible();
     await box.getByRole("button", { name: "Choisir un autre parcours" }).click();

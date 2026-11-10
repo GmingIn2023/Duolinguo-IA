@@ -36,6 +36,12 @@ export function supabaseProgressDb(reader: SupabaseClient): ProgressDb {
       return (data?.length ?? 0) > 0;
     },
 
+    async paidFor(userId, source, ref) {
+      const { data, error } = await reader.from("xp_events").select("amount").eq("user_id", userId).eq("source", source).eq("ref", ref);
+      if (error) throw new Error(error.message);
+      return data?.length ? data.reduce((sum, e) => sum + (e.amount ?? 0), 0) : null;
+    },
+
     async awardXp(a) {
       const { data, error } = await createAdminClient()
         .rpc("award_xp", {

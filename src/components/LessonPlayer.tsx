@@ -26,8 +26,11 @@ export function LessonPlayer({
   notes: initialNotes,
   next,
   completedBefore,
+  quizSeed = "",
   prefs = { sounds: false, motion: "full", textSize: "normal" },
 }: {
+  /** Changes the order of the quiz answers at each new attempt of the lesson. */
+  quizSeed?: string;
   lesson: Lesson;
   track: TrackId;
   resumeAt: number | null;
@@ -111,7 +114,7 @@ export function LessonPlayer({
         {phase.kind === "quiz" && (
           <div className="grid gap-6">
             <p className="meta">Quiz · {lesson.questions.length} questions</p>
-            <QuizRunner questions={lesson.questions} track={track} onDone={save} onProgress={setQuizProgress} />
+            <QuizRunner questions={lesson.questions} track={track} seed={quizSeed} onDone={save} onProgress={setQuizProgress} />
           </div>
         )}
 
@@ -351,6 +354,11 @@ function Done({ lesson, track, saving, error, result, next, sounds, onRetrySave 
           { label: "Total", value: String(result.totalXp), icon: "xp" },
         ]}
       />
+      {result.replay && (
+        <p className="fade-in rounded-xl bg-sunk px-4 py-3 font-medium [animation-delay:600ms]" role="status">
+          Ce cours était déjà enregistré il y a moins de 20 heures : tes XP sont bien comptés, rien n&apos;est perdu.
+        </p>
+      )}
       <section className="fade-in grid gap-2 [animation-delay:700ms]">
         <h2 className="text-sm font-semibold text-muted">Ce que tu sais faire maintenant</h2>
         <ul className="flex flex-wrap gap-2">

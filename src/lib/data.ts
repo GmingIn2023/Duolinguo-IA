@@ -1,11 +1,13 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { LESSONS, getLesson, getQuestion, reviewVariant } from "@/content";
+import { LESSONS, getLesson, getQuestion } from "@/content";
 import type { Question } from "@/content/types";
+import { isGraded } from "@/lib/grading";
 import { knowledgeFrom } from "@/lib/path";
 import { parsePreferences, readPlacements } from "@/lib/prefs";
-import { todayKey } from "@/lib/streak";
+import { checkpointQuestions as pickCheckpointQuestions, serveItems, type Served } from "@/lib/reviewServe";
+import { readTimezone, todayKey } from "@/lib/streak";
 import { createClient } from "@/lib/supabase/server";
 import type { LessonProgressRow, Note, Profile, ReviewItemRow } from "@/lib/types";
 import { isoWeekKey, pickWeeklyReview, WEEKLY_TARGET, type WeeklyCandidate } from "@/lib/weekly";
@@ -50,8 +52,12 @@ export const getReviewItems = cache(async (): Promise<ReviewItemRow[]> => {
     .order("due_at");
   if (error) throw new Error(error.message);
   // notions whose question no longer exists (older curriculum) can never be served: dropping them
-  // keeps them from filling the daily slots and the "due" badge forever
-  return ((data ?? []) as ReviewItemRow[]).filter((i) => getQuestion(i.question_id));
+  // keeps them from filling the daily slots and the "due" badge forever. Written questions are no longer scheduled
+  // (self-assessed, see grading.ts): rows left by older versions are ignored the same way, never deleted.
+  return ((data ?? []) as ReviewItemRow[]).filter((i) => {
+    const found = getQuestion(i.question_id);
+    return found && isGraded(found.question);
+  });
 });
 
 /** Checkpoints already passed, read from the XP ledger. */
@@ -72,29 +78,19 @@ export const getKnowledge = cache(async () => {
   return { knowledge, prefs, progress, placements };
 });
 
-/** XP earned today (Europe/Paris), for the daily goal ring. */
+/** XP earned today (in the learner's timezone), for the daily goal ring. */
 export const getTodayXp = cache(async (): Promise<number> => {
-  const { supabase, user } = await requireViewer();
-  const today = todayKey();
-  // a day in Paris starts between 22:00 and 23:00 UTC the day before: read from there, then keep only today's events
-  const since = new Date(Date.parse(`${today}T00:00:00Z`) - 3 * 3_600_000).toISOString();
+  const { supabase, user, profile } = await requireViewer();
+  const tz = readTimezone(profile.preferences);
+  const today = todayKey(new Date(), tz);
+  // a local day starts at most 14 h before the same date in UTC (UTC+14): read from there, then keep only today's events
+  const since = new Date(Date.parse(`${today}T00:00:00Z`) - 14 * 3_600_000).toISOString();
   const { data, error } = await supabase.from("xp_events").select("amount, created_at").eq("user_id", user.id).gte("created_at", since);
   if (error) throw new Error(error.message);
-  return (data ?? []).filter((e) => todayKey(new Date(e.created_at)) === today).reduce((sum, e) => sum + (e.amount ?? 0), 0);
+  return (data ?? []).filter((e) => todayKey(new Date(e.created_at), tz) === today).reduce((sum, e) => sum + (e.amount ?? 0), 0);
 });
 
-export type Served = { scheduledId: string; question: Question };
-
-/** Turns scheduled items into the questions to show, a notion coming back under another form when one exists. */
-export function serveItems(items: Pick<ReviewItemRow, "question_id" | "box">[]): Served[] {
-  const seen = new Set<string>();
-  return items.flatMap((i) => {
-    const question = reviewVariant(i.question_id, i.box);
-    if (!question || seen.has(question.id)) return [];
-    seen.add(question.id);
-    return [{ scheduledId: i.question_id, question }];
-  });
-}
+export { serveItems, type Served };
 
 export const DAILY_LIMIT = 12;
 
@@ -126,14 +122,8 @@ export const getWeeklyPlan = cache(async () => {
   return { lessonIds, items: picked.map((id) => byId.get(id)!), bonusClaimed: Boolean(bonus?.length) };
 });
 
-/** A chapter review's questions: two or three per lesson, review forms first so notions come back differently. */
-export function checkpointQuestions(lessonIds: string[]): Question[] {
-  const per = lessonIds.length <= 2 ? 3 : 2;
-  return lessonIds.flatMap((id) => {
-    const l = getLesson(id);
-    return l ? [...l.reviewQuestions, ...l.questions].slice(0, per) : [];
-  });
-}
+/** A chapter review's questions (see reviewServe.ts). */
+export const checkpointQuestions = (lessonIds: string[]): Question[] => pickCheckpointQuestions(lessonIds, getLesson);
 
 export async function getNotes(lessonId?: string): Promise<Note[]> {
   const { supabase, user } = await requireViewer();

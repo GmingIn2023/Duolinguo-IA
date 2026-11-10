@@ -7,7 +7,8 @@ import { WRITTEN_MAX, metCriteria } from "@/lib/grading";
 import { Rich, renderInline } from "@/components/Rich";
 
 export type Draft = Answer | null;
-export type Reveal = null | { correct: boolean; skipped?: boolean };
+/** `self`: a written answer, shown next to the model answer for the learner to compare (no verdict). */
+export type Reveal = null | { correct: boolean; skipped?: boolean; self?: boolean };
 
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 const WRITTEN_MIN = 3;
@@ -505,7 +506,7 @@ function WrittenField({
         />
         {!reveal && (
           <p className="flex justify-between gap-3 text-sm text-muted">
-            <span>On vérifie tes idées, pas l&apos;orthographe.</span>
+            <span>Écris, puis compare avec une réponse modèle. Cette question ne compte pas dans ton score.</span>
             <span className="tabular flex-none">
               {value.length} / {WRITTEN_MAX}
             </span>
@@ -516,6 +517,7 @@ function WrittenField({
         <>
           <div className="tile grid gap-3 p-4 sm:p-5">
             <p className="text-sm font-semibold">Idées attendues</p>
+            <p className="text-sm text-muted">Le repérage se fait sur des mots-clés : il peut se tromper. C&apos;est la réponse modèle qui fait foi.</p>
             <ul className="grid gap-2.5">
               {question.criteria.map((c) => {
                 const ok = met.includes(c.id);
@@ -524,7 +526,7 @@ function WrittenField({
                     {ok ? <CircleCheck className="mt-0.5 size-5 flex-none text-good" aria-hidden /> : <CircleDashed className="mt-0.5 size-5 flex-none text-muted" aria-hidden />}
                     <span className={`leading-snug ${ok ? "font-medium" : "text-ink-2"}`}>
                       {renderInline(c.label)}
-                      <span className="sr-only">{ok ? " : présent" : " : absent"}</span>
+                      <span className="sr-only">{ok ? " : mots-clés repérés" : " : mots-clés non repérés"}</span>
                     </span>
                   </li>
                 );

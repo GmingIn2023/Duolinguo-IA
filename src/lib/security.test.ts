@@ -81,7 +81,9 @@ describe("progress writes", () => {
 
   it("marks a checkpoint as passed only for a session that passed", () => {
     expect(service()).toMatch(/reviewPassed\(\{ correct, answered: total, expected \}\)/);
-    expect(service()).toMatch(/const reviewRef = passed \? mode : `try:\$\{mode\}`/);
+    expect(service()).toMatch(/const markRef = passed \? mode : `try:\$\{mode\}`/);
+    // only a daily session is logged under its own attempt id; checkpoints and weekly reviews keep the passed / try marker
+    expect(service()).toMatch(/const reviewRef = daily \? dailyRef\(input\.attemptId\) : markRef/);
     expect(service()).toMatch(/else if \(passed && replayable\)/);
     expect(service()).toMatch(/if \(passed && mode === "weekly"\)/);
   });

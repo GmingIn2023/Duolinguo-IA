@@ -49,6 +49,8 @@ export type LessonResult = {
   totalXp: number;
   streak: number;
   firstCompletion: boolean;
+  /** Nothing was paid because this lesson was already saved inside the replay window (a retry after a lost response, or a quick replay). */
+  replay?: boolean;
 };
 
 export type ReviewMode = "daily" | "weekly" | `checkpoint:${string}`;
@@ -64,4 +66,6 @@ export type ReviewResult = {
   bonus: number;
   totalXp: number;
   streak: number;
+  /** This session was already recorded (a retry after a lost response, or a replay inside the window): nothing new was written or paid. */
+  replay?: boolean;
 };

@@ -51,7 +51,7 @@ export function SignupForm() {
       {t ? (
         <p className="-mt-4 text-ink-2">Parcours choisi : <strong className="text-ink">{t.animal} · {t.name}</strong>. <Link href="/onboarding" className="underline">Changer</Link></p>
       ) : (
-        <p className="-mt-4 text-ink-2">Tu choisiras ton parcours juste après. <Link href="/onboarding" className="underline">Ou fais le test de niveau</Link> (3 minutes) pour qu&apos;on te le conseille.</p>
+        <p className="-mt-4 text-ink-2">Tu choisiras ton parcours juste après. <Link href="/onboarding" className="underline">Ou fais le test de niveau</Link> (5 minutes) pour qu&apos;on te le conseille.</p>
       )}
       <form className="grid gap-4" action={(fd) => { fd.set("onboarding", readOnboarding()); setRetry(0); return action(fd); }}>
         <input type="hidden" name="track" value={track ?? ""} />

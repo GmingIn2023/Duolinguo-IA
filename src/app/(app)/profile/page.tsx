@@ -6,6 +6,7 @@ import { signOut } from "@/app/actions";
 import { TRACKS, getLesson } from "@/content";
 import { getKnowledge, requireViewer } from "@/lib/data";
 import { levelName } from "@/lib/placementRules";
+import { profileStreak } from "@/lib/streak";
 
 export const metadata: Metadata = { title: "Profil" };
 
@@ -18,7 +19,7 @@ export default async function ProfilePage() {
   const stats = [
     { k: track ? `Test ${track.name}` : "Test", v: test ? `${test.score}/10` : "–", sub: test ? levelName(test.score) : "Pas encore passé" },
     { k: "XP", v: String(profile.xp) },
-    { k: "Jours de série", v: String(profile.streak_days) },
+    { k: "Jours de série", v: String(profileStreak(profile)) },
     { k: "Cours terminés", v: String(done.length) },
   ];
 
@@ -42,7 +43,7 @@ export default async function ProfilePage() {
             </div>
           ))}
         </dl>
-        <p className="text-[0.9375rem] text-ink-2">Ton niveau a changé ? <Link href={`/onboarding?track=${track?.id ?? "bird"}`} className="font-semibold text-ink underline">Refaire le test</Link> (10 questions, 3 minutes).</p>
+        <p className="text-[0.9375rem] text-ink-2">Ton niveau a changé ? <Link href={`/onboarding?track=${track?.id ?? "bird"}`} className="font-semibold text-ink underline">Refaire le test</Link> (une quinzaine de questions, 5 minutes).</p>
       </div>
 
       <section className="grid gap-6" aria-labelledby="prefs">

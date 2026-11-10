@@ -16,7 +16,17 @@ export const normalizeText = (s: string) =>
 
 type Written = Extract<Question, { type: "written" }>;
 
-/** Ids of the criteria a written answer meets. */
+/**
+ * Whether a question counts in scores, XP and spaced repetition. Written answers do not: matching keywords
+ * accepts a wrong sentence that contains the right words ("cinq exemples suffisent" matches "exemples") and
+ * rejects a correct paraphrase. The learner compares their text with the model answer instead (self-assessment).
+ */
+export const isGraded = (q: Question) => q.type !== "written";
+
+/**
+ * Ids of the criteria whose keywords appear in a written answer. A HINT for the learner ("idées repérées"),
+ * never a verdict: it knows nothing about negation or paraphrase.
+ */
 export function metCriteria(q: Written, text: string): string[] {
   const t = normalizeText(text);
   return q.criteria.filter((c) => c.anyOf.some((frag) => t.includes(normalizeText(frag)))).map((c) => c.id);

@@ -94,6 +94,12 @@ export class FakeProgressDb implements ProgressDb {
     return true;
   }
 
+  async paidFor(userId: string, source: string, ref: string) {
+    await this.tick();
+    const rows = this.events.filter((e) => e.userId === userId && e.source === source && e.ref === ref);
+    return rows.length ? rows.reduce((s, e) => s + e.amount, 0) : null;
+  }
+
   async awardXp(a: AwardArgs): Promise<AwardResult> {
     await this.tick();
     if (a.amount < 0 || a.amount > 500) throw new Error(`award_xp: amount out of range (${a.amount})`);

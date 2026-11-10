@@ -8,15 +8,24 @@ export { TRACK_FOR_GOAL, isGoal, type Goal } from "./goals";
 export { NEXT_TRACK, PREVIOUS_TRACK, levelName, placementVerdict, testedChapters, type Verdict } from "./placementRules";
 
 /**
- * One placement test per track: a few questions every track shares, then one question per chapter of the
- * track, in chapter order. A right chapter question validates that chapter. Fixed order, so the learner
- * can go back and change an answer until the end.
+ * One placement test per track: a few questions every track shares, then TWO questions per chapter of the
+ * track (two forms of the same notion). A chapter is validated only when both of its forms are right: one
+ * lucky answer no longer skips a whole chapter. Fixed order, so the learner can go back and change an answer
+ * until the end.
  */
 export type PlacementQuestion = Question & { chapter?: string };
 
-export const PLACEMENT_LENGTH = 10;
+/** Questions every test starts with, the "two answers" one included. */
+export const PLACEMENT_SHARED = 3;
+/** Forms asked per chapter, all of which must be right to validate it. */
+export const FORMS_PER_CHAPTER = 2;
+/** The score is always reported out of 10, whatever the number of questions. */
+export const PLACEMENT_SCALE = 10;
 /** Shared questions always sit at this position (0-based): the "two answers" question. */
 const SPECIAL_AT = 2;
+
+/** How many questions a track's test asks: 13 for five tested chapters, 15 for six. */
+export const placementLength = (track: TrackId) => PLACEMENT_SHARED + FORMS_PER_CHAPTER * testedChapters(track).length;
 
 const common = (q: Question): PlacementQuestion => q;
 const ch = (chapter: string, q: Question): PlacementQuestion => ({ ...q, chapter });
@@ -503,52 +512,59 @@ const byId = new Map(PLACEMENT_POOL.map((q) => [q.id, q]));
 export const getPlacementQuestion = (id: string) => byId.get(id);
 
 
-/** The 10 questions of a track's test, in order. The seed varies the forms between attempts. */
+/**
+ * The questions of a track's test, in order: the shared ones, then a first form of every chapter, then the
+ * second form of every chapter (the two forms of a notion are never side by side). The seed varies the shared
+ * questions and which form comes first between attempts.
+ */
 export function placementTest(track: TrackId, seed: string): PlacementQuestion[] {
   const chapters = testedChapters(track);
-  const shared = seededShuffle(COMMON_POOL, `${seed}:common`).slice(0, PLACEMENT_LENGTH - chapters.length - 1);
+  const shared = seededShuffle(COMMON_POOL, `${seed}:common`).slice(0, PLACEMENT_SHARED - 1);
   shared.splice(SPECIAL_AT, 0, TWO_ANSWERS);
-  const perChapter = chapters.map((c) => {
-    const forms = CHAPTER_POOL.filter((q) => q.chapter === c);
-    return seededShuffle(forms, `${seed}:${c}`)[0];
-  });
-  return [...shared, ...perChapter];
+  const forms = chapters.map((c) => seededShuffle(CHAPTER_POOL.filter((q) => q.chapter === c), `${seed}:${c}`).slice(0, FORMS_PER_CHAPTER));
+  const rounds = Array.from({ length: FORMS_PER_CHAPTER }, (_, round) => forms.flatMap((f) => (f[round] ? [f[round]] : [])));
+  return [...shared, ...rounds.flat()];
 }
 
 export type PlacementAnswer = { id: string; answer: Answer | null };
 
 /**
  * Grades a test on the server: the browser's verdicts are never trusted. Only questions that belong to
- * this track's test count, each once, at most one per chapter and 10 in all.
+ * this track's test count, each once, at most two per chapter and three shared ones. A chapter is validated
+ * when its two forms were both asked and both right. The score is the share of the WHOLE test answered
+ * right, out of 10: a question left out counts as wrong.
  */
 export function gradePlacement(track: TrackId, answers: unknown): Placement {
   const chapters = new Set(testedChapters(track));
-  const sharedMax = PLACEMENT_LENGTH - chapters.size;
+  const total = placementLength(track);
   const seen = new Set<string>();
-  const seenChapters = new Set<string>();
+  const asked = new Map<string, number>();
+  const rightIn = new Map<string, number>();
   let shared = 0;
-  let score = 0;
-  const validated: string[] = [];
-  for (const entry of Array.isArray(answers) ? answers.slice(0, PLACEMENT_LENGTH * 2) : []) {
+  let right = 0;
+  for (const entry of Array.isArray(answers) ? answers.slice(0, total * 2) : []) {
     if (!entry || typeof entry !== "object" || typeof (entry as PlacementAnswer).id !== "string") continue;
     const { id, answer } = entry as PlacementAnswer;
     const q = byId.get(id);
     if (!q || seen.has(id)) continue;
     if (q.chapter) {
-      if (!chapters.has(q.chapter) || seenChapters.has(q.chapter)) continue;
-      seenChapters.add(q.chapter);
+      if (!chapters.has(q.chapter) || (asked.get(q.chapter) ?? 0) >= FORMS_PER_CHAPTER) continue;
+      asked.set(q.chapter, (asked.get(q.chapter) ?? 0) + 1);
     } else {
-      if (shared >= sharedMax) continue;
+      if (shared >= PLACEMENT_SHARED) continue;
       shared++;
     }
     seen.add(id);
-    const right = answer !== null && answer !== undefined && safeGrade(q, answer);
-    if (right) {
-      score++;
-      if (q.chapter) validated.push(q.chapter);
+    if (answer !== null && answer !== undefined && safeGrade(q, answer)) {
+      right++;
+      if (q.chapter) rightIn.set(q.chapter, (rightIn.get(q.chapter) ?? 0) + 1);
     }
   }
-  return { score, chapters: testedChapters(track).filter((c) => validated.includes(c)), at: new Date().toISOString() };
+  return {
+    score: Math.round((right / total) * PLACEMENT_SCALE),
+    chapters: testedChapters(track).filter((c) => rightIn.get(c) === FORMS_PER_CHAPTER),
+    at: new Date().toISOString(),
+  };
 }
 
 function safeGrade(q: Question, answer: Answer): boolean {

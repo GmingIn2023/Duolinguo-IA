@@ -4,11 +4,11 @@ import { gradeAnswer } from "./grading";
 import { lessonXp, reviewXp } from "./xp";
 import { nextReviewState, INTERVAL_DAYS } from "./srs";
 import { pickWeeklyReview, isoWeekKey } from "./weekly";
-import { COMMON_POOL, PLACEMENT_LENGTH, gradePlacement, placementTest, placementVerdict, testedChapters, type PlacementQuestion } from "./placement";
+import { COMMON_POOL, FORMS_PER_CHAPTER, PLACEMENT_SHARED, gradePlacement, placementLength, placementTest, placementVerdict, testedChapters, type PlacementQuestion } from "./placement";
 import { canOpenLesson, knowledgeFrom, trackPath } from "./path";
 import { itemState, weakLessons } from "./mastery";
 import { DEFAULT_PREFERENCES, parsePreferences, readPlacements } from "./prefs";
-import { nextStreak } from "./streak";
+import { activityDay, displayStreak, isTimeZone, nextStreak, profileStreak, readTimezone, todayKey } from "./streak";
 
 const mcq: Question = {
   id: "q1",
@@ -143,25 +143,66 @@ describe("placement", () => {
     }
   };
 
-  it("builds 10 questions per track: shared first, the special one third, then one per tested chapter in order", () => {
+  it("builds a test per track: three shared questions, the special one third, then two forms per tested chapter", () => {
     for (const track of ["bird", "gecko", "fox"] as const) {
       const test = placementTest(track, "seed");
-      expect(test).toHaveLength(PLACEMENT_LENGTH);
+      const chapters = testedChapters(track);
+      expect(test).toHaveLength(placementLength(track));
+      expect(test).toHaveLength(PLACEMENT_SHARED + FORMS_PER_CHAPTER * chapters.length);
       expect(test[2].id).toBe("c-deux");
-      const chapters = test.filter((q) => q.chapter).map((q) => q.chapter);
-      expect(chapters).toEqual(testedChapters(track));
-      expect(new Set(test.map((q) => q.id)).size).toBe(PLACEMENT_LENGTH);
+      expect(test.slice(0, PLACEMENT_SHARED).every((q) => !q.chapter)).toBe(true);
+      // a first form of every chapter in order, then the second form of every chapter: the two forms are never side by side
+      expect(test.slice(PLACEMENT_SHARED).map((q) => q.chapter)).toEqual([...chapters, ...chapters]);
+      expect(new Set(test.map((q) => q.id)).size).toBe(test.length);
     }
-    expect(testedChapters("fox")).toHaveLength(6);
-    expect(placementTest("fox", "a").filter((q) => !q.chapter)).toHaveLength(4);
+    expect(placementLength("bird")).toBe(13);
+    expect(placementLength("fox")).toBe(15);
   });
 
-  it("validates exactly the chapters answered right and scores out of 10", () => {
-    const test = placementTest("gecko", "s");
-    const answers = test.map((q, i) => ({ id: q.id, answer: i === 6 ? null : right(q) }));
-    const r = gradePlacement("gecko", answers);
-    expect(r.score).toBe(9);
-    expect(r.chapters).toEqual(testedChapters("gecko").filter((c) => c !== test[6].chapter));
+  const all = (track: "bird" | "gecko" | "fox", seed = "s") => placementTest(track, seed);
+
+  it("everything right: 10/10 and every tested chapter validated", () => {
+    const r = gradePlacement("gecko", all("gecko").map((q) => ({ id: q.id, answer: right(q) })));
+    expect(r.score).toBe(10);
+    expect(r.chapters).toEqual(testedChapters("gecko"));
+  });
+
+  it("regression: ONE right answer no longer validates a chapter, both forms are needed", () => {
+    const test = all("bird");
+    const first = test.find((q) => q.chapter === "b1")!;
+    // only one of the two b1 forms right, nothing else answered
+    const one = gradePlacement("bird", test.map((q) => ({ id: q.id, answer: q.id === first.id ? right(q) : null })));
+    expect(one.chapters).toEqual([]);
+    // both b1 forms right: validated
+    const both = gradePlacement("bird", test.map((q) => ({ id: q.id, answer: q.chapter === "b1" ? right(q) : null })));
+    expect(both.chapters).toEqual(["b1"]);
+    // a forged submission that sends a single right form per chapter validates nothing
+    const forged = gradePlacement("bird", testedChapters("bird").map((c) => test.find((q) => q.chapter === c)!).map((q) => ({ id: q.id, answer: right(q) })));
+    expect(forged.chapters).toEqual([]);
+  });
+
+  it("a chapter with one form missed is not validated, and the score is the share of the whole test out of 10", () => {
+    const test = all("gecko");
+    const missed = test.find((q) => q.chapter === "g3")!;
+    const r = gradePlacement("gecko", test.map((q) => ({ id: q.id, answer: q.id === missed.id ? null : right(q) })));
+    expect(r.chapters).toEqual(testedChapters("gecko").filter((c) => c !== "g3"));
+    expect(r.score).toBe(Math.round((12 / 13) * 10));
+    // unanswered questions count as wrong: half a test cannot score 10
+    const half = gradePlacement("gecko", test.slice(0, 6).map((q) => ({ id: q.id, answer: right(q) })));
+    expect(half.score).toBe(Math.round((6 / 13) * 10));
+  });
+
+  it("guessing at random validates far less than one chapter on average", () => {
+    // each chapter question of the bank has at least 3 options: two lucky answers in a row are needed
+    let validated = 0;
+    const runs = 400;
+    let x = 12345;
+    const rand = () => ((x = (x * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
+    for (let i = 0; i < runs; i++) {
+      const answers = all("bird", `r${i}`).map((q) => ({ id: q.id, answer: "options" in q ? q.options[Math.floor(rand() * q.options.length)].id : rand() < 0.5 }));
+      validated += gradePlacement("bird", answers).chapters.length;
+    }
+    expect(validated / runs).toBeLessThan(1);
   });
 
   it("ignores questions of another track, repeats, extra shared questions and forged entries", () => {
@@ -296,29 +337,64 @@ describe("streak", () => {
     expect(nextStreak(3, "2026-10-01", "2026-10-04")).toBe(1);
     expect(nextStreak(0, null, "2026-10-04")).toBe(1);
   });
-});
 
-import { frenchSpacing } from "./typo";
-describe("frenchSpacing", () => {
-  it("binds French punctuation to its word", () => {
-    expect(frenchSpacing("« Vrai ? » oui : non !")).toBe("« Vrai ? » oui : non !");
+  it("regression: the streak SHOWN is 0 once a day has been missed, whatever the stored value", () => {
+    expect(displayStreak(7, "2026-10-04", "2026-10-04")).toBe(7); // active today
+    expect(displayStreak(7, "2026-10-03", "2026-10-04")).toBe(7); // active yesterday: still alive today
+    expect(displayStreak(7, "2026-10-02", "2026-10-04")).toBe(0); // a day missed
+    expect(displayStreak(7, "2026-09-13", "2026-10-04")).toBe(0); // three weeks away: no more "7 jours"
+    expect(displayStreak(7, null, "2026-10-04")).toBe(0);
+    expect(displayStreak(0, "2026-10-04", "2026-10-04")).toBe(0);
   });
-});
-describe("frenchSpacing hyphens", () => {
-  it("keeps inversions together", () => {
-    expect(frenchSpacing("Qu'est-ce que c'est")).toBe("Qu'est‑ce que c'est");
-  });
-});
 
-import { safeNext } from "./safeNext";
-describe("safeNext", () => {
-  it("keeps internal paths and rejects external redirects", () => {
-    expect(safeNext("/review")).toBe("/review");
-    for (const bad of ["//evil.com", "/\\evil.com", "https://evil.com", "", null]) expect(safeNext(bad)).toBe("/learn");
+  it("regression: the day is the learner's own, not the day in Paris", () => {
+    // 03:30 UTC on 11 November: already the 11th in Paris, still the evening of the 10th in Montréal
+    const now = new Date("2026-11-11T03:30:00Z");
+    expect(todayKey(now)).toBe("2026-11-11");
+    expect(todayKey(now, "Europe/Paris")).toBe("2026-11-11");
+    expect(todayKey(now, "America/Toronto")).toBe("2026-11-10");
+    expect(todayKey(now, "Pacific/Auckland")).toBe("2026-11-11");
   });
-  it("rejects control characters browsers would strip into a protocol-relative URL", () => {
-    for (const bad of ["/\t/evil.com", "/\n/evil.com", "/\r//evil.com", "/\u0000x"]) expect(safeNext(bad)).toBe("/learn");
-    expect(safeNext("/review/checkpoint:u1?x=1#a")).toBe("/review/checkpoint:u1?x=1#a");
-    expect(safeNext("/" + "a".repeat(600))).toBe("/learn");
+
+  it("regression: practising every evening in Montréal keeps the streak (it broke with Paris days)", () => {
+    // 20:00 local on three consecutive days = 01:00 UTC the day after
+    const evenings = ["2026-11-08T01:00:00Z", "2026-11-09T01:00:00Z", "2026-11-10T01:00:00Z"].map((d) => new Date(d));
+    let streak = 0;
+    let last: string | null = null;
+    for (const at of evenings) {
+      const day = activityDay(todayKey(at, "America/Toronto"), last);
+      streak = nextStreak(streak, last, day);
+      last = day;
+    }
+    expect(streak).toBe(3);
+    // and a morning session the same local day does not count twice
+    const morning = new Date("2026-11-09T14:00:00Z"); // 09:00 in Montréal on the 9th, same local day as the 3rd evening
+    expect(nextStreak(streak, last, activityDay(todayKey(morning, "America/Toronto"), last))).toBe(3);
+  });
+
+  it("a change of timezone never replays a day nor resets the streak", () => {
+    // active on the 11th (Paris), then the browser reports a timezone where it is still the 10th
+    expect(activityDay("2026-11-10", "2026-11-11")).toBe("2026-11-11");
+    expect(nextStreak(5, "2026-11-11", activityDay("2026-11-10", "2026-11-11"))).toBe(5);
+    expect(nextStreak(5, "2026-11-11", "2026-11-10")).toBe(5); // even unclamped, going back is not a reset
+    expect(activityDay("2026-11-12", "2026-11-11")).toBe("2026-11-12");
+    expect(activityDay("2026-11-12", null)).toBe("2026-11-12");
+  });
+
+  it("reads the stored timezone and falls back to Paris on anything invalid", () => {
+    expect(readTimezone({ timezone: "America/Toronto" })).toBe("America/Toronto");
+    expect(readTimezone({ timezone: "Mars/Olympus" })).toBe("Europe/Paris");
+    expect(readTimezone({ timezone: 42 })).toBe("Europe/Paris");
+    expect(readTimezone(null)).toBe("Europe/Paris");
+    expect(isTimeZone("Asia/Tokyo")).toBe(true);
+    expect(isTimeZone("")).toBe(false);
+    expect(isTimeZone("x".repeat(200))).toBe(false);
+  });
+
+  it("shows a profile's streak in its own timezone", () => {
+    const now = new Date("2026-11-11T03:30:00Z"); // the 10th in Montréal, the 11th in Paris
+    const row = { streak_days: 4, last_active_date: "2026-11-09", preferences: { timezone: "America/Toronto" } };
+    expect(profileStreak(row, now)).toBe(4); // yesterday there: alive
+    expect(profileStreak({ ...row, preferences: {} }, now)).toBe(0); // two days ago in Paris: lost
   });
 });

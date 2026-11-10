@@ -110,21 +110,24 @@ export async function answerCorrectly(scope: Locator) {
       for (let i = 0; i < q.items.length; i++) await scope.getByRole("radiogroup", { name: `Ranger « ${q.items[i].text} »` }).getByRole("radio", { name: q.bins[q.answer[i]], exact: true }).click();
       return;
     case "written":
-      // the first fragment of every criterion: graded on ideas, so this meets them all
+      // self-assessed: any text opens the comparison with the model answer
       return scope.getByRole("textbox", { name: "Ta réponse" }).fill(`${q.modelAnswer} ${q.criteria.map((c) => c.anyOf[0]).join(" ")}`);
   }
 }
 
-/** The smallest block holding the question and its "Vérifier" button. */
+/** The check button: "Vérifier", or "Comparer" on a written question (self-assessed, no verdict). */
+const VERIFY = /^(Vérifier|Comparer)$/;
+
+/** The smallest block holding the question and its check button. */
 const scopeOf = (verify: Locator) => verify.locator("xpath=ancestor::div[.//h2][1]");
 
 /** Answers one quiz step: check, then continue past the correction. */
 export async function solveStep(page: Page, wrongFirst = false) {
   // pin the question's block: once checked, "Vérifier" is gone and could not locate it again
   await page.locator("[data-e2e-scope]").evaluateAll((els) => els.forEach((el) => el.removeAttribute("data-e2e-scope")));
-  await scopeOf(page.getByRole("button", { name: "Vérifier", exact: true }).first()).evaluate((el) => el.setAttribute("data-e2e-scope", ""));
+  await scopeOf(page.getByRole("button", { name: VERIFY }).first()).evaluate((el) => el.setAttribute("data-e2e-scope", ""));
   const scope = page.locator("[data-e2e-scope]");
-  const verify = scope.getByRole("button", { name: "Vérifier", exact: true });
+  const verify = scope.getByRole("button", { name: VERIFY });
   if (wrongFirst) {
     // a deliberate miss on the first radio/checkbox when it is not the right one is enough to test the retry loop
     const first = scope.getByRole("radio").or(scope.getByRole("checkbox")).first();
@@ -133,7 +136,7 @@ export async function solveStep(page: Page, wrongFirst = false) {
   const answeredRight = !wrongFirst || !(await verify.isEnabled());
   if (answeredRight) await answerCorrectly(scope);
   await verify.click();
-  if (answeredRight) await expect(scope.getByRole("status")).toContainText(/Juste|Les idées y sont/);
+  if (answeredRight) await expect(scope.getByRole("status")).toContainText(/Juste|À toi de comparer/);
   // the full quiz shows "Continuer"; an in-lesson check moves on by itself
   const next = scope.getByRole("button", { name: "Continuer", exact: true });
   if (await next.waitFor({ timeout: 1500 }).then(() => true, () => false)) await next.click();
@@ -149,7 +152,7 @@ export async function finishQuiz(page: Page, done: RegExp, { missOne = false } =
       await again.click();
       continue;
     }
-    if (await page.getByRole("button", { name: "Vérifier", exact: true }).first().isVisible().catch(() => false)) {
+    if (await page.getByRole("button", { name: VERIFY }).first().isVisible().catch(() => false)) {
       await solveStep(page, missOne && i === 0);
       continue;
     }
@@ -164,7 +167,7 @@ const endOf = (page: Page, done: RegExp) => page.getByRole("heading", { name: do
 /** Answers every in-lesson check of the current section so "Suivant" unlocks. */
 export async function answerSectionChecks(page: Page) {
   for (let i = 0; i < 6; i++) {
-    const verify = page.getByRole("button", { name: "Vérifier", exact: true });
+    const verify = page.getByRole("button", { name: VERIFY });
     if (!(await verify.count())) return;
     await solveStep(page);
   }

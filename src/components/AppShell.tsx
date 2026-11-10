@@ -3,6 +3,8 @@ import { Flame, Zap } from "lucide-react";
 import { Avatar } from "@/components/Avatar";
 import { AppNav, MobileTopBar } from "@/components/AppNav";
 import { parsePreferences } from "@/lib/prefs";
+import { profileStreak, readTimezone } from "@/lib/streak";
+import { TimezoneSync } from "@/components/TimezoneSync";
 import { Wordmark } from "@/components/Wordmark";
 import type { Profile } from "@/lib/types";
 
@@ -19,8 +21,12 @@ export function Stat({ icon, value, label }: { icon: "xp" | "streak"; value: num
 
 export function AppShell({ profile, dueCount, children }: { profile: Profile; dueCount: number; children: React.ReactNode }) {
   const prefs = parsePreferences(profile.preferences);
+  // the stored streak is only rewritten at the next activity: show 0 once a day has been missed
+  const streak = profileStreak(profile);
+  const hasTimezone = Boolean(profile.preferences && typeof profile.preferences === "object" && "timezone" in profile.preferences);
   return (
     <div data-track={profile.track_id ?? undefined} data-motion={prefs.motion} data-text={prefs.textSize} className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
+      <TimezoneSync stored={hasTimezone ? readTimezone(profile.preferences) : null} />
       <a href="#contenu" className="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50">Aller au contenu</a>
       <aside className="sticky top-0 hidden h-dvh flex-col gap-10 border-r border-line px-5 py-7 lg:flex">
         <Wordmark href="/learn" small />
@@ -31,7 +37,7 @@ export function AppShell({ profile, dueCount, children }: { profile: Profile; du
             <span className="truncate text-sm font-semibold">{profile.display_name ?? "Toi"}</span>
             <span className="flex gap-3 text-sm">
               <Stat icon="xp" value={profile.xp} label="points d'expérience" />
-              <Stat icon="streak" value={profile.streak_days} label="jours de série" />
+              <Stat icon="streak" value={streak} label="jours de série" />
             </span>
           </span>
         </Link>
@@ -41,7 +47,7 @@ export function AppShell({ profile, dueCount, children }: { profile: Profile; du
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-line bg-paper/90 px-4 backdrop-blur lg:hidden">
         <Wordmark href="/learn" small />
         <div className="flex items-center gap-4 text-sm">
-          <Stat icon="streak" value={profile.streak_days} label="jours de série" />
+          <Stat icon="streak" value={streak} label="jours de série" />
           <Stat icon="xp" value={profile.xp} label="points d'expérience" />
           <Link href="/profile" className="grid size-11 place-items-center rounded-full hover:bg-sunk" aria-label="Profil et réglages">
             {profile.track_id ? <Avatar track={profile.track_id} size={30} /> : <span className="size-7 rounded-full bg-sunk" />}

@@ -26,6 +26,9 @@ export interface ProgressDb {
    */
   claimReviewItem(userId: string, expected: { question_id: string; box: number; dueBefore: string }, next: ReviewWrite): Promise<boolean>;
 
+  /** Total XP the ledger holds for this source and ref, or null when it holds no such event. Read only. */
+  paidFor(userId: string, source: XpSource, ref: string): Promise<number | null>;
+
   /** Atomic (the award_xp database function): event + total + streak, with the replay window decided inside. */
   awardXp(args: AwardArgs): Promise<AwardResult>;
   /**

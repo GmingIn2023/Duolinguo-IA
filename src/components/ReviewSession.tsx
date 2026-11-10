@@ -14,12 +14,16 @@ import type { ReviewMode, ReviewResult } from "@/lib/types";
 
 const LABEL = (mode: ReviewMode) => (mode === "daily" ? "Jour" : mode === "weekly" ? "Semaine" : "Bilan");
 
-export function ReviewSession({ mode, title, questions, track, prefs }: { mode: ReviewMode; title: string; questions: Question[]; track: TrackId; prefs: { sounds: boolean; motion: "full" | "calm"; textSize: "normal" | "large" } }) {
+/** One id per session, sent again on every retry: the server recognises a session it has already saved. */
+const newAttemptId = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : undefined);
+
+export function ReviewSession({ mode, title, questions, track, prefs, seed = "" }: { mode: ReviewMode; title: string; questions: Question[]; track: TrackId; seed?: string; prefs: { sounds: boolean; motion: "full" | "calm"; textSize: "normal" | "large" } }) {
   const [progress, setProgress] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer> | null>(null);
   const [result, setResult] = useState<ReviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, start] = useTransition();
+  const [attemptId] = useState(newAttemptId);
   const back = mode.startsWith("checkpoint:") ? "/learn" : "/review";
 
   const save = useCallback((a: Record<string, Answer>) => {
@@ -27,12 +31,12 @@ export function ReviewSession({ mode, title, questions, track, prefs }: { mode: 
     setError(null);
     start(async () => {
       try {
-        setResult(await submitReview(mode, a));
+        setResult(await submitReview(mode, a, attemptId));
       } catch {
         setError("Vérifie ta connexion, puis réessaie. Si ça persiste, reconnecte-toi.");
       }
     });
-  }, [mode]);
+  }, [mode, attemptId]);
 
   const total = result ? result.xpEarned + result.bonus : 0;
   const needed = result ? Math.ceil(result.expected * PASS_RATIO) : 0;
@@ -52,7 +56,7 @@ export function ReviewSession({ mode, title, questions, track, prefs }: { mode: 
         {!answers && (
           <div className="grid gap-6">
             <p className="meta">{title} · {questions.length} questions</p>
-            <QuizRunner questions={questions} track={track} onDone={save} onProgress={setProgress} />
+            <QuizRunner questions={questions} track={track} seed={seed} onDone={save} onProgress={setProgress} />
           </div>
         )}
         {answers && error && (
@@ -68,15 +72,24 @@ export function ReviewSession({ mode, title, questions, track, prefs }: { mode: 
         {result && !error && (
           <div className="grid gap-10 py-6">
             <div className="flex flex-wrap items-end justify-between gap-6">
-              <h1 className="display text-[clamp(4.5rem,16vw,10rem)] leading-[0.85]" aria-label={`${total} XP gagnés`}>
-                <span className="reveal-line"><span>+{total}</span></span>
-                <span className="reveal-line"><span>XP</span></span>
-              </h1>
+              {result.replay && total === 0 ? (
+                <h1 className="display display-l">Déjà enregistrée.</h1>
+              ) : (
+                <h1 className="display text-[clamp(4.5rem,16vw,10rem)] leading-[0.85]" aria-label={`${total} XP gagnés`}>
+                  <span className="reveal-line"><span>+{total}</span></span>
+                  <span className="reveal-line"><span>XP</span></span>
+                </h1>
+              )}
               <Avatar track={track} mood={result.passed ? "cheer" : "think"} size={120} animate />
             </div>
             <div className="fade-in grid gap-2 [animation-delay:500ms]">
               <p className="bubble w-fit">{mascotLine(track, result.correct === result.total ? "perfect" : "done", result.totalXp)}</p>
               <p className="pt-3 text-xl font-semibold">{result.correct} sur {result.total} du premier coup.</p>
+              {result.replay && (
+                <p className="rounded-xl bg-sunk px-4 py-3 font-medium" role="status">
+                  Cette session était déjà enregistrée : tes XP et tes révisions sont bien comptés, rien n&apos;est perdu.
+                </p>
+              )}
               {!result.passed && (
                 <p className="rounded-xl bg-bad-soft px-4 py-3 font-medium text-bad" role="status">
                   Pas encore validé : il fallait {needed} bonnes réponses sur {result.expected}. Refais-le quand tu veux, le bonus t&apos;attend.

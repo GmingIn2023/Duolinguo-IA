@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { placementLength } from "../src/lib/placement";
 import { answerSectionChecks, finishQuiz } from "./quiz";
 
 // The real journey of a brand-new learner, on a real account created through the signup form:
@@ -55,7 +56,7 @@ test("new learner: placement → signup → course → quiz → XP → notes →
   // 1. placement test (beginner) + real signup
   await page.goto("/onboarding");
   await page.getByRole("radio", { name: /M'en servir pour étudier ou travailler/ }).click();
-  for (let i = 0; i < 10; i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
+  for (let i = 0; i < placementLength("gecko"); i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
   // 0/10 on Pratiquer suggests the Découvrir test; the learner stays
   await page.getByRole("button", { name: "Continuer sur Pratiquer" }).click();
   await page.getByRole("button", { name: "Créer mon compte et commencer" }).click();

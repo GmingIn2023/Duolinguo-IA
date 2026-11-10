@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { placementLength } from "../src/lib/placement";
 import { answerCorrectly } from "./quiz";
 
 // Public flows: no account needed.
@@ -17,7 +18,7 @@ test("placement test: 10/10 on Construire, then another track with a warning, an
   await page.goto("/onboarding");
   await page.getByRole("radio", { name: /Construire avec l'IA/ }).click();
   const main = page.locator("main");
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= placementLength("fox"); i++) {
     await expect(main.getByRole("progressbar", { name: "Avancement du test" })).toHaveAttribute("aria-valuenow", String(i - 1));
     await answerCorrectly(main);
     await page.getByRole("button", { name: /^Valider/ }).click();
@@ -31,7 +32,7 @@ test("placement test: 10/10 on Construire, then another track with a warning, an
   await expect(page.getByText("Parcours choisi")).toContainText("Pratiquer");
   // the answers travel with the form and are graded again on the server
   const stored = await page.evaluate(() => JSON.parse(sessionStorage.getItem("gusgus.onboarding") ?? "{}"));
-  expect(stored.placement).toHaveLength(10);
+  expect(stored.placement).toHaveLength(placementLength("fox"));
   expect(stored.tested).toBe("fox");
   await page.getByLabel("Prénom").fill("Test");
   await page.getByLabel("Email").fill("someone@gusgus.test");
@@ -43,7 +44,7 @@ test("placement test: 10/10 on Construire, then another track with a warning, an
 test("« Je ne sais pas » everywhere on Découvrir: 0/10, start at chapter 1", async ({ page }) => {
   await page.goto("/onboarding");
   await page.getByRole("radio", { name: /Comprendre ce qu'est l'IA/ }).click();
-  for (let i = 0; i < 10; i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
+  for (let i = 0; i < placementLength("bird"); i++) await page.getByRole("button", { name: "Je ne sais pas" }).click();
   await expect(page.locator("main p", { hasText: "Ton score" })).toContainText("0/10");
   await expect(page.getByRole("heading", { name: /Tu commences au chapitre 1/ })).toBeVisible();
 });
