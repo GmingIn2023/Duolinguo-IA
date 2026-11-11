@@ -20,7 +20,7 @@ npm run build && npm start
 npm run test:e2e       # parcours complets desktop + mobile (serveur lancé sur :3000, ou BASE_URL=…)
 E2E_SWEEP=1 BASE_URL=http://localhost:3000 npx playwright test content-sweep --project=desktop
                        # avec `npm run dev` : joue chaque question des 47 cours dans la vraie interface
-npm run content:check  # infos outils à revérifier (aussi chaque lundi en CI)
+npm run content:check  # infos outils à revérifier tous les 30 jours (contrôle chaque lundi en CI)
 ```
 
 Tests de base de données (droits, `award_xp`, fenêtre anti-rejeu) : exécuter `supabase/tests/progress_lock.sql`, `award_xp_replay.sql` puis `complete_lesson.sql` dans l'éditeur SQL Supabase (transactions annulées, aucune donnée modifiée). État des migrations et marche à suivre : `supabase/MIGRATIONS.md`.

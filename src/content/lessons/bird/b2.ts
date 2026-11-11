@@ -80,7 +80,7 @@ export const birdChapter2: Lesson[] = [
         blocks: [
           {
             type: "text",
-            body: "Pendant une conversation, il relit tout ce qui a été dit : c'est sa **mémoire de travail**. Mais elle a une taille limite, et une **nouvelle conversation repart de zéro**.",
+            body: "Pendant une conversation, il relit tout ce qui a été dit : c'est sa **mémoire de travail**. Elle a une taille limite. Et par défaut, une **nouvelle conversation repart de zéro**, sauf si l'application a une fonction « mémoire » activée.",
           },
           {
             type: "check",
@@ -118,7 +118,7 @@ export const birdChapter2: Lesson[] = [
     summary: [
       "Il apprend pendant l'entraînement, puis **il est figé**.",
       "Ses connaissances s'arrêtent à une **date de coupure**.",
-      "Une nouvelle conversation repart de zéro : **donne-lui ce qui manque**.",
+      "Par défaut, une nouvelle conversation repart de zéro (sauf fonction « mémoire » activée) : **donne-lui ce qui manque**.",
     ],
     questions: [
       {
@@ -129,6 +129,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "Une réponse dépassée, s'il ne peut pas chercher sur le web" },
           { id: "b", text: "Aucun, il est toujours à jour" },
+          { id: "c", text: "Il refusera forcément de répondre" },
         ],
         answer: "a",
         explanation: "Sans recherche web, il ne connaît que ce qui précède sa date de coupure.",
@@ -146,13 +147,14 @@ export const birdChapter2: Lesson[] = [
         type: "fill_choice",
         concept: "memoire",
         prompt: "Complète la phrase.",
-        sentence: "Une nouvelle conversation repart de ___.",
+        sentence: "Par défaut, sans fonction « mémoire » activée, une nouvelle conversation repart de ___.",
         options: [
           { id: "a", text: "zéro" },
           { id: "b", text: "la dernière" },
+          { id: "c", text: "la plus longue" },
         ],
         answer: "a",
-        explanation: "Par défaut, rien ne passe d'une conversation à l'autre.",
+        explanation: "Par défaut, rien ne passe d'une conversation à l'autre. Certaines applications ont une fonction « mémoire » qui garde quelques informations : regarde dans les réglages si elle est activée.",
       },
       {
         id: "entrainement-et-limites:v2-q4",
@@ -162,6 +164,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "colles la lettre dans la conversation" },
           { id: "b", text: "lui demandes de la retrouver" },
+          { id: "c", text: "lui donnes seulement le nom de l'expéditeur" },
         ],
         answer: "a",
         explanation: "Donne-lui le texte : il travaille sur ce qui est dans la conversation.",
@@ -184,6 +187,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "Lui donner ton vrai planning" },
           { id: "b", text: "Lui dire « réfléchis mieux »" },
+          { id: "c", text: "Reposer exactement la même question" },
         ],
         answer: "a",
         explanation: "Il ne peut pas deviner ce qu'il n'a pas. Donne-lui l'information.",
@@ -344,6 +348,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "La retrouver dans une source fiable" },
           { id: "b", text: "Reposer la question jusqu'à avoir la même réponse" },
+          { id: "c", text: "Demander à l'IA si elle est sûre d'elle" },
         ],
         answer: "a",
         explanation: "Une source indépendante tranche. La répétition ne prouve rien.",
@@ -358,6 +363,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "n'a servi à rien : elle a confirmé" },
           { id: "b", text: "a révélé l'erreur" },
+          { id: "c", text: "a fait supprimer les faux jugements" },
         ],
         answer: "a",
         explanation: "La confirmation vient du même mécanisme que l'invention.",
@@ -514,6 +520,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "Chercher qui l'a publiée et si des médias fiables en parlent" },
           { id: "b", text: "La partager pour prévenir tes amis" },
+          { id: "c", text: "Zoomer dessus : si elle est nette, elle est vraie" },
         ],
         answer: "a",
         explanation: "Remonter à la source avant tout. Partager un faux l'aide à se répandre.",
@@ -541,6 +548,7 @@ export const birdChapter2: Lesson[] = [
         options: [
           { id: "a", text: "le rappelles sur son numéro habituel" },
           { id: "b", text: "fais le virement" },
+          { id: "c", text: "lui demandes de confirmer par un message vocal" },
         ],
         answer: "a",
         explanation: "Demande urgente d'argent : on vérifie par un autre canal.",

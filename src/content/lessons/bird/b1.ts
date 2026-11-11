@@ -177,6 +177,7 @@ export const birdChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Elle se trompe plus souvent, ce cas ne ressemble pas à ses exemples" },
           { id: "b", text: "Aucun : un chat reste un chat" },
+          { id: "c", text: "Elle voit mieux : il y a moins de détails la nuit" },
         ],
         answer: "a",
         explanation: "Plus un cas s'éloigne de ses exemples, plus il faut contrôler sa réponse.",
@@ -199,6 +200,7 @@ export const birdChapter1: Lesson[] = [
         options: [
           { id: "a", text: "classe : « c'est toi » ou « ce n'est pas toi »" },
           { id: "b", text: "crée une photo de toi" },
+          { id: "c", text: "prédit le prochain mot que tu vas taper" },
         ],
         answer: "a",
         explanation: "Elle range ce qu'elle voit dans une case. C'est de la classification.",
@@ -342,6 +344,7 @@ export const birdChapter1: Lesson[] = [
         options: [
           { id: "a", text: "montre" },
           { id: "b", text: "cache" },
+          { id: "c", text: "éloigne" },
         ],
         answer: "a",
         explanation: "L'IA du fil apprend de ce qui te retient, et t'en propose davantage.",
@@ -379,6 +382,7 @@ export const birdChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Tu en as beaucoup regardé, l'IA t'en propose plus" },
           { id: "b", text: "Il n'existe que des vidéos de cuisine" },
+          { id: "c", text: "L'application a choisi ce thème au hasard" },
         ],
         answer: "a",
         explanation: "Le fil amplifie ce qui t'a déjà retenu.",
@@ -581,6 +585,7 @@ export const birdChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Rien sur l'exactitude : le ton est le même quand il se trompe" },
           { id: "b", text: "Qu'il a vérifié sa réponse" },
+          { id: "c", text: "Que la réponse vient d'un expert humain" },
         ],
         answer: "a",
         explanation: "Il produit ce qui sonne juste. Vérifier, c'est ton travail.",

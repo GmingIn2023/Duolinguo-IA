@@ -180,6 +180,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Avant d'envoyer quelque chose à quelqu'un" },
           { id: "b", text: "Après chaque phrase" },
+          { id: "c", text: "Seulement une fois que tout est envoyé" },
         ],
         answer: "a",
         explanation: "Une fois envoyé, impossible de rattraper.",
@@ -193,6 +194,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "décide et vérifie" },
           { id: "b", text: "valide sans lire" },
+          { id: "c", text: "recopie sans rien changer" },
         ],
         answer: "a",
         explanation: "La responsabilité reste la tienne.",
@@ -205,6 +207,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Pour garder la main et repérer les erreurs tôt" },
           { id: "b", text: "Pour écrire plus de messages" },
+          { id: "c", text: "Pour que l'assistant travaille plus lentement" },
         ],
         answer: "a",
         explanation: "Petites étapes, petites erreurs, faciles à corriger.",
@@ -219,6 +222,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "dans une forme précise, réutilisable" },
           { id: "b", text: "un long texte libre" },
+          { id: "c", text: "un simple « c'est fait »" },
         ],
         answer: "a",
         explanation: "Une forme précise se recolle facilement à l'étape suivante.",
@@ -374,6 +378,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "La tester sur des lignes dont tu connais le résultat" },
           { id: "b", text: "Vérifier qu'elle n'affiche pas d'erreur" },
+          { id: "c", text: "Demander à l'IA si elle en est sûre" },
         ],
         answer: "a",
         explanation: "Une formule peut tourner sans erreur et donner un faux résultat.",
@@ -387,6 +392,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "point-virgule" },
           { id: "b", text: "tiret" },
+          { id: "c", text: "deux-points" },
         ],
         answer: "a",
         explanation: "La virgule sert déjà de séparateur décimal.",
@@ -407,6 +413,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "les noms de colonnes et une ligne inventée" },
           { id: "b", text: "la vraie liste des clients" },
+          { id: "c", text: "une capture d'écran du fichier complet" },
         ],
         answer: "a",
         explanation: "La formule ne dépend que de la structure.",
@@ -421,6 +428,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Pas forcément : teste sur des valeurs connues" },
           { id: "b", text: "Oui" },
+          { id: "c", text: "Oui, si elle est courte" },
         ],
         answer: "a",
         explanation: "Pas d'erreur affichée ne veut pas dire résultat correct.",
@@ -595,6 +603,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Pour comprendre du texte écrit librement" },
           { id: "b", text: "Pour déclencher à une heure fixe" },
+          { id: "c", text: "Pour copier un fichier d'un dossier à un autre" },
         ],
         answer: "a",
         explanation: "Une heure fixe, c'est une règle simple, pas besoin d'IA.",
@@ -615,6 +624,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Un brouillon à valider" },
           { id: "b", text: "Un envoi automatique" },
+          { id: "c", text: "Une suppression du message d'origine" },
         ],
         answer: "a",
         explanation: "Ce qui ne se reprend pas passe par un humain.",
@@ -628,6 +638,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "humain" },
           { id: "b", text: "robot" },
+          { id: "c", text: "minuteur" },
         ],
         answer: "a",
         explanation: "Tu sais où améliorer la consigne, ou où l'IA n'a pas sa place.",
@@ -642,6 +653,7 @@ export const geckoChapter5: Lesson[] = [
         options: [
           { id: "a", text: "une règle fixe, pas besoin d'IA" },
           { id: "b", text: "une étape IA" },
+          { id: "c", text: "une étape qu'un humain doit valider à chaque fois" },
         ],
         answer: "a",
         explanation: "Une condition simple et sûre se fait sans IA.",

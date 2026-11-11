@@ -141,6 +141,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Toi : l'IA met en forme" },
           { id: "b", text: "L'IA : elle sait mieux écrire" },
+          { id: "c", text: "Le lecteur, une fois le texte envoyé" },
         ],
         answer: "a",
         explanation: "Tu apportes le fond, elle aide sur la forme.",
@@ -154,6 +155,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "textes" },
           { id: "b", text: "mots de passe" },
+          { id: "c", text: "contacts" },
         ],
         answer: "a",
         explanation: "Un exemple réel montre ton style mieux qu'un adjectif.",
@@ -174,6 +176,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Une erreur ajoutée en reformulant : il faut relire" },
           { id: "b", text: "Ta réunion a changé de jour" },
+          { id: "c", text: "Le calendrier de l'IA est plus fiable que le tien" },
         ],
         answer: "a",
         explanation: "Dates et chiffres sont les premières choses à relire.",
@@ -186,6 +189,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "« Plus court, phrases simples, comme mon exemple »" },
           { id: "b", text: "« Sois humain »" },
+          { id: "c", text: "« Ajoute des formules de politesse »" },
         ],
         answer: "a",
         explanation: "Des consignes précises et un exemple marchent mieux qu'un souhait vague.",
@@ -200,6 +204,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "« 80 mots, garde la date et le lieu »" },
           { id: "b", text: "« Plus court »" },
+          { id: "c", text: "« Résume, mais garde tout »" },
         ],
         answer: "a",
         explanation: "Une longueur chiffrée et ce qui doit rester.",
@@ -345,6 +350,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Ce que le lecteur doit faire après l'avoir lu" },
           { id: "b", text: "La police d'écriture" },
+          { id: "c", text: "La liste de tous tes anciens mails" },
         ],
         answer: "a",
         explanation: "Le but organise tout le message.",
@@ -366,6 +372,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "calme et professionnel" },
           { id: "b", text: "comme tu veux" },
+          { id: "c", text: "très désolé du début à la fin" },
         ],
         answer: "a",
         explanation: "Un ton précis donne un résultat précis.",
@@ -391,6 +398,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "« Une seule phrase d'excuse, puis la solution »" },
           { id: "b", text: "« Encore plus d'excuses »" },
+          { id: "c", text: "« Garde tout et ajoute une introduction »" },
         ],
         answer: "a",
         explanation: "Une excuse claire, puis l'action : c'est plus crédible.",
@@ -405,6 +413,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "une formule qui ne demande rien de précis" },
           { id: "b", text: "un but clair" },
+          { id: "c", text: "une demande avec une date limite" },
         ],
         answer: "a",
         explanation: "Préfère une action et une date.",
@@ -594,6 +603,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "phrase" },
           { id: "b", text: "couleur" },
+          { id: "c", text: "longueur" },
         ],
         answer: "a",
         explanation: "La phrase source rend la vérification rapide.",
@@ -606,6 +616,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Chaque partie est mieux traitée et plus facile à vérifier" },
           { id: "b", text: "Parce que c'est plus rapide à taper" },
+          { id: "c", text: "Pour que le résumé soit plus long que l'original" },
         ],
         answer: "a",
         explanation: "Moins de texte à la fois, moins d'oublis.",
@@ -620,6 +631,7 @@ export const geckoChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Une nuance aplatie" },
           { id: "b", text: "Aucun" },
+          { id: "c", text: "Une faute d'orthographe" },
         ],
         answer: "a",
         explanation: "« Environ » et « selon » ont disparu : le chiffre paraît plus sûr qu'il ne l'est.",

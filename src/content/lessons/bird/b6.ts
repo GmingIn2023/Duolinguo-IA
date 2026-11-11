@@ -134,6 +134,7 @@ export const birdChapter6: Lesson[] = [
         options: [
           { id: "a", text: "Le résumé de la réunion du lundi, chaque semaine" },
           { id: "b", text: "Une décision importante, une seule fois" },
+          { id: "c", text: "Une question que tu ne poseras plus jamais" },
         ],
         answer: "a",
         explanation: "Une tâche qui revient amortit le temps passé à écrire le prompt.",
@@ -147,6 +148,7 @@ export const birdChapter6: Lesson[] = [
         options: [
           { id: "a", text: "trous" },
           { id: "b", text: "titres" },
+          { id: "c", text: "exemples" },
         ],
         answer: "a",
         explanation: "Le reste est fixe et écrit une fois pour toutes.",
@@ -167,6 +169,7 @@ export const birdChapter6: Lesson[] = [
         options: [
           { id: "a", text: "les dates, heures et lieux" },
           { id: "b", text: "le nombre de virgules" },
+          { id: "c", text: "la longueur des phrases" },
         ],
         answer: "a",
         explanation: "Une mauvaise date fait déplacer des gens pour rien.",
@@ -181,6 +184,7 @@ export const birdChapter6: Lesson[] = [
         options: [
           { id: "a", text: "Deux à quatre" },
           { id: "b", text: "Une vingtaine" },
+          { id: "c", text: "Aucun" },
         ],
         answer: "a",
         explanation: "Peu de trous : le prompt reste rapide à remplir.",

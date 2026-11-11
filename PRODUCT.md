@@ -17,7 +17,7 @@ Goal question → 10-question placement test on that track (3–4 common questio
 Beta: « L'atelier du prompt », a mini-game where the learner builds a request from cards and sees the likely answer change. Marked only with a small « bêta » badge.
 
 ## Mechanism / position
-Concepts first, tools second. Durable mental models (next-token prediction, hallucinations, prompting, privacy, evaluation) before tool-specific advice. Volatile tool facts live in one dated file (`src/content/tools.ts`, re-checked weekly with `npm run content:check`).
+Concepts first, tools second. Durable mental models (next-token prediction, hallucinations, prompting, privacy, evaluation) before tool-specific advice. Volatile tool facts live in one dated file (`src/content/tools.ts`, re-verified every 30 days, the check running each Monday with `npm run content:check`).
 
 ## Constraints
 - Content must be accurate, sourced and short; key notions in bold, human tone, no AI disclaimers in the product.

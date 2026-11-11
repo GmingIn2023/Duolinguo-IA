@@ -159,6 +159,7 @@ export const foxEvaluerRag: Lesson[] = [
         options: [
           { id: "a", text: "Pour savoir quel étage réparer" },
           { id: "b", text: "Pour doubler le nombre de chiffres" },
+          { id: "c", text: "Parce que la génération ne peut pas se mesurer" },
         ],
         answer: "a",
         explanation: "Une note globale ne dit pas d'où vient l'erreur.",
@@ -180,6 +181,7 @@ export const foxEvaluerRag: Lesson[] = [
         options: [
           { id: "a", text: "rappel" },
           { id: "b", text: "coût" },
+          { id: "c", text: "précision" },
         ],
         answer: "a",
         explanation: "Recall@k en anglais.",
@@ -206,6 +208,7 @@ export const foxEvaluerRag: Lesson[] = [
         options: [
           { id: "a", text: "Dans la génération : prompt, ordre et nombre de passages" },
           { id: "b", text: "Dans l'index vectoriel" },
+          { id: "c", text: "Dans le choix du modèle d'embedding" },
         ],
         answer: "a",
         explanation: "Les bons passages arrivent : c'est leur usage qui pèche.",
@@ -228,6 +231,7 @@ export const foxEvaluerRag: Lesson[] = [
         options: [
           { id: "a", text: "Vérifier par du code qu'elle figure mot pour mot dans un passage" },
           { id: "b", text: "Demander au modèle si elle est exacte" },
+          { id: "c", text: "Compter le nombre de mots de la citation" },
         ],
         answer: "a",
         explanation: "Une sous-chaîne se vérifie sans modèle, sans ambiguïté.",

@@ -24,8 +24,8 @@ type Written = Extract<Question, { type: "written" }>;
 export const isGraded = (q: Question) => q.type !== "written";
 
 /**
- * Ids of the criteria whose keywords appear in a written answer. A HINT for the learner ("idées repérées"),
- * never a verdict: it knows nothing about negation or paraphrase.
+ * Ids of the criteria whose keywords appear in a written answer. Kept for tools and tests; it is no longer shown to
+ * the learner nor used as a verdict: it knows nothing about negation or paraphrase.
  */
 export function metCriteria(q: Written, text: string): string[] {
   const t = normalizeText(text);

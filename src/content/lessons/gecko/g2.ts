@@ -149,6 +149,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "Mieux pendant les exercices, moins bien à l'examen sans aide" },
           { id: "b", text: "Mieux partout" },
+          { id: "c", text: "Aucune différence, avec ou sans chatbot" },
         ],
         answer: "a",
         explanation: "L'aide masquait le manque d'apprentissage.",
@@ -175,6 +176,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "solution" },
           { id: "b", text: "consigne" },
+          { id: "c", text: "question" },
         ],
         answer: "a",
         explanation: "C'est l'interdit qui transforme l'assistant en tuteur.",
@@ -195,6 +197,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "expliques comment tu l'as utilisée" },
           { id: "b", text: "dis non, c'est plus simple" },
+          { id: "c", text: "réponds que tout le monde le fait" },
         ],
         answer: "a",
         explanation: "Déclarer ton usage, c'est la règle presque partout.",
@@ -209,6 +212,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "Lui montrer ta réponse et demander où est l'erreur" },
           { id: "b", text: "Lui demander la solution pour comparer" },
+          { id: "c", text: "Lui faire refaire l'exercice à ta place" },
         ],
         answer: "a",
         explanation: "Il corrige ton raisonnement : tu sais où tu as dérapé.",
@@ -353,6 +357,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "Se faire interroger, plusieurs jours de suite" },
           { id: "b", text: "Relire la fiche juste avant le contrôle" },
+          { id: "c", text: "Surligner tout le cours en couleurs" },
         ],
         answer: "a",
         explanation: "Se tester et espacer : c'est ce que montrent les études.",
@@ -374,6 +379,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "attends" },
           { id: "b", text: "devine" },
+          { id: "c", text: "ignore" },
         ],
         answer: "a",
         explanation: "Tu cherches d'abord, il corrige ensuite.",
@@ -399,6 +405,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "la vérifies ou la retires" },
           { id: "b", text: "l'apprends, elle a l'air juste" },
+          { id: "c", text: "la surlignes, pour mieux la retenir" },
         ],
         answer: "a",
         explanation: "Ce qui n'est pas dans ton cours a pu être inventé.",
@@ -558,6 +565,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "saisir l'idée de base avant les détails" },
           { id: "b", text: "obtenir une réponse plus courte, c'est tout" },
+          { id: "c", text: "éviter d'avoir à apprendre les détails ensuite" },
         ],
         answer: "a",
         explanation: "C'est une marche : tu remontes ensuite vers le niveau de ton cours.",
@@ -579,6 +587,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "expliquer" },
           { id: "b", text: "surligner" },
+          { id: "c", text: "relire" },
         ],
         answer: "a",
         explanation: "Expliquer révèle les trous que la lecture cache.",
@@ -591,6 +600,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "suis ton cours et poses la question à ton prof" },
           { id: "b", text: "suis l'IA, elle a lu plus de livres" },
+          { id: "c", text: "choisis la version la plus simple à retenir" },
         ],
         answer: "a",
         explanation: "Ton cours est ta référence pour l'examen, et l'IA peut se tromper.",
@@ -618,6 +628,7 @@ export const geckoChapter2: Lesson[] = [
         options: [
           { id: "a", text: "« Où cette analogie ne marche plus ? »" },
           { id: "b", text: "« Tu en as une autre plus drôle ? »" },
+          { id: "c", text: "« Peux-tu la répéter mot pour mot ? »" },
         ],
         answer: "a",
         explanation: "Connaître la limite de l'analogie évite une idée fausse.",

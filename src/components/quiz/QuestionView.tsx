@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Bot, Check, CircleCheck, CircleDashed, UserRound } from "lucide-react";
+import { ArrowDown, ArrowUp, Bot, Check, CircleDashed, UserRound } from "lucide-react";
 import type { Answer, Item, Option, Question, QuestionVisual } from "@/content/types";
-import { WRITTEN_MAX, metCriteria } from "@/lib/grading";
+import { WRITTEN_MAX } from "@/lib/grading";
 import { Rich, renderInline } from "@/components/Rich";
 
 export type Draft = Answer | null;
@@ -490,7 +490,6 @@ function WrittenField({
   setDraft: (d: Draft) => void;
   reveal: Reveal;
 }) {
-  const met = reveal ? metCriteria(question, value) : [];
   return (
     <div className="grid gap-4">
       <div className="grid gap-1.5">
@@ -516,21 +515,15 @@ function WrittenField({
       {reveal && (
         <>
           <div className="tile grid gap-3 p-4 sm:p-5">
-            <p className="text-sm font-semibold">Idées attendues</p>
-            <p className="text-sm text-muted">Le repérage se fait sur des mots-clés : il peut se tromper. C&apos;est la réponse modèle qui fait foi.</p>
+            <p className="text-sm font-semibold">Les idées attendues : les as-tu toutes ?</p>
+            {/* no automatic tick: spotting keywords marked wrong sentences as right (see isGraded in grading.ts) */}
             <ul className="grid gap-2.5">
-              {question.criteria.map((c) => {
-                const ok = met.includes(c.id);
-                return (
-                  <li key={c.id} className="flex items-start gap-2.5">
-                    {ok ? <CircleCheck className="mt-0.5 size-5 flex-none text-good" aria-hidden /> : <CircleDashed className="mt-0.5 size-5 flex-none text-muted" aria-hidden />}
-                    <span className={`leading-snug ${ok ? "font-medium" : "text-ink-2"}`}>
-                      {renderInline(c.label)}
-                      <span className="sr-only">{ok ? " : mots-clés repérés" : " : mots-clés non repérés"}</span>
-                    </span>
-                  </li>
-                );
-              })}
+              {question.criteria.map((c) => (
+                <li key={c.id} className="flex items-start gap-2.5">
+                  <CircleDashed className="mt-0.5 size-5 flex-none text-muted" aria-hidden />
+                  <span className="leading-snug">{renderInline(c.label)}</span>
+                </li>
+              ))}
             </ul>
           </div>
           <div className="rounded-xl bg-accent-soft p-4 sm:p-5">

@@ -162,6 +162,7 @@ export const foxOrchestrer: Lesson[] = [
         options: [
           { id: "a", text: "Découper : sous-tâches connues d'avance. Orchestrateur : décidées à la volée" },
           { id: "b", text: "Aucune" },
+          { id: "c", text: "Découper utilise plusieurs modèles, l'orchestrateur un seul" },
         ],
         answer: "a",
         explanation: "C'est la prévisibilité des sous-tâches qui sépare les deux.",
@@ -182,6 +183,7 @@ export const foxOrchestrer: Lesson[] = [
         options: [
           { id: "a", text: "Pour réduire le coût et la latence sans perdre en qualité sur ces cas" },
           { id: "b", text: "Parce que les petits modèles sont plus exacts" },
+          { id: "c", text: "Parce que les petits modèles ont une plus grande fenêtre de contexte" },
         ],
         answer: "a",
         explanation: "Le grand modèle reste réservé aux cas qui en ont besoin.",
@@ -221,6 +223,7 @@ export const foxOrchestrer: Lesson[] = [
         options: [
           { id: "a", text: "vote" },
           { id: "b", text: "routage" },
+          { id: "c", text: "chaînage" },
         ],
         answer: "a",
         explanation: "Une variante de la parallélisation.",
@@ -235,6 +238,7 @@ export const foxOrchestrer: Lesson[] = [
         options: [
           { id: "a", text: "Évaluateur et optimiseur" },
           { id: "b", text: "Routage" },
+          { id: "c", text: "Orchestrateur et exécutants" },
         ],
         answer: "a",
         explanation: "Critères clairs, retour utile : la boucle évaluateur-optimiseur s'y prête.",

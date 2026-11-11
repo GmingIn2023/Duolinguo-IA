@@ -1,4 +1,5 @@
-// Weekly freshness check for time-sensitive tool facts. Exit code 1 when something is overdue.
+// Freshness check for time-sensitive tool facts, run every Monday. Exit code 1 when a tool has not been re-verified
+// within its cadence (30 days, see src/content/tools.ts).
 import { TOOLS, staleTools } from "../src/content/tools.ts";
 
 const stale = staleTools();

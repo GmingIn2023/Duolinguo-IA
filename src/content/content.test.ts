@@ -129,6 +129,24 @@ describe("lessons", () => {
     expect(dupes).toEqual([]);
   });
 
+  it("regression: a graded choice question offers at least 3 answers (a coin flip is not a test)", () => {
+    for (const l of LESSONS) {
+      for (const q of [...l.questions, ...l.reviewQuestions]) {
+        if (q.type === "mcq" || q.type === "fill_choice") expect(q.options.length, `${l.id}/${q.id}`).toBeGreaterThanOrEqual(3);
+      }
+    }
+    for (const q of [...COMMON_POOL, ...CHAPTER_POOL]) {
+      if (q.type === "mcq" || q.type === "fill_choice") expect(q.options.length, q.id).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("regression: true/false stays a minority of every quiz", () => {
+    for (const l of LESSONS) {
+      const binary = l.questions.filter((q) => q.type === "true_false").length;
+      expect(binary / l.questions.length, l.id).toBeLessThanOrEqual(0.5);
+    }
+  });
+
   it("review questions share a concept with a quiz question, so notions come back in another form", () => {
     for (const l of LESSONS) {
       const quizConcepts = new Set(l.questions.map((q) => q.concept).filter(Boolean));

@@ -173,6 +173,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Réussi" },
           { id: "b", text: "Merci" },
+          { id: "c", text: "Format" },
         ],
         answer: "a",
         explanation: "Le critère de réussite dit à quoi ressemble un bon résultat.",
@@ -193,6 +194,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Pour qu'il applique l'intention aux cas imprévus" },
           { id: "b", text: "Pour rallonger le prompt" },
+          { id: "c", text: "Pour qu'il s'excuse moins souvent" },
         ],
         answer: "a",
         explanation: "Il comprend le but, pas seulement la règle.",
@@ -205,6 +207,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Lui demander de poser des questions avant de répondre" },
           { id: "b", text: "Le laisser deviner" },
+          { id: "c", text: "Inventer toi-même une valeur plausible" },
         ],
         answer: "a",
         explanation: "Une question coûte moins cher qu'une réponse fausse.",
@@ -219,6 +222,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "donner la matière, pour limiter les inventions" },
           { id: "b", text: "fixer le ton" },
+          { id: "c", text: "définir le public visé" },
         ],
         answer: "a",
         explanation: "Avec ta source sous les yeux, il invente moins.",
@@ -392,6 +396,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "« 150 mots maximum »" },
           { id: "b", text: "« pas trop long »" },
+          { id: "c", text: "« un texte de bonne taille »" },
         ],
         answer: "a",
         explanation: "Un chiffre ne laisse pas de place à l'interprétation.",
@@ -412,6 +417,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Un tableau : une ligne par assurance, une colonne par critère" },
           { id: "b", text: "Un texte libre" },
+          { id: "c", text: "Une liste de liens" },
         ],
         answer: "a",
         explanation: "Comparer se fait en lignes et colonnes.",
@@ -439,6 +445,7 @@ export const geckoChapter1: Lesson[] = [
         options: [
           { id: "a", text: "Varier les sujets, ou dire « imite le style, pas le sujet »" },
           { id: "b", text: "Mettre les exemples en majuscules" },
+          { id: "c", text: "Donner un seul exemple, très long" },
         ],
         answer: "a",
         explanation: "Tu lui dis ce qu'il doit garder, et ce qu'il doit changer.",

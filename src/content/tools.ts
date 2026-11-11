@@ -2,9 +2,15 @@ import type { ToolFact, ToolId } from "./types";
 
 /**
  * Time-sensitive facts about AI tools. This is the ONLY place tool-specific claims live:
- * lessons reference tools by id. Run `npm run content:check` (also weekly in CI) to list
+ * lessons reference tools by id. Run `npm run content:check` (also every Monday in CI) to list
  * entries whose `lastVerified` is older than `reviewEveryDays`.
+ *
+ * The cadence is one month. It was 7 days: five tools to re-read every week by hand was never done, so the
+ * check was permanently red and told nothing. A monthly check that can pass is a signal; `lastVerified` is
+ * only ever changed after the sources were really opened and compared.
  */
+export const REVIEW_EVERY_DAYS = 30;
+
 export const TOOLS: Record<ToolId, ToolFact> = {
   chatgpt: {
     id: "chatgpt",
@@ -19,7 +25,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Fichiers, images, voix et analyse de données ont des limites d'usage séparées, plus strictes sur l'offre gratuite que sur les offres payantes.",
     ],
     lastVerified: "2026-10-29",
-    reviewEveryDays: 7,
+    reviewEveryDays: REVIEW_EVERY_DAYS,
     sources: [
       "https://help.openai.com/en/articles/7730893-data-controls-in-chatgpt",
       "https://help.openai.com/en/articles/5722486-how-your-data-is-used-to-improve-model-performance",
@@ -38,7 +44,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Donner un pouce haut ou bas enregistre la conversation entière, qui peut alors servir à l'entraînement ; une conversation signalée pour un contrôle de sécurité peut aussi être utilisée.",
     ],
     lastVerified: "2026-10-29",
-    reviewEveryDays: 7,
+    reviewEveryDays: REVIEW_EVERY_DAYS,
     sources: [
       "https://privacy.claude.com/en/articles/10023580-is-my-data-used-for-model-training",
       "https://claude.com/pricing",
@@ -57,7 +63,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Les applications connectées disponibles varient selon le pays, la langue, l'appareil et le type de compte.",
     ],
     lastVerified: "2026-10-29",
-    reviewEveryDays: 7,
+    reviewEveryDays: REVIEW_EVERY_DAYS,
     sources: [
       "https://support.google.com/gemini/answer/13594961",
       "https://support.google.com/gemini/answer/13695044",
@@ -75,7 +81,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Le 30 janvier 2025, l'autorité italienne de protection des données a ordonné en urgence la limitation du traitement des données des utilisateurs italiens : évite de mettre des informations sensibles dans le service en ligne.",
     ],
     lastVerified: "2026-10-29",
-    reviewEveryDays: 7,
+    reviewEveryDays: REVIEW_EVERY_DAYS,
     sources: [
       "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html",
       "https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/10097450",
@@ -93,7 +99,7 @@ export const TOOLS: Record<ToolId, ToolFact> = {
       "Le résumé peut mélanger des informations venant de sources différentes.",
     ],
     lastVerified: "2026-10-29",
-    reviewEveryDays: 7,
+    reviewEveryDays: REVIEW_EVERY_DAYS,
     sources: [
       "https://www.perplexity.ai/help-center/en/articles/10352895-how-does-perplexity-work",
       "https://www.perplexity.ai/help-center/en/articles/10354917-what-is-an-answer-engine-and-how-does-perplexity-work-as-one",

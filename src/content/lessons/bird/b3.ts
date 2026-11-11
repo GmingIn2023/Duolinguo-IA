@@ -146,6 +146,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "en 3 phrases" },
           { id: "b", text: "s'il te plaît" },
+          { id: "c", text: "pour ma grand-mère" },
         ],
         answer: "a",
         explanation: "« En 3 phrases » dit quelle forme doit avoir la réponse.",
@@ -158,6 +159,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Sans précision, l'IA choisit la réponse la plus moyenne" },
           { id: "b", text: "L'IA n'aime pas la poésie" },
+          { id: "c", text: "Le mot « poème » est trop court pour être compris" },
         ],
         answer: "a",
         explanation: "Pour qui, sur quoi, quel ton ? Sans ça, elle fait du générique.",
@@ -180,6 +182,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "du contexte" },
           { id: "b", text: "la tâche" },
+          { id: "c", text: "le format" },
         ],
         answer: "a",
         explanation: "Il dit pour qui est la réponse : c'est du contexte.",
@@ -333,6 +336,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "des infos sur ta situation" },
           { id: "b", text: "un point d'exclamation" },
+          { id: "c", text: "le même message une deuxième fois" },
         ],
         answer: "a",
         explanation: "Ta situation, c'est ce qui rend la réponse spécifique.",
@@ -345,6 +349,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Quand l'échange est parti dans tous les sens" },
           { id: "b", text: "À chaque nouveau message" },
+          { id: "c", text: "Jamais : une seule conversation pour tout" },
         ],
         answer: "a",
         explanation: "Sinon, continuer la même conversation est plus efficace.",
@@ -486,6 +491,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "Coller un de tes anciens mails en exemple" },
           { id: "b", text: "Écrire « fais naturel »" },
+          { id: "c", text: "Lui demander d'écrire comme un écrivain célèbre" },
         ],
         answer: "a",
         explanation: "Ton vrai mail montre ton style mieux qu'un adjectif.",
@@ -507,6 +513,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "rôle" },
           { id: "b", text: "mot de passe" },
+          { id: "c", text: "exemple" },
         ],
         answer: "a",
         explanation: "Le rôle règle le ton de la réponse.",
@@ -519,6 +526,7 @@ export const birdChapter3: Lesson[] = [
         options: [
           { id: "a", text: "trois versions avec des tons différents" },
           { id: "b", text: "la meilleure version possible" },
+          { id: "c", text: "la même version, en plus long" },
         ],
         answer: "a",
         explanation: "Comparer plusieurs versions t'aide à savoir ce que tu veux.",

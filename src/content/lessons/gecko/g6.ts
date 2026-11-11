@@ -184,6 +184,7 @@ export const geckoChapter6: Lesson[] = [
         options: [
           { id: "a", text: "Pour juger objectivement, pas au feeling" },
           { id: "b", text: "Pour gagner du temps d'écriture" },
+          { id: "c", text: "Pour que l'assistant apprenne tes réponses par cœur" },
         ],
         answer: "a",
         explanation: "Sinon, on trouve toujours la réponse « pas mal ».",
@@ -205,6 +206,7 @@ export const geckoChapter6: Lesson[] = [
         options: [
           { id: "a", text: "un indice" },
           { id: "b", text: "rien" },
+          { id: "c", text: "la réponse en majuscules" },
         ],
         answer: "a",
         explanation: "Un interdit avec une alternative est mieux suivi qu'un simple « non ».",
@@ -217,6 +219,7 @@ export const geckoChapter6: Lesson[] = [
         options: [
           { id: "a", text: "Non : les tests ne couvrent pas tout" },
           { id: "b", text: "Oui" },
+          { id: "c", text: "Oui, tant que personne ne se plaint" },
         ],
         answer: "a",
         explanation: "Les tests réduisent le risque, ils ne le suppriment pas.",
@@ -231,6 +234,7 @@ export const geckoChapter6: Lesson[] = [
         options: [
           { id: "a", text: "des cas normaux et des pièges" },
           { id: "b", text: "seulement des cas faciles" },
+          { id: "c", text: "une seule question, répétée dix fois" },
         ],
         answer: "a",
         explanation: "Les pièges montrent si les règles tiennent.",

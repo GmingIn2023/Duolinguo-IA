@@ -144,6 +144,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "cite" },
           { id: "b", text: "cache" },
+          { id: "c", text: "efface" },
         ],
         answer: "a",
         explanation: "Il donne des liens numérotés. Ouvre-les quand même.",
@@ -156,6 +157,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Un assistant généraliste, bien pris en main" },
           { id: "b", text: "Cinq outils en même temps" },
+          { id: "c", text: "L'outil le plus cher, forcément le meilleur" },
         ],
         answer: "a",
         explanation: "Tu progresses plus vite en maîtrisant un outil.",
@@ -170,6 +172,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "un modèle à télécharger" },
           { id: "b", text: "un moteur de réponse" },
+          { id: "c", text: "un assistant généraliste en ligne" },
         ],
         answer: "a",
         explanation: "Il fonctionne sans envoyer tes données à un service en ligne.",
@@ -310,6 +313,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "utilises l'outil officiel du travail" },
           { id: "b", text: "utilises ton compte perso, plus pratique" },
+          { id: "c", text: "le colles dans l'outil gratuit le plus connu" },
         ],
         answer: "a",
         explanation: "L'outil choisi par ton employeur est encadré pour ces documents.",
@@ -323,6 +327,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "cherche sur le web" },
           { id: "b", text: "parle plusieurs langues" },
+          { id: "c", text: "génère des images" },
         ],
         answer: "a",
         explanation: "Sans web, il s'arrête à sa date de coupure.",
@@ -337,6 +342,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Retirer ce qui est sensible, ou utiliser l'outil autorisé" },
           { id: "b", text: "Choisir l'outil le plus connu" },
+          { id: "c", text: "Le coller vite, puis supprimer la conversation" },
         ],
         answer: "a",
         explanation: "La sensibilité des données décide avant tout le reste.",
@@ -474,6 +480,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "Le prendre en photo et demander une traduction" },
           { id: "b", text: "Recopier chaque lettre à la main" },
+          { id: "c", text: "Attendre d'être rentré chez toi pour chercher" },
         ],
         answer: "a",
         explanation: "Montrer est plus rapide et évite les fautes de recopie.",
@@ -508,6 +515,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "relis" },
           { id: "b", text: "ajoute des emojis" },
+          { id: "c", text: "répète tout plus fort" },
         ],
         answer: "a",
         explanation: "La dictée peut mal comprendre un mot.",
@@ -522,6 +530,7 @@ export const birdChapter5: Lesson[] = [
         options: [
           { id: "a", text: "prends une photo nette et droite" },
           { id: "b", text: "prends-la de loin pour tout avoir" },
+          { id: "c", text: "prends-la dans la pénombre" },
         ],
         answer: "a",
         explanation: "Une image nette réduit les erreurs de lecture.",

@@ -2,9 +2,54 @@
 
 Relevé fait en **lecture seule** sur le projet Supabase `gusgus` (région eu-west-3) le 17 octobre 2026. Depuis, aucune requête n'a été envoyée à la base distante, et rien n'a été appliqué.
 
+> **Mise à jour du 10 novembre 2026.** Le tableau ci-dessous est le relevé du 17 octobre et n'a pas pu être refait : l'API Supabase
+> signale le projet `gusgus` comme **INACTIVE** (en pause), la base ne répond donc à aucune lecture. Ce qui a changé depuis, côté dépôt,
+> est décrit au §0. Rien n'a été appliqué ni modifié à distance.
+
 Légende : **[V]** vérifié (relevé, requête ou test réellement exécuté) · **[H]** hypothèse, non vérifiée.
 
-## 1. État relevé
+## 0. Ce que le code actuel exige (10 novembre 2026)
+
+| Migration | Le code en dépend ? | État distant |
+|---|---|---|
+| `20261017000000` award_xp_replay_window | **oui** : chaque crédit d'XP envoie `p_replay_hours` (`src/lib/progressDb.supabase.ts`) | **inconnu**. « Pas appliquée » au relevé du 17 octobre ; non revérifiable, projet en pause |
+| `20261018000000` complete_lesson | **oui** : chaque fin de cours appelle `complete_lesson` | **inconnu**, même raison |
+| `20261110000000` display_name_length | non (durcissement seul) | **pas appliquée** : écrite le 10 novembre, jamais exécutée |
+
+**[V]** Le code de `main` appelle `complete_lesson` et `award_xp` à 7 arguments depuis la v2 : si l'une des deux migrations manque en
+production, toute fin de cours (et toute révision) échoue avec « function not found ». **[H]** Elles ont probablement été appliquées
+avec la v2, mais ce document ne peut pas l'affirmer.
+
+À faire dès que le projet est réactivé, **en lecture seule**, avant tout déploiement :
+
+```sql
+select p.proname, pg_get_function_identity_arguments(p.oid) as arguments
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'public' and p.proname in ('award_xp', 'complete_lesson');
+select version, name from supabase_migrations.schema_migrations order by version;
+```
+
+Résultat attendu : `award_xp` avec 7 arguments (le dernier `p_replay_hours integer`) et `complete_lesson` avec 8 arguments. Sinon,
+appliquer la procédure du §3 (puis §5) avant de servir le code actuel.
+
+### 0.1 Les correctifs du 10 novembre ne demandent aucune migration
+
+- **Révision du jour** : l'événement XP d'une session est journalisé sous `ref = 'daily:<identifiant de session>'` au lieu de `'daily'`.
+  `xp_events.ref` est un `text` libre ; les index uniques ne concernent que `weekly` et `checkpoint`. Les anciens événements `'daily'`
+  restent valides et ne sont pas touchés.
+- **Fuseau horaire** : stocké dans `profiles.preferences.timezone` (clé d'un `jsonb` existant), écrit par le serveur.
+- **Série** : `streak_days` et `last_active_date` gardent leur sens ; seul le calcul du jour (fuseau de l'apprenant) et l'affichage changent.
+- **Réponses écrites** : plus planifiées. Les lignes `review_items` déjà créées pour ces questions sont ignorées à la lecture, pas supprimées.
+- **Test de niveau** : les placements déjà stockés (validés sur une seule réponse) sont conservés tels quels ; seuls les nouveaux tests
+  exigent deux bonnes réponses par chapitre.
+
+### 0.2 Migration `20261110000000_display_name_length`
+
+Ajoute `check (display_name is null or char_length(display_name) <= 80) not valid` sur `profiles`. `not valid` : les lignes existantes ne
+sont ni lues ni rejetées, la règle vaut pour les écritures suivantes. Verrou bref sur la table ; annulation :
+`alter table public.profiles drop constraint profiles_display_name_length;`. **Jamais exécutée**, même en local.
+
+## 1. État relevé le 17 octobre 2026
 
 | Version | Fichier local | Historique distant | Schéma distant |
 |---|---|---|---|

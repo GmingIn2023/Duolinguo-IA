@@ -149,6 +149,7 @@ export const birdChapter4: Lesson[] = [
         options: [
           { id: "a", text: "« Mon enfant de 9 ans a des difficultés en lecture. »" },
           { id: "b", text: "La même chose, c'est plus précis" },
+          { id: "c", text: "« Lucas, 9 ans, a des difficultés en lecture. »" },
         ],
         answer: "a",
         explanation: "Le prénom et l'école n'aident pas l'IA. L'âge et la difficulté, si.",
@@ -162,6 +163,7 @@ export const birdChapter4: Lesson[] = [
         options: [
           { id: "a", text: "temporaire" },
           { id: "b", text: "sombre" },
+          { id: "c", text: "silencieux" },
         ],
         answer: "a",
         explanation: "Le nom exact change selon l'outil : cherche-le dans les paramètres.",
@@ -184,6 +186,7 @@ export const birdChapter4: Lesson[] = [
         options: [
           { id: "a", text: "retirer ce qui permet de reconnaître quelqu'un" },
           { id: "b", text: "écrire en majuscules" },
+          { id: "c", text: "supprimer la conversation après coup" },
         ],
         answer: "a",
         explanation: "Noms, adresses, numéros : on les remplace ou on les retire.",
@@ -333,6 +336,7 @@ export const birdChapter4: Lesson[] = [
         options: [
           { id: "a", text: "La dose d'un médicament" },
           { id: "b", text: "Un synonyme de « joli »" },
+          { id: "c", text: "Une idée de prénom pour un chat" },
         ],
         answer: "a",
         explanation: "La santé fait partie de ce qu'on vérifie toujours.",
@@ -346,6 +350,7 @@ export const birdChapter4: Lesson[] = [
         options: [
           { id: "a", text: "les autres" },
           { id: "b", text: "ses propres pages" },
+          { id: "c", text: "ses publicités" },
         ],
         answer: "a",
         explanation: "C'est la lecture « à côté ».",
@@ -360,6 +365,7 @@ export const birdChapter4: Lesson[] = [
         options: [
           { id: "a", text: "retrouver l'info dans une autre source sérieuse" },
           { id: "b", text: "reposer la question à l'IA" },
+          { id: "c", text: "relire la même page une deuxième fois" },
         ],
         answer: "a",
         explanation: "Une deuxième source indépendante, pas le même outil.",

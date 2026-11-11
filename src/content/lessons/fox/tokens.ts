@@ -233,6 +233,7 @@ export const foxTokens: Lesson[] = [
         options: [
           { id: "a", text: "Tout l'historique est renvoyé, donc facturé, à chaque appel" },
           { id: "b", text: "Le modèle se fatigue" },
+          { id: "c", text: "Le prix par token double à chaque message" },
         ],
         answer: "a",
         explanation: "Résumer ou tronquer l'historique réduit le coût.",
@@ -245,6 +246,7 @@ export const foxTokens: Lesson[] = [
         options: [
           { id: "a", text: "La version 4 est sortie après sa date de coupure" },
           { id: "b", text: "Il ment volontairement" },
+          { id: "c", text: "La version 4 n'existe pas vraiment" },
         ],
         answer: "a",
         explanation: "Ses connaissances sont figées. Donne-lui la documentation à jour.",
@@ -267,6 +269,7 @@ export const foxTokens: Lesson[] = [
         options: [
           { id: "a", text: "En haut, avec la question à la fin" },
           { id: "b", text: "Après la question" },
+          { id: "c", text: "Au milieu, entre deux consignes" },
         ],
         answer: "a",
         explanation: "Documents d'abord, question ensuite : c'est la disposition recommandée pour les longs contextes.",
@@ -279,6 +282,7 @@ export const foxTokens: Lesson[] = [
         options: [
           { id: "a", text: "Lui faire épeler, ou utiliser du code" },
           { id: "b", text: "Lui demander de faire attention" },
+          { id: "c", text: "Monter la température" },
         ],
         answer: "a",
         explanation: "Épeler remet chaque lettre en token ; le code compte exactement.",

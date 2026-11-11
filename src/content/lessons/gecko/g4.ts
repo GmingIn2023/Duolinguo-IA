@@ -173,6 +173,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "retires la phrase" },
           { id: "b", text: "la gardes, elle a l'air sérieuse" },
+          { id: "c", text: "inventes une référence qui lui ressemble" },
         ],
         answer: "a",
         explanation: "Ce que tu ne peux pas confirmer ne part pas sous ton nom.",
@@ -194,6 +195,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "faux" },
           { id: "b", text: "plus long" },
+          { id: "c", text: "plus joli" },
         ],
         answer: "a",
         explanation: "Le coût d'une erreur décide de l'effort de vérification.",
@@ -206,6 +208,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "Le retrouver dans une source fiable" },
           { id: "b", text: "Demander à l'IA de se relire" },
+          { id: "c", text: "Compter combien de fois l'IA le répète" },
         ],
         answer: "a",
         explanation: "La source extérieure tranche. L'IA peut confirmer sa propre erreur.",
@@ -220,6 +223,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "le raisonnement" },
           { id: "b", text: "l'orthographe" },
+          { id: "c", text: "la mise en page" },
         ],
         answer: "a",
         explanation: "Une conclusion peut sonner juste et ne pas découler de ce qui précède.",
@@ -372,6 +376,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "shadow AI" },
           { id: "b", text: "télétravail" },
+          { id: "c", text: "phishing" },
         ],
         answer: "a",
         explanation: "L'organisation ne sait plus où partent ses données.",
@@ -419,6 +424,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "Interdire ces outils en interne" },
           { id: "b", text: "Rien" },
+          { id: "c", text: "Rendre ces outils obligatoires pour tous" },
         ],
         answer: "a",
         explanation: "Une réaction fréquente quand une organisation perd le contrôle de ses données.",
@@ -433,6 +439,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "Non : dans le doute, on demande" },
           { id: "b", text: "Oui" },
+          { id: "c", text: "Oui, si des collègues l'utilisent déjà" },
         ],
         answer: "a",
         explanation: "L'absence de règle n'autorise rien.",
@@ -587,6 +594,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "les retrouves, les lis, puis cites ceux qui servent" },
           { id: "b", text: "les recopies tels quels" },
+          { id: "c", text: "cites seulement leurs titres, sans les ouvrir" },
         ],
         answer: "a",
         explanation: "Une référence non lue peut être inventée ou mal résumée.",
@@ -600,6 +608,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "expliquer" },
           { id: "b", text: "copier" },
+          { id: "c", text: "imprimer" },
         ],
         answer: "a",
         explanation: "C'est la règle la plus simple et la plus sûre.",
@@ -612,6 +621,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "demandes au prof avant" },
           { id: "b", text: "fais comme tu veux" },
+          { id: "c", text: "l'utilises sans rien dire, puisque rien ne l'interdit" },
         ],
         answer: "a",
         explanation: "Une question évite un malentendu.",
@@ -626,6 +636,7 @@ export const geckoChapter4: Lesson[] = [
         options: [
           { id: "a", text: "Celle que tu as ouverte et lue" },
           { id: "b", text: "Celle que l'IA a mentionnée" },
+          { id: "c", text: "Celle dont le titre a l'air le plus sérieux" },
         ],
         answer: "a",
         explanation: "On cite ce qu'on a vérifié.",
