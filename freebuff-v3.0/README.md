@@ -29,21 +29,24 @@ what it looked like before, what it looks like now, and what is still open.
 | C4 | The mobile track selector is a group of pressed buttons, not tabs without tabpanels | `ThemePlan.tsx`, `landing.css` |
 | C5 | Track dots are 24 px (was 18 px), so they are a real touch target | `landing.css` |
 | C6 | "Relancer" on the token demo never repeats the word already shown | `tokenDemo.ts`, `TokenDemo.tsx` |
-| C7 | SEO: canonical URL, Open Graph and Twitter cards with a real 1200×630 image, `robots.txt`, `sitemap.xml` | `layout.tsx`, new `opengraph-image.tsx`, `robots.ts`, `sitemap.ts` |
+| C7 | SEO: canonical URL, Open Graph and Twitter cards with a real 1200×630 image, `robots.txt`, `sitemap.xml` | `layout.tsx`, `page.tsx`, new `opengraph-image.tsx`, `robots.ts`, `sitemap.ts` |
 | C8 | Baseline security headers, and `X-Powered-By` removed | `next.config.ts` |
 
 ## How to review
 
 1. Read `BEFORE-AFTER.md` first: it is ordered by user-visible impact, not by file.
-2. `changes.patch` is the exact `git diff` of the worktree against `3e80cba`, including the 7 new
-   files. Because the worktree already contains the changes, verify it with
+2. `changes.patch` is the exact `git diff` of this work against `3e80cba`, including the 7 new
+   files. Because the commit below already contains the changes, verify it with
    `git apply --check --reverse changes.patch` (exit 0 means the patch matches the files exactly).
    On a clean checkout of `3e80cba`, plain `git apply --check changes.patch` is the forward test.
 3. `VERIFICATION.md` lists what was proven and, just as important, what was not.
 
 ## Status at hand-off
 
-- Worktree: 12 modified files, 7 new source files, uncommitted. `.claude/skills/**` deletions were
-  already present before this work and are untouched.
+- Committed locally as `37cd605`, 21 files against `3e80cba`. Nothing was pushed. Nothing was
+  deployed.
 - Typecheck: pass. Lint: pass. Tests: 289 passed, 8 skipped. Production build: pass.
-- Ready to commit once you have read it. Not deployed.
+- Password reset: exercised end to end on a real inbox, landing on `/learn` signed in.
+- A second read of the diff removed four redundant pieces; see the review pass at the end of
+  `BEFORE-AFTER.md`.
+- Ready for review. The only deploy-blocking unknown left is the live security-header check.

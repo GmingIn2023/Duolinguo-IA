@@ -21,17 +21,19 @@ There is no legal notice, no privacy page, and no cookie statement. These cannot
 need a legal entity name, an address, a contact email and a hosting statement. Blocked on the
 owner, not on engineering.
 
-## 4. A real end-to-end auth test — blocked on an inbox
+## 4. The reset flow — verified; two environment gaps left
 
-No real signup, login or password reset was performed. Supabase has zero profiles. To close this:
+The reset flow now has a real run behind it (see `VERIFICATION.md`): request, email, code exchange,
+new password, `/learn` signed in. Two things remain, neither of them app code:
 
-1. Use a real address you control.
-2. Sign up, open the confirmation email, land on `/learn`.
-3. Sign out, sign in again.
-4. Request a reset on `/login/forgot`, follow the email, set a new password.
-5. Confirm the `profiles` row and that XP survives a reload.
+- **Local development needs `http://localhost:3000/**` in Supabase → Authentication → URL
+  Configuration → Redirect URLs.** Without it GoTrue rewrites the callback to the production Site
+  URL, which is correct in production and useless locally.
+- **The production redirect hop is still unobserved**, because the new routes are not deployed yet.
+  The first deploy closes it.
 
-The reset flow added here is the only part of that chain that has never run in production.
+Signup with email confirmation, ordinary login and the authenticated app were already exercised
+earlier; `/learn` renders a real account with XP, streak and review counts.
 
 ## 5. Content-Security-Policy — deliberately deferred
 
@@ -49,22 +51,23 @@ not the file, and that was outside what could be done safely here.
 
 ## 7. Verification gaps
 
-No browser click-through, no live header check, no content sweep re-run. Details and reasons in
-`VERIFICATION.md`. None of these are failures; they are checks that have not happened yet.
+Live security headers (needs a deploy), the production redirect hop, and a re-run of
+`content:check` (no content file changed). Details in `VERIFICATION.md`. None of these are
+failures; they are checks that have not happened yet.
 
 ## 8. Repository state
 
-- Worktree is **uncommitted**: 12 modified files, 7 new source files, plus this folder.
+- The work is committed locally as `37cd605` (`wip: sauvegarde du travail en cours sur la landing
+  et l'authentification`), 21 files against `3e80cba`.
 - Nothing was pushed. Nothing was deployed.
-- `.claude/skills/**` shows a large set of deletions in `git status`. **They were already there
-  before this work began** and were left untouched. Do not sweep them into a commit by accident;
-  `git add -A` would.
-- `git add -N` was used once, only to make `changes.patch` include the new files, and the index was
-  reset afterwards. The worktree is the source of truth.
+- That commit also carries the `.claude/skills/**` deletions and the new skill folders. They
+  predate this work; they went in with it because the commit was made from the whole worktree.
+- `changes.patch` was regenerated against `3e80cba` after that commit;
+  `git apply --check --reverse` exits 0 on the current tree.
 
 ## Suggested order for Claude
 
-1. Read `BEFORE-AFTER.md`, then `git apply --check freebuff-v3.0/changes.patch`.
-2. Run the real reset flow with an inbox (item 4). That is the highest-value unverified path.
-3. Decide on CSP with the Supabase URL in hand (item 5).
-4. Commit, excluding `.claude/skills/**`.
+1. Read `BEFORE-AFTER.md`, then `git apply --check --reverse freebuff-v3.0/changes.patch`.
+2. Decide on CSP with the Supabase URL in hand (item 5).
+3. Deploy, then `curl -I` the origin for the headers and walk one reset from the production URL
+   (item 4).

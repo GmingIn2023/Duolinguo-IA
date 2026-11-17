@@ -86,10 +86,10 @@ index 5fb7340..a4985e4 100644
 -.landing .plan-tab[aria-selected="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }
 +.landing .plan-tab[aria-pressed="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }
 diff --git a/src/app/layout.tsx b/src/app/layout.tsx
-index 8efd850..53d1d33 100644
+index 8efd850..40cea55 100644
 --- a/src/app/layout.tsx
 +++ b/src/app/layout.tsx
-@@ -6,14 +6,24 @@ const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-
+@@ -6,15 +6,18 @@ const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-
  const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
  
  export const metadata: Metadata = {
@@ -97,26 +97,20 @@ index 8efd850..53d1d33 100644
 +  metadataBase: new URL(process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com"),
 +  title: { default: "Gusgus.ia — Way of Learning AI", template: "%s · Gusgus.ia" },
    description: "Apprends l'IA en français : des cours à pratiquer, des quiz qui t'expliquent tes erreurs et des révisions qui reviennent avant que tu oublies.",
-+  alternates: { canonical: "/" },
    openGraph: {
      type: "website",
      locale: "fr_FR",
 -    siteName: "Gusgus",
 -    title: "Gusgus — Apprends l'IA comme une langue",
-+    url: "/",
 +    siteName: "Gusgus.ia",
 +    title: "Gusgus.ia — Apprends l'IA comme une langue",
      description: "Un test de niveau en 10 questions, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
-+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Gusgus.ia — Apprends l'IA comme une langue" }],
-+  },
-+  twitter: {
-+    card: "summary_large_image",
-+    title: "Gusgus.ia — Apprends l'IA comme une langue",
-+    description: "Un test de niveau en 10 questions, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
-+    images: ["/opengraph-image"],
    },
++  // the image itself comes from src/app/opengraph-image.tsx, which feeds both og:image and twitter:image
++  twitter: { card: "summary_large_image" },
  };
  
+ export const viewport: Viewport = { themeColor: "#f1f1ee" };
 diff --git a/src/app/login/LoginForm.tsx b/src/app/login/LoginForm.tsx
 index 4afca95..fffeec5 100644
 --- a/src/app/login/LoginForm.tsx
@@ -378,10 +372,25 @@ index 0000000..846178f
 +  );
 +}
 diff --git a/src/app/page.tsx b/src/app/page.tsx
-index 829c97e..5624bc0 100644
+index 829c97e..6897ef6 100644
 --- a/src/app/page.tsx
 +++ b/src/app/page.tsx
-@@ -146,7 +146,7 @@ export default async function Home() {
+@@ -1,3 +1,4 @@
++import type { Metadata } from "next";
+ import Link from "next/link";
+ import { Caveat } from "next/font/google";
+ import { HeroScene } from "@/components/landing/HeroScene";
+@@ -21,6 +22,9 @@ const hand = Caveat({ subsets: ["latin"], weight: "600", variable: "--font-hand"
+ 
+ const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
+ 
++// only the home page is the canonical root; the app pages must not inherit it
++export const metadata: Metadata = { alternates: { canonical: "/" } };
++
+ export default async function Home() {
+   const viewer = await getViewer().catch(() => null);
+   const cta = viewer ? { href: "/learn", label: "Reprendre mon parcours" } : { href: "/onboarding", label: "Dis-moi où j'en suis" };
+@@ -146,7 +150,7 @@ export default async function Home() {
              <Link href={viewer ? cta.href : "#depart"} className="btn btn-lg bg-bird text-ink">{viewer ? cta.label : "Faire le test"}</Link>
            </div>
            <div className="mt-12"><SleepingFooter /></div>
@@ -392,10 +401,10 @@ index 829c97e..5624bc0 100644
        </footer>
 diff --git a/src/app/robots.ts b/src/app/robots.ts
 new file mode 100644
-index 0000000..c477458
+index 0000000..dd22efd
 --- /dev/null
 +++ b/src/app/robots.ts
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,16 @@
 +import type { MetadataRoute } from "next";
 +
 +const base = (process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com").replace(/\/$/, "");
@@ -410,7 +419,6 @@ index 0000000..c477458
 +      },
 +    ],
 +    sitemap: `${base}/sitemap.xml`,
-+    host: base,
 +  };
 +}
 diff --git a/src/app/signup/SignupForm.tsx b/src/app/signup/SignupForm.tsx
@@ -438,10 +446,10 @@ index 5459182..878b712 100644
          <FormError message={state.error} />
 diff --git a/src/app/sitemap.ts b/src/app/sitemap.ts
 new file mode 100644
-index 0000000..33f0e78
+index 0000000..70abdfe
 --- /dev/null
 +++ b/src/app/sitemap.ts
-@@ -0,0 +1,13 @@
+@@ -0,0 +1,12 @@
 +import type { MetadataRoute } from "next";
 +
 +const base = (process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com").replace(/\/$/, "");
@@ -452,23 +460,18 @@ index 0000000..33f0e78
 +    { url: `${base}/`, lastModified, changeFrequency: "weekly", priority: 1 },
 +    { url: `${base}/onboarding`, lastModified, changeFrequency: "monthly", priority: 0.8 },
 +    { url: `${base}/signup`, lastModified, changeFrequency: "monthly", priority: 0.6 },
-+    { url: `${base}/login`, lastModified, changeFrequency: "yearly", priority: 0.3 },
 +  ];
 +}
 diff --git a/src/components/AuthLayout.tsx b/src/components/AuthLayout.tsx
-index 5870912..130535b 100644
+index 5870912..b7dd550 100644
 --- a/src/components/AuthLayout.tsx
 +++ b/src/components/AuthLayout.tsx
-@@ -17,10 +17,10 @@ export function AuthLayout({ title, children, aside, track }: { title: string; c
-   );
- }
- 
--export function FormError({ message }: { message: string | null }) {
-+export function FormError({ message, id = "auth-error" }: { message: string | null; id?: string }) {
+@@ -20,7 +20,7 @@ export function AuthLayout({ title, children, aside, track }: { title: string; c
+ export function FormError({ message }: { message: string | null }) {
    if (!message) return null;
    return (
 -    <p role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
-+    <p id={id} role="alert" aria-live="polite" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
++    <p id="auth-error" role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
        {message}
      </p>
    );

@@ -103,16 +103,15 @@ unavailable", which is the honest state.
 `src/components/AuthLayout.tsx`
 
 ```diff
--export function FormError({ message }: { message: string | null }) {
-+export function FormError({ message, id = "auth-error" }: { message: string | null; id?: string }) {
    if (!message) return null;
    return (
 -    <p role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
-+    <p id={id} role="alert" aria-live="polite" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
++    <p id="auth-error" role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
 ```
 
 `role="alert"` alone announces the box when it appears, but a screen-reader user who tabs back to
-the email field had no way to hear *why* it was rejected. The fields now point at the message:
+the email field had no way to hear *why* it was rejected, so the box needs a stable id. The fields
+now point at the message:
 
 ```diff
 -          <input name="email" ... defaultValue={state.values?.email} />
@@ -292,14 +291,20 @@ After, in `src/app/layout.tsx`:
 ```ts
 metadataBase: new URL(process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com"),
 title: { default: "Gusgus.ia — Way of Learning AI", template: "%s · Gusgus.ia" },
-alternates: { canonical: "/" },
 openGraph: {
-  type: "website", locale: "fr_FR", url: "/", siteName: "Gusgus.ia",
+  type: "website", locale: "fr_FR", siteName: "Gusgus.ia",
   title: "Gusgus.ia — Apprends l'IA comme une langue",
   description: "...",
-  images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Gusgus.ia — Apprends l'IA comme une langue" }],
 },
-twitter: { card: "summary_large_image", ... images: ["/opengraph-image"] },
+// the image itself comes from src/app/opengraph-image.tsx, which feeds both og:image and twitter:image
+twitter: { card: "summary_large_image" },
+```
+
+and the canonical, which is only true for one page, on `src/app/page.tsx`:
+
+```ts
+// only the home page is the canonical root; the app pages must not inherit it
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 ```
 
 New `src/app/opengraph-image.tsx` renders the card with `next/og` in the site's own palette
@@ -313,7 +318,8 @@ New `src/app/robots.ts` allows the marketing pages and disallows the signed-in a
 (`/learn`, `/map`, `/jeu`, `/courses`, `/lesson`, `/review`, `/notes`, `/profile`, `/dev`,
 `/auth/`), and points at the sitemap.
 
-New `src/app/sitemap.ts` lists the four public URLs: `/`, `/onboarding`, `/signup`, `/login`.
+New `src/app/sitemap.ts` lists the three public URLs a stranger can start from: `/`, `/onboarding`,
+`/signup`. `/login` is deliberately absent — a login form is not a landing page.
 
 Both files read the base URL from `SITE_URL` with the Render URL as fallback, so the sitemap is
 correct in production without another env var.
@@ -352,6 +358,60 @@ const securityHeaders = [
 **No CSP yet, on purpose.** Next injects inline bootstrap scripts and Supabase needs
 `connect-src`, so a CSP written blind would either be useless or blank the page. It is listed in
 `REMAINING.md` as the next security step, not silently skipped.
+
+---
+
+## Review pass — four redundant pieces removed
+
+A second read of the whole diff, with the working app in front of it, found four things that were
+doing nothing or doing harm. All four are gone from the final worktree, and every check was re-run
+afterwards.
+
+### R1 — The canonical URL was applied to every page
+
+`layout.tsx` carried `alternates: { canonical: "/" }`. Root-layout metadata is injected into every
+route that does not override it, so `/login`, `/lesson/[id]` and `/profile` all told crawlers their
+canonical URL was the home page. That is worse than having no canonical at all.
+
+```diff
+ // src/app/layout.tsx
+-  alternates: { canonical: "/" },
+```
+
+It now lives only where it is true — `src/app/page.tsx`, the page that exists at `/`:
+
+```diff
++export const metadata: Metadata = { alternates: { canonical: "/" } };
+```
+
+`openGraph.url: "/"` was removed for the same reason: it made every shared page claim to be the
+home page.
+
+### R2 — The share image was declared three times
+
+The diff declared the card as `openGraph.images`, as `twitter.images`, and as the
+`opengraph-image.tsx` file convention. The convention already emits the tags, with the right
+dimensions and the `alt` read from the file's exports, so the explicit entries were duplicate
+truth. They are removed; `twitter` now only sets `card: "summary_large_image"`.
+
+This was checked in the built HTML rather than assumed. `/login.html`, which inherits the root
+metadata, contains `og:image`, `og:image:type/width/height/alt`, `twitter:image`,
+`twitter:image:alt`, and — filled in from the Open Graph block — `twitter:title` and
+`twitter:description`. Nothing was lost.
+
+### R3 — A parameter nobody passes, and a live-region conflict
+
+`FormError` had gained an `id` prop with a default, but all four call sites use the default; the
+prop was only a new way to get it wrong. The id is a constant again.
+
+The same element had `role="alert"` **and** `aria-live="polite"`. `role="alert"` is already an
+assertive live region, so the second attribute contradicts the first. `role="alert"` stays; the
+`aria-live` is gone.
+
+### R4 — Two lines of SEO noise
+
+- `robots.ts` set `host`, a directive only Yandex reads, and nobody asked for it.
+- `sitemap.ts` listed `/login`. Removed, as described in C7.
 
 ---
 

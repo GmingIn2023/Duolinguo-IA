@@ -28,8 +28,21 @@ outage instead of 500-ing the landing page (change C2).
 - `complete_lesson` exists.
 - Public tables: `profiles`, `lesson_progress`, `lesson_resume`, `notes`, `review_items`,
   `xp_events`.
-- Row counts: **0 in every table.** There are no real accounts yet, which is why no end-to-end
-  auth test could be run.
+- Accounts: **2 confirmed** — `val.leg.poi@icloud.com` and `val.leg.poi@gmail.com`.
+- Row counts: `profiles` 2, `lesson_progress` 9, `review_items` 51, `xp_events` 12, `notes` 5.
+  The earlier "every table is empty" note is obsolete: the iCloud account carries real progress.
+
+### Redirect allow-list
+
+GoTrue honours a `redirect_to` only when it matches the project's allow-list, and silently
+replaces it with the **Site URL** otherwise. Checked with `curl -D -` against `/auth/v1/verify`:
+
+- `https://duolinguo-ia.onrender.com/auth/callback?next=/login/reset` → kept as requested.
+- `http://localhost:3000/auth/callback?next=/login/reset` →
+  `Location: https://duolinguo-ia.onrender.com?code=…`.
+
+Production needs no change. For local development, add `http://localhost:3000/**` under
+Authentication → URL Configuration → Redirect URLs.
 
 Writes go through the admin client and are always scoped to the signed-in user's id; learners can
 only read their own rows. That design predates this work and was not changed.
