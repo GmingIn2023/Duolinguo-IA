@@ -20,7 +20,7 @@ export function AuthLayout({ title, children, aside, track }: { title: string; c
 export function FormError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
+    <p id="auth-error" role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
       {message}
     </p>
   );

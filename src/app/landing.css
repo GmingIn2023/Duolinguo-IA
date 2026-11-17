@@ -102,11 +102,11 @@ html:has(.landing) { background: #fbf6ec; }
 /* the thread between chapters: a quiet line behind the numbers */
 .landing .plan-chapters li:not(:last-child)::before { content: ""; position: absolute; left: 0.85rem; top: 1.75rem; bottom: -0.7rem; width: 2px; background: color-mix(in srgb, var(--accent-deep) 35%, transparent); }
 .landing .plan-num { position: relative; z-index: 1; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background: var(--accent); box-shadow: inset 0 -2px 0 var(--accent-deep); font: 800 0.8rem var(--font-archivo), sans-serif; }
-.landing .plan-dot { width: 1.15rem; height: 1.15rem; border-radius: 999px; background: var(--th); box-shadow: inset 0 -2px 0 var(--th-deep), 0 0 0 1.5px var(--surface); cursor: pointer; transition: transform 160ms var(--ease-out), opacity 200ms; }
+.landing .plan-dot { width: 1.5rem; height: 1.5rem; border-radius: 999px; background: var(--th); box-shadow: inset 0 -2px 0 var(--th-deep), 0 0 0 1.5px var(--surface); cursor: pointer; transition: transform 160ms var(--ease-out), opacity 200ms; }
 .landing i.plan-dot { display: inline-block; cursor: default; }
 .landing .plan-dot[data-theme="projets"] { background: var(--ink); }
 @media (hover: hover) { .landing button.plan-dot:hover { transform: scale(1.25); } }
 .landing .plan-dot[aria-pressed="true"] { outline: 2.5px solid var(--ink); outline-offset: 2px; }
 .landing .plan-dot[data-dim] { opacity: 0.18; }
 .landing .plan-tab { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0 0.85rem 0 0.4rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line); }
-.landing .plan-tab[aria-selected="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }
+.landing .plan-tab[aria-pressed="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }

@@ -15,5 +15,18 @@ export function pickCandidate(r: number): number {
     acc += TOKEN_CANDIDATES[i].p;
     if (r < acc) return i;
   }
-  return 0;
+  return TOKEN_CANDIDATES.length - 1;
+}
+
+/** Weighted draw among all candidates except `excluded`, so "Relancer" never repeats the current word. */
+export function pickCandidateExcept(r: number, excluded: number): number {
+  const choices = TOKEN_CANDIDATES.map((candidate, index) => ({ candidate, index })).filter(({ index }) => index !== excluded);
+  const total = choices.reduce((sum, { candidate }) => sum + candidate.p, 0);
+  const target = (Math.min(Math.max(r, 0), 100) / 100) * total;
+  let acc = 0;
+  for (const { candidate, index } of choices) {
+    acc += candidate.p;
+    if (target < acc) return index;
+  }
+  return choices[choices.length - 1]?.index ?? 0;
 }

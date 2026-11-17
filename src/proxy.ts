@@ -7,29 +7,39 @@ const PROTECTED = ["/learn", "/map", "/jeu", "/courses", "/lesson", "/review", "
 /** Refreshes the Supabase session cookie and keeps signed-out visitors out of the app. */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    supabasePublishableKey(),
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll(toSet) {
-          toSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          toSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+  let signedIn = false;
+  let authUnavailable = false;
+
+  try {
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      supabasePublishableKey(),
+      {
+        cookies: {
+          getAll: () => request.cookies.getAll(),
+          setAll(toSet) {
+            toSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            toSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          },
         },
       },
-    },
-  );
+    );
 
-  const { data } = await supabase.auth.getClaims();
-  const signedIn = Boolean(data?.claims);
+    const { data } = await supabase.auth.getClaims();
+    signedIn = Boolean(data?.claims);
+  } catch {
+    // A missing env var or an unreachable auth service must not 500 public pages.
+    authUnavailable = true;
+  }
+
   const path = request.nextUrl.pathname;
 
   if (!signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
+    if (authUnavailable) url.searchParams.set("error", "service");
     return NextResponse.redirect(url);
   }
   if (signedIn && (path === "/login" || path === "/signup")) {

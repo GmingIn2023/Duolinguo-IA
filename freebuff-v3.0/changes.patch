@@ -1,0 +1,662 @@
+diff --git a/next.config.ts b/next.config.ts
+index e9ffa30..e63edd3 100644
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -1,7 +1,20 @@
+ import type { NextConfig } from "next";
+ 
++// No CSP yet: Next injects inline bootstrap scripts, and Supabase needs a connect-src entry.
++// The headers below close the cheap holes without risking a blank page.
++const securityHeaders = [
++  { key: "X-Content-Type-Options", value: "nosniff" },
++  { key: "X-Frame-Options", value: "DENY" },
++  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
++  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
++  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
++];
++
+ const nextConfig: NextConfig = {
+-  /* config options here */
++  poweredByHeader: false,
++  async headers() {
++    return [{ source: "/:path*", headers: securityHeaders }];
++  },
+ };
+ 
+ export default nextConfig;
+diff --git a/src/app/auth/actions.ts b/src/app/auth/actions.ts
+index 44754ef..1a6811d 100644
+--- a/src/app/auth/actions.ts
++++ b/src/app/auth/actions.ts
+@@ -71,3 +71,38 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
+   if (hasSession) redirect("/learn");
+   return { error: null, sentTo: email, values };
+ }
++
++/** Always answers the same thing, whether or not the address has an account. */
++export async function requestPasswordReset(_: AuthState, form: FormData): Promise<AuthState> {
++  const email = String(form.get("email") ?? "").trim();
++  if (!email) return { error: "Indique l'adresse email de ton compte.", values: { email } };
++
++  const h = await headers();
++  const origin = process.env.SITE_URL?.replace(/\/$/, "") || (h.get("origin") ?? `https://${h.get("host")}`);
++  try {
++    const supabase = await createClient();
++    const { error } = await supabase.auth.resetPasswordForEmail(email, {
++      redirectTo: `${origin}/auth/callback?next=/login/reset`,
++    });
++    if (error) return { error: authErrorMessage(error.message), values: { email } };
++  } catch (e) {
++    return { error: authErrorMessage(e instanceof Error ? e.message : "network"), values: { email } };
++  }
++  return { error: null, sentTo: email, values: { email } };
++}
++
++/** Reached from the recovery link: the callback exchanged the code for a short-lived session. */
++export async function updatePassword(_: AuthState, form: FormData): Promise<AuthState> {
++  const password = String(form.get("password") ?? "");
++  const confirm = String(form.get("confirm") ?? "");
++  if (password.length < 8) return { error: "Mot de passe trop court : 8 caractères minimum." };
++  if (password !== confirm) return { error: "Les deux mots de passe ne sont pas identiques." };
++  try {
++    const supabase = await createClient();
++    const { error } = await supabase.auth.updateUser({ password });
++    if (error) return { error: authErrorMessage(error.message) };
++  } catch (e) {
++    return { error: authErrorMessage(e instanceof Error ? e.message : "network") };
++  }
++  redirect("/learn");
++}
+diff --git a/src/app/landing.css b/src/app/landing.css
+index 5fb7340..a4985e4 100644
+--- a/src/app/landing.css
++++ b/src/app/landing.css
+@@ -102,11 +102,11 @@ html:has(.landing) { background: #fbf6ec; }
+ /* the thread between chapters: a quiet line behind the numbers */
+ .landing .plan-chapters li:not(:last-child)::before { content: ""; position: absolute; left: 0.85rem; top: 1.75rem; bottom: -0.7rem; width: 2px; background: color-mix(in srgb, var(--accent-deep) 35%, transparent); }
+ .landing .plan-num { position: relative; z-index: 1; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 999px; background: var(--accent); box-shadow: inset 0 -2px 0 var(--accent-deep); font: 800 0.8rem var(--font-archivo), sans-serif; }
+-.landing .plan-dot { width: 1.15rem; height: 1.15rem; border-radius: 999px; background: var(--th); box-shadow: inset 0 -2px 0 var(--th-deep), 0 0 0 1.5px var(--surface); cursor: pointer; transition: transform 160ms var(--ease-out), opacity 200ms; }
++.landing .plan-dot { width: 1.5rem; height: 1.5rem; border-radius: 999px; background: var(--th); box-shadow: inset 0 -2px 0 var(--th-deep), 0 0 0 1.5px var(--surface); cursor: pointer; transition: transform 160ms var(--ease-out), opacity 200ms; }
+ .landing i.plan-dot { display: inline-block; cursor: default; }
+ .landing .plan-dot[data-theme="projets"] { background: var(--ink); }
+ @media (hover: hover) { .landing button.plan-dot:hover { transform: scale(1.25); } }
+ .landing .plan-dot[aria-pressed="true"] { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+ .landing .plan-dot[data-dim] { opacity: 0.18; }
+ .landing .plan-tab { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2.75rem; padding: 0 0.85rem 0 0.4rem; border-radius: 999px; font-weight: 700; font-size: 0.9rem; background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line); }
+-.landing .plan-tab[aria-selected="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }
++.landing .plan-tab[aria-pressed="true"] { background: var(--accent); box-shadow: 0 3px 0 var(--accent-deep); }
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index 8efd850..53d1d33 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -6,14 +6,24 @@ const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-
+ const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
+ 
+ export const metadata: Metadata = {
+-  title: { default: "Gusgus — Way of Learning AI", template: "%s · Gusgus" },
++  metadataBase: new URL(process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com"),
++  title: { default: "Gusgus.ia — Way of Learning AI", template: "%s · Gusgus.ia" },
+   description: "Apprends l'IA en français : des cours à pratiquer, des quiz qui t'expliquent tes erreurs et des révisions qui reviennent avant que tu oublies.",
++  alternates: { canonical: "/" },
+   openGraph: {
+     type: "website",
+     locale: "fr_FR",
+-    siteName: "Gusgus",
+-    title: "Gusgus — Apprends l'IA comme une langue",
++    url: "/",
++    siteName: "Gusgus.ia",
++    title: "Gusgus.ia — Apprends l'IA comme une langue",
+     description: "Un test de niveau en 10 questions, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
++    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Gusgus.ia — Apprends l'IA comme une langue" }],
++  },
++  twitter: {
++    card: "summary_large_image",
++    title: "Gusgus.ia — Apprends l'IA comme une langue",
++    description: "Un test de niveau en 10 questions, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
++    images: ["/opengraph-image"],
+   },
+ };
+ 
+diff --git a/src/app/login/LoginForm.tsx b/src/app/login/LoginForm.tsx
+index 4afca95..fffeec5 100644
+--- a/src/app/login/LoginForm.tsx
++++ b/src/app/login/LoginForm.tsx
+@@ -8,7 +8,14 @@ import { login, type AuthState } from "@/app/auth/actions";
+ 
+ export function LoginForm() {
+   const params = useSearchParams();
+-  const initial: AuthState = { error: params.get("error") === "link" ? "Ce lien a expiré ou a déjà servi. Connecte-toi directement." : null };
++  const errorParam = params.get("error");
++  const initial: AuthState = {
++    error: errorParam === "link"
++      ? "Ce lien a expiré ou a déjà servi. Connecte-toi directement."
++      : errorParam === "service"
++        ? "Le service de connexion est momentanément indisponible. Réessaie dans un instant."
++        : null,
++  };
+   const [state, action, pending] = useActionState(login, initial);
+ 
+   const aside = (
+@@ -23,12 +30,15 @@ export function LoginForm() {
+         <input type="hidden" name="next" value={params.get("next") ?? "/learn"} />
+         <label className="grid gap-1.5">
+           <span className="text-sm font-semibold">Email</span>
+-          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" defaultValue={state.values?.email} />
++          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" defaultValue={state.values?.email} aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
+         </label>
+         <label className="grid gap-1.5">
+           <span className="text-sm font-semibold">Mot de passe</span>
+-          <input name="password" type="password" required autoComplete="current-password" className="field" aria-invalid={Boolean(state.error) || undefined} />
++          <input name="password" type="password" required autoComplete="current-password" className="field" aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
+         </label>
++        <div className="flex justify-end">
++          <Link href="/login/forgot" className="text-sm font-semibold text-ink underline">Mot de passe oublié ?</Link>
++        </div>
+         <FormError message={state.error} />
+         <button className="btn btn-primary btn-lg mt-2" disabled={pending}>{pending ? "Connexion…" : "Se connecter"}</button>
+       </form>
+diff --git a/src/app/login/forgot/ForgotForm.tsx b/src/app/login/forgot/ForgotForm.tsx
+new file mode 100644
+index 0000000..ea43bb0
+--- /dev/null
++++ b/src/app/login/forgot/ForgotForm.tsx
+@@ -0,0 +1,47 @@
++"use client";
++
++import Link from "next/link";
++import { useActionState } from "react";
++import { MailCheck } from "lucide-react";
++import { AuthLayout, FormError } from "@/components/AuthLayout";
++import { requestPasswordReset, type AuthState } from "@/app/auth/actions";
++
++export function ForgotForm() {
++  const [state, action, pending] = useActionState(requestPasswordReset, { error: null } as AuthState);
++
++  const aside = (
++    <div className="flex h-full flex-col justify-end p-12 text-paper">
++      <p className="display display-xl">On te remet sur les rails.</p>
++    </div>
++  );
++
++  if (state.sentTo) {
++    return (
++      <AuthLayout title="Vérifie ta boîte mail." aside={aside}>
++        <div className="grid gap-5">
++          <MailCheck className="size-10" aria-hidden />
++          <p className="lede">
++            Si un compte existe pour <strong className="text-ink">{state.sentTo}</strong>, tu recevras un lien pour choisir un nouveau mot de passe d&apos;ici quelques minutes.
++          </p>
++          <p className="text-[0.9375rem] text-muted">Rien reçu ? Regarde dans les spams. Le lien expire au bout d&apos;une heure.</p>
++          <Link href="/login" className="font-semibold text-ink underline">Retour à la connexion</Link>
++        </div>
++      </AuthLayout>
++    );
++  }
++
++  return (
++    <AuthLayout title="Mot de passe oublié." aside={aside}>
++      <p className="-mt-4 text-ink-2">Indique l&apos;adresse email de ton compte : on t&apos;envoie un lien pour en choisir un nouveau.</p>
++      <form className="grid gap-4" action={action}>
++        <label className="grid gap-1.5">
++          <span className="text-sm font-semibold">Email</span>
++          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" defaultValue={state.values?.email} aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
++        </label>
++        <FormError message={state.error} />
++        <button className="btn btn-primary btn-lg mt-2" disabled={pending}>{pending ? "Envoi…" : "Envoyer le lien"}</button>
++      </form>
++      <p className="text-ink-2">Tu t&apos;en souviens ? <Link href="/login" className="font-semibold text-ink underline">Se connecter</Link></p>
++    </AuthLayout>
++  );
++}
+diff --git a/src/app/login/forgot/page.tsx b/src/app/login/forgot/page.tsx
+new file mode 100644
+index 0000000..c54603c
+--- /dev/null
++++ b/src/app/login/forgot/page.tsx
+@@ -0,0 +1,8 @@
++import type { Metadata } from "next";
++import { ForgotForm } from "./ForgotForm";
++
++export const metadata: Metadata = { title: "Mot de passe oublié", robots: { index: false, follow: false } };
++
++export default function Page() {
++  return <ForgotForm />;
++}
+diff --git a/src/app/login/reset/ResetForm.tsx b/src/app/login/reset/ResetForm.tsx
+new file mode 100644
+index 0000000..419046b
+--- /dev/null
++++ b/src/app/login/reset/ResetForm.tsx
+@@ -0,0 +1,38 @@
++"use client";
++
++import { useActionState } from "react";
++import { KeyRound } from "lucide-react";
++import { AuthLayout, FormError } from "@/components/AuthLayout";
++import { updatePassword, type AuthState } from "@/app/auth/actions";
++
++export function ResetForm() {
++  const [state, action, pending] = useActionState(updatePassword, { error: null } as AuthState);
++
++  const aside = (
++    <div className="flex h-full flex-col justify-end p-12 text-paper">
++      <p className="display display-xl">Nouveau mot de passe, nouvelle page.</p>
++    </div>
++  );
++
++  return (
++    <AuthLayout title="Nouveau mot de passe." aside={aside}>
++      <div className="grid gap-5">
++        <KeyRound className="size-10" aria-hidden />
++        <p className="-mt-4 text-ink-2">Choisis un mot de passe d&apos;au moins 8 caractères. Tu resteras connecté après l&apos;enregistrement.</p>
++        <form className="grid gap-4" action={action}>
++          <label className="grid gap-1.5">
++            <span className="text-sm font-semibold">Nouveau mot de passe</span>
++            <input name="password" type="password" required autoComplete="new-password" minLength={8} className="field" aria-describedby="pw-hint" />
++            <span id="pw-hint" className="text-sm text-muted">8 caractères minimum.</span>
++          </label>
++          <label className="grid gap-1.5">
++            <span className="text-sm font-semibold">Confirme le mot de passe</span>
++            <input name="confirm" type="password" required autoComplete="new-password" minLength={8} className="field" aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
++          </label>
++          <FormError message={state.error} />
++          <button className="btn btn-primary btn-lg mt-2" disabled={pending}>{pending ? "Enregistrement…" : "Enregistrer"}</button>
++        </form>
++      </div>
++    </AuthLayout>
++  );
++}
+diff --git a/src/app/login/reset/page.tsx b/src/app/login/reset/page.tsx
+new file mode 100644
+index 0000000..42f67ae
+--- /dev/null
++++ b/src/app/login/reset/page.tsx
+@@ -0,0 +1,30 @@
++import type { Metadata } from "next";
++import Link from "next/link";
++import { AuthLayout } from "@/components/AuthLayout";
++import { createClient } from "@/lib/supabase/server";
++import { ResetForm } from "./ResetForm";
++
++export const metadata: Metadata = { title: "Nouveau mot de passe", robots: { index: false, follow: false } };
++
++async function hasRecoverySession() {
++  try {
++    const supabase = await createClient();
++    const { data } = await supabase.auth.getClaims();
++    return Boolean(data?.claims);
++  } catch {
++    return false;
++  }
++}
++
++export default async function Page() {
++  if (await hasRecoverySession()) return <ResetForm />;
++  return (
++    <AuthLayout title="Lien expiré.">
++      <div className="grid gap-4">
++        <p className="lede">Ce lien a expiré ou a déjà servi. Demande-en un nouveau : ça ne prend que quelques secondes.</p>
++        <Link href="/login/forgot" className="btn btn-primary btn-lg mt-2 w-fit">Demander un nouveau lien</Link>
++        <p className="text-ink-2">Ou <Link href="/login" className="font-semibold text-ink underline">revenir à la connexion</Link>.</p>
++      </div>
++    </AuthLayout>
++  );
++}
+diff --git a/src/app/opengraph-image.tsx b/src/app/opengraph-image.tsx
+new file mode 100644
+index 0000000..846178f
+--- /dev/null
++++ b/src/app/opengraph-image.tsx
+@@ -0,0 +1,69 @@
++import { ImageResponse } from "next/og";
++
++export const alt = "Gusgus.ia — Apprends l'IA comme une langue";
++export const size = { width: 1200, height: 630 };
++export const contentType = "image/png";
++
++const CHIPS = [
++  { label: "Cours à pratiquer", color: "#ffd43b" },
++  { label: "Quiz qui expliquent", color: "#ff6b2c" },
++  { label: "Révisions espacées", color: "#3bd671" },
++];
++
++export default function OpengraphImage() {
++  return new ImageResponse(
++    (
++      <div
++        style={{
++          width: "100%",
++          height: "100%",
++          display: "flex",
++          flexDirection: "column",
++          justifyContent: "space-between",
++          background: "#f1f1ee",
++          padding: "64px 72px",
++          fontFamily: "sans-serif",
++        }}
++      >
++        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
++          <div style={{ display: "flex", alignItems: "baseline", fontSize: 44, letterSpacing: "-0.03em", color: "#000000" }}>
++            gusgus<span style={{ fontSize: 28 }}>.ia</span>
++          </div>
++          <div style={{ display: "flex", fontSize: 24, color: "#66665f" }}>Way of Learning AI</div>
++        </div>
++
++        <div style={{ display: "flex", flexDirection: "column" }}>
++          <div style={{ display: "flex", fontSize: 82, lineHeight: 1.05, letterSpacing: "-0.035em", color: "#000000", maxWidth: 980 }}>
++            Apprends l&apos;IA comme une langue.
++          </div>
++          <div style={{ display: "flex", marginTop: 26, fontSize: 30, lineHeight: 1.35, color: "#3a3a37", maxWidth: 900 }}>
++            Des cours courts, des quiz qui expliquent tes erreurs et des révisions qui reviennent avant que tu oublies.
++          </div>
++        </div>
++
++        <div style={{ display: "flex", gap: 16 }}>
++          {CHIPS.map((chip) => (
++            <div
++              key={chip.label}
++              style={{
++                display: "flex",
++                alignItems: "center",
++                gap: 12,
++                background: "#ffffff",
++                border: "2px solid #d3d3cc",
++                borderRadius: 999,
++                padding: "14px 24px",
++                fontSize: 24,
++                color: "#000000",
++              }}
++            >
++              <div style={{ display: "flex", width: 16, height: 16, borderRadius: 999, background: chip.color }} />
++              {chip.label}
++            </div>
++          ))}
++        </div>
++      </div>
++    ),
++    size,
++  );
++}
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 829c97e..5624bc0 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -146,7 +146,7 @@ export default async function Home() {
+             <Link href={viewer ? cta.href : "#depart"} className="btn btn-lg bg-bird text-ink">{viewer ? cta.label : "Faire le test"}</Link>
+           </div>
+           <div className="mt-12"><SleepingFooter /></div>
+-          <p className="display mt-6 overflow-hidden pb-[0.12em] text-[clamp(4.5rem,22vw,19rem)] leading-[0.85] tracking-[-0.06em]" aria-hidden>gusgus</p>
++          <p className="display mt-6 overflow-hidden pb-[0.12em] text-[clamp(4.5rem,22vw,19rem)] leading-[0.85] tracking-[-0.06em]" aria-hidden>gusgus<span className="text-[0.4em] tracking-[-0.03em]">.ia</span></p>
+           <p className="mt-4 text-paper/80">Apprendre l&apos;IA en français</p>
+         </div>
+       </footer>
+diff --git a/src/app/robots.ts b/src/app/robots.ts
+new file mode 100644
+index 0000000..c477458
+--- /dev/null
++++ b/src/app/robots.ts
+@@ -0,0 +1,17 @@
++import type { MetadataRoute } from "next";
++
++const base = (process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com").replace(/\/$/, "");
++
++export default function robots(): MetadataRoute.Robots {
++  return {
++    rules: [
++      {
++        userAgent: "*",
++        allow: "/",
++        disallow: ["/learn", "/map", "/jeu", "/courses", "/lesson", "/review", "/notes", "/profile", "/dev", "/auth/"],
++      },
++    ],
++    sitemap: `${base}/sitemap.xml`,
++    host: base,
++  };
++}
+diff --git a/src/app/signup/SignupForm.tsx b/src/app/signup/SignupForm.tsx
+index 5459182..878b712 100644
+--- a/src/app/signup/SignupForm.tsx
++++ b/src/app/signup/SignupForm.tsx
+@@ -57,15 +57,15 @@ export function SignupForm() {
+         <input type="hidden" name="track" value={track ?? ""} />
+         <label className="grid gap-1.5">
+           <span className="text-sm font-semibold">Prénom</span>
+-          <input name="name" required autoComplete="given-name" className="field" placeholder="Camille" defaultValue={state.values?.name} />
++          <input name="name" required autoComplete="given-name" className="field" placeholder="Camille" defaultValue={state.values?.name} aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
+         </label>
+         <label className="grid gap-1.5">
+           <span className="text-sm font-semibold">Email</span>
+-          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" placeholder="camille@exemple.fr" defaultValue={state.values?.email} />
++          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" placeholder="camille@exemple.fr" defaultValue={state.values?.email} aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
+         </label>
+         <label className="grid gap-1.5">
+           <span className="text-sm font-semibold">Mot de passe</span>
+-          <input name="password" type="password" required autoComplete="new-password" className="field" aria-describedby="pw-hint" />
++          <input name="password" type="password" required autoComplete="new-password" className="field" aria-describedby={state.error ? "pw-hint auth-error" : "pw-hint"} aria-invalid={Boolean(state.error) || undefined} />
+           <span id="pw-hint" className="text-sm text-muted">8 caractères minimum.</span>
+         </label>
+         <FormError message={state.error} />
+diff --git a/src/app/sitemap.ts b/src/app/sitemap.ts
+new file mode 100644
+index 0000000..33f0e78
+--- /dev/null
++++ b/src/app/sitemap.ts
+@@ -0,0 +1,13 @@
++import type { MetadataRoute } from "next";
++
++const base = (process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com").replace(/\/$/, "");
++
++export default function sitemap(): MetadataRoute.Sitemap {
++  const lastModified = new Date();
++  return [
++    { url: `${base}/`, lastModified, changeFrequency: "weekly", priority: 1 },
++    { url: `${base}/onboarding`, lastModified, changeFrequency: "monthly", priority: 0.8 },
++    { url: `${base}/signup`, lastModified, changeFrequency: "monthly", priority: 0.6 },
++    { url: `${base}/login`, lastModified, changeFrequency: "yearly", priority: 0.3 },
++  ];
++}
+diff --git a/src/components/AuthLayout.tsx b/src/components/AuthLayout.tsx
+index 5870912..130535b 100644
+--- a/src/components/AuthLayout.tsx
++++ b/src/components/AuthLayout.tsx
+@@ -17,10 +17,10 @@ export function AuthLayout({ title, children, aside, track }: { title: string; c
+   );
+ }
+ 
+-export function FormError({ message }: { message: string | null }) {
++export function FormError({ message, id = "auth-error" }: { message: string | null; id?: string }) {
+   if (!message) return null;
+   return (
+-    <p role="alert" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
++    <p id={id} role="alert" aria-live="polite" className="rounded-xl bg-bad-soft px-4 py-3 text-[0.9375rem] font-medium text-bad">
+       {message}
+     </p>
+   );
+diff --git a/src/components/Wordmark.tsx b/src/components/Wordmark.tsx
+index 9e130d2..59d02e9 100644
+--- a/src/components/Wordmark.tsx
++++ b/src/components/Wordmark.tsx
+@@ -2,8 +2,8 @@ import Link from "next/link";
+ 
+ export function Wordmark({ href = "/", small = false }: { href?: string; small?: boolean }) {
+   return (
+-    <Link href={href} className="group inline-flex items-baseline gap-2" aria-label="Gusgus, accueil" translate="no">
+-      <span className={`display ${small ? "text-[1.375rem]" : "text-[1.625rem]"} leading-none`}>gusgus</span>
++    <Link href={href} className="group inline-flex items-baseline gap-2" aria-label="Gusgus.ia, accueil" translate="no">
++      <span className={`display ${small ? "text-[1.375rem]" : "text-[1.625rem]"} leading-none`}>gusgus<span className="text-[0.62em] tracking-[-0.02em]">.ia</span></span>
+       {!small && <span className="hidden text-[0.8125rem] text-muted sm:inline">Way of Learning AI</span>}
+     </Link>
+   );
+diff --git a/src/components/landing/ThemePlan.tsx b/src/components/landing/ThemePlan.tsx
+index 2a7e30a..1b492c6 100644
+--- a/src/components/landing/ThemePlan.tsx
++++ b/src/components/landing/ThemePlan.tsx
+@@ -63,9 +63,9 @@ export function ThemePlan({ plan }: { plan: LandingPlan }) {
+             <p className="lede">Chacun a son guide, ses chapitres et ses cours. Tu en suis un seul, à ton niveau.</p>
+           </div>
+ 
+-          <div className="mb-5 flex gap-2 md:hidden" role="tablist" aria-label="Parcours">
++          <div className="mb-5 flex gap-2 md:hidden" role="group" aria-label="Parcours">
+             {TRACKS.map((t) => (
+-              <button key={t} role="tab" type="button" data-track={t} aria-selected={mobileTrack === t} aria-controls={`plan-${t}`} onClick={() => setMobileTrack(t)} className="plan-tab">
++              <button key={t} type="button" data-track={t} aria-pressed={mobileTrack === t} aria-controls={`plan-${t}`} onClick={() => setMobileTrack(t)} className="plan-tab">
+                 <Avatar track={t} size={28} decorative />
+                 {plan.tracks[t].name}
+               </button>
+diff --git a/src/components/landing/TokenDemo.tsx b/src/components/landing/TokenDemo.tsx
+index eef07d8..66a918f 100644
+--- a/src/components/landing/TokenDemo.tsx
++++ b/src/components/landing/TokenDemo.tsx
+@@ -1,7 +1,7 @@
+ "use client";
+ 
+ import { useState } from "react";
+-import { TOKEN_CANDIDATES as CANDIDATES, TOKEN_START as START, pickCandidate } from "@/lib/tokenDemo";
++import { TOKEN_CANDIDATES as CANDIDATES, TOKEN_START as START, pickCandidateExcept } from "@/lib/tokenDemo";
+ 
+ export function TokenDemo() {
+   // starts on the most likely word so the section is complete before any click, then each click draws again
+@@ -33,7 +33,7 @@ export function TokenDemo() {
+           type="button"
+           className="btn btn-primary"
+           onClick={() => {
+-            setChosen(pickCandidate(Math.random() * 100));
++            setChosen(pickCandidateExcept(Math.random() * 100, chosen));
+             setRolls((n) => n + 1);
+           }}
+         >
+diff --git a/src/lib/tokenDemo.test.ts b/src/lib/tokenDemo.test.ts
+index 4918c56..958dc10 100644
+--- a/src/lib/tokenDemo.test.ts
++++ b/src/lib/tokenDemo.test.ts
+@@ -1,12 +1,21 @@
+ import { describe, expect, it } from "vitest";
+-import { TOKEN_CANDIDATES, pickCandidate } from "./tokenDemo";
++import { TOKEN_CANDIDATES, pickCandidate, pickCandidateExcept } from "./tokenDemo";
+ 
+ describe("token demo", () => {
+   it("probabilities add up to 100", () => {
+     expect(TOKEN_CANDIDATES.reduce((s, c) => s + c.p, 0)).toBe(100);
+   });
+ 
+-  it("draws each word over its own slice of [0, 100)", () => {
++  it("every candidate makes a sentence that reads on its own", () => {
++    for (const c of TOKEN_CANDIDATES) {
++      expect(c.word.length).toBeGreaterThan(2);
++      expect(c.tail.endsWith(".")).toBe(true);
++    }
++  });
++});
++
++describe("pickCandidate", () => {
++  it("uses the weighted ranges", () => {
+     expect(pickCandidate(0)).toBe(0);
+     expect(pickCandidate(39.9)).toBe(0);
+     expect(pickCandidate(40)).toBe(1);
+@@ -14,11 +23,20 @@ describe("token demo", () => {
+     expect(pickCandidate(62)).toBe(2);
+     expect(pickCandidate(99.9)).toBe(4);
+   });
++});
+ 
+-  it("every candidate makes a sentence that reads on its own", () => {
+-    for (const c of TOKEN_CANDIDATES) {
+-      expect(c.word.length).toBeGreaterThan(2);
+-      expect(c.tail.endsWith(".")).toBe(true);
++describe("pickCandidateExcept", () => {
++  it("never returns the excluded candidate across the whole range", () => {
++    for (let excluded = 0; excluded < TOKEN_CANDIDATES.length; excluded++) {
++      for (let r = 0; r <= 100; r += 0.5) {
++        expect(pickCandidateExcept(r, excluded)).not.toBe(excluded);
++      }
+     }
+   });
++
++  it("keeps the remaining weights ordered", () => {
++    expect(pickCandidateExcept(0, 0)).toBe(1);
++    expect(pickCandidateExcept(100, 0)).toBe(4);
++    expect(pickCandidateExcept(0, 4)).toBe(0);
++  });
+ });
+diff --git a/src/lib/tokenDemo.ts b/src/lib/tokenDemo.ts
+index ce5b7f1..c793565 100644
+--- a/src/lib/tokenDemo.ts
++++ b/src/lib/tokenDemo.ts
+@@ -15,5 +15,18 @@ export function pickCandidate(r: number): number {
+     acc += TOKEN_CANDIDATES[i].p;
+     if (r < acc) return i;
+   }
+-  return 0;
++  return TOKEN_CANDIDATES.length - 1;
++}
++
++/** Weighted draw among all candidates except `excluded`, so "Relancer" never repeats the current word. */
++export function pickCandidateExcept(r: number, excluded: number): number {
++  const choices = TOKEN_CANDIDATES.map((candidate, index) => ({ candidate, index })).filter(({ index }) => index !== excluded);
++  const total = choices.reduce((sum, { candidate }) => sum + candidate.p, 0);
++  const target = (Math.min(Math.max(r, 0), 100) / 100) * total;
++  let acc = 0;
++  for (const { candidate, index } of choices) {
++    acc += candidate.p;
++    if (target < acc) return index;
++  }
++  return choices[choices.length - 1]?.index ?? 0;
+ }
+diff --git a/src/proxy.ts b/src/proxy.ts
+index 7e6bda8..17961f6 100644
+--- a/src/proxy.ts
++++ b/src/proxy.ts
+@@ -7,29 +7,39 @@ const PROTECTED = ["/learn", "/map", "/jeu", "/courses", "/lesson", "/review", "
+ /** Refreshes the Supabase session cookie and keeps signed-out visitors out of the app. */
+ export async function proxy(request: NextRequest) {
+   let response = NextResponse.next({ request });
+-  const supabase = createServerClient(
+-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+-    supabasePublishableKey(),
+-    {
+-      cookies: {
+-        getAll: () => request.cookies.getAll(),
+-        setAll(toSet) {
+-          toSet.forEach(({ name, value }) => request.cookies.set(name, value));
+-          response = NextResponse.next({ request });
+-          toSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
++  let signedIn = false;
++  let authUnavailable = false;
++
++  try {
++    const supabase = createServerClient(
++      process.env.NEXT_PUBLIC_SUPABASE_URL!,
++      supabasePublishableKey(),
++      {
++        cookies: {
++          getAll: () => request.cookies.getAll(),
++          setAll(toSet) {
++            toSet.forEach(({ name, value }) => request.cookies.set(name, value));
++            response = NextResponse.next({ request });
++            toSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
++          },
+         },
+       },
+-    },
+-  );
++    );
++
++    const { data } = await supabase.auth.getClaims();
++    signedIn = Boolean(data?.claims);
++  } catch {
++    // A missing env var or an unreachable auth service must not 500 public pages.
++    authUnavailable = true;
++  }
+ 
+-  const { data } = await supabase.auth.getClaims();
+-  const signedIn = Boolean(data?.claims);
+   const path = request.nextUrl.pathname;
+ 
+   if (!signedIn && PROTECTED.some((p) => path === p || path.startsWith(`${p}/`))) {
+     const url = request.nextUrl.clone();
+     url.pathname = "/login";
+     url.searchParams.set("next", path);
++    if (authUnavailable) url.searchParams.set("error", "service");
+     return NextResponse.redirect(url);
+   }
+   if (signedIn && (path === "/login" || path === "/signup")) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TOKEN_CANDIDATES as CANDIDATES, TOKEN_START as START, pickCandidate } from "@/lib/tokenDemo";
+import { TOKEN_CANDIDATES as CANDIDATES, TOKEN_START as START, pickCandidateExcept } from "@/lib/tokenDemo";
 
 export function TokenDemo() {
   // starts on the most likely word so the section is complete before any click, then each click draws again
@@ -33,7 +33,7 @@ export function TokenDemo() {
           type="button"
           className="btn btn-primary"
           onClick={() => {
-            setChosen(pickCandidate(Math.random() * 100));
+            setChosen(pickCandidateExcept(Math.random() * 100, chosen));
             setRolls((n) => n + 1);
           }}
         >

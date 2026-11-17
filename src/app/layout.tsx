@@ -6,15 +6,18 @@ const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "Gusgus — Way of Learning AI", template: "%s · Gusgus" },
+  metadataBase: new URL(process.env.SITE_URL ?? "https://duolinguo-ia.onrender.com"),
+  title: { default: "Gusgus.ia — Way of Learning AI", template: "%s · Gusgus.ia" },
   description: "Apprends l'IA en français : des cours à pratiquer, des quiz qui t'expliquent tes erreurs et des révisions qui reviennent avant que tu oublies.",
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    siteName: "Gusgus",
-    title: "Gusgus — Apprends l'IA comme une langue",
+    siteName: "Gusgus.ia",
+    title: "Gusgus.ia — Apprends l'IA comme une langue",
     description: "Un test de niveau en 10 questions, des cours à pratiquer, des quiz qui expliquent, des révisions qui reviennent avant l'oubli.",
   },
+  // the image itself comes from src/app/opengraph-image.tsx, which feeds both og:image and twitter:image
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = { themeColor: "#f1f1ee" };

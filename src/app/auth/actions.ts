@@ -71,3 +71,38 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (hasSession) redirect("/learn");
   return { error: null, sentTo: email, values };
 }
+
+/** Always answers the same thing, whether or not the address has an account. */
+export async function requestPasswordReset(_: AuthState, form: FormData): Promise<AuthState> {
+  const email = String(form.get("email") ?? "").trim();
+  if (!email) return { error: "Indique l'adresse email de ton compte.", values: { email } };
+
+  const h = await headers();
+  const origin = process.env.SITE_URL?.replace(/\/$/, "") || (h.get("origin") ?? `https://${h.get("host")}`);
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${origin}/auth/callback?next=/login/reset`,
+    });
+    if (error) return { error: authErrorMessage(error.message), values: { email } };
+  } catch (e) {
+    return { error: authErrorMessage(e instanceof Error ? e.message : "network"), values: { email } };
+  }
+  return { error: null, sentTo: email, values: { email } };
+}
+
+/** Reached from the recovery link: the callback exchanged the code for a short-lived session. */
+export async function updatePassword(_: AuthState, form: FormData): Promise<AuthState> {
+  const password = String(form.get("password") ?? "");
+  const confirm = String(form.get("confirm") ?? "");
+  if (password.length < 8) return { error: "Mot de passe trop court : 8 caractères minimum." };
+  if (password !== confirm) return { error: "Les deux mots de passe ne sont pas identiques." };
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { error: authErrorMessage(error.message) };
+  } catch (e) {
+    return { error: authErrorMessage(e instanceof Error ? e.message : "network") };
+  }
+  redirect("/learn");
+}

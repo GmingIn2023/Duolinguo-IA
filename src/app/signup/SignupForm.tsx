@@ -57,15 +57,15 @@ export function SignupForm() {
         <input type="hidden" name="track" value={track ?? ""} />
         <label className="grid gap-1.5">
           <span className="text-sm font-semibold">Prénom</span>
-          <input name="name" required autoComplete="given-name" className="field" placeholder="Camille" defaultValue={state.values?.name} />
+          <input name="name" required autoComplete="given-name" className="field" placeholder="Camille" defaultValue={state.values?.name} aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
         </label>
         <label className="grid gap-1.5">
           <span className="text-sm font-semibold">Email</span>
-          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" placeholder="camille@exemple.fr" defaultValue={state.values?.email} />
+          <input name="email" type="email" required autoComplete="email" spellCheck={false} className="field" placeholder="camille@exemple.fr" defaultValue={state.values?.email} aria-invalid={Boolean(state.error) || undefined} aria-describedby={state.error ? "auth-error" : undefined} />
         </label>
         <label className="grid gap-1.5">
           <span className="text-sm font-semibold">Mot de passe</span>
-          <input name="password" type="password" required autoComplete="new-password" className="field" aria-describedby="pw-hint" />
+          <input name="password" type="password" required autoComplete="new-password" className="field" aria-describedby={state.error ? "pw-hint auth-error" : "pw-hint"} aria-invalid={Boolean(state.error) || undefined} />
           <span id="pw-hint" className="text-sm text-muted">8 caractères minimum.</span>
         </label>
         <FormError message={state.error} />

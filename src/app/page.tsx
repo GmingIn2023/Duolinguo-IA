@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Caveat } from "next/font/google";
 import { HeroScene } from "@/components/landing/HeroScene";
@@ -20,6 +21,9 @@ import "./landing-close.css";
 const hand = Caveat({ subsets: ["latin"], weight: "600", variable: "--font-hand", display: "swap" });
 
 const TOOLS = ["ChatGPT", "Claude", "Gemini", "DeepSeek", "Perplexity"];
+
+// only the home page is the canonical root; the app pages must not inherit it
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const viewer = await getViewer().catch(() => null);
@@ -146,7 +150,7 @@ export default async function Home() {
             <Link href={viewer ? cta.href : "#depart"} className="btn btn-lg bg-bird text-ink">{viewer ? cta.label : "Faire le test"}</Link>
           </div>
           <div className="mt-12"><SleepingFooter /></div>
-          <p className="display mt-6 overflow-hidden pb-[0.12em] text-[clamp(4.5rem,22vw,19rem)] leading-[0.85] tracking-[-0.06em]" aria-hidden>gusgus</p>
+          <p className="display mt-6 overflow-hidden pb-[0.12em] text-[clamp(4.5rem,22vw,19rem)] leading-[0.85] tracking-[-0.06em]" aria-hidden>gusgus<span className="text-[0.4em] tracking-[-0.03em]">.ia</span></p>
           <p className="mt-4 text-paper/80">Apprendre l&apos;IA en français</p>
         </div>
       </footer>

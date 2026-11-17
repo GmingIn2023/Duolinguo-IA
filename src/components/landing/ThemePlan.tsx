@@ -63,9 +63,9 @@ export function ThemePlan({ plan }: { plan: LandingPlan }) {
             <p className="lede">Chacun a son guide, ses chapitres et ses cours. Tu en suis un seul, à ton niveau.</p>
           </div>
 
-          <div className="mb-5 flex gap-2 md:hidden" role="tablist" aria-label="Parcours">
+          <div className="mb-5 flex gap-2 md:hidden" role="group" aria-label="Parcours">
             {TRACKS.map((t) => (
-              <button key={t} role="tab" type="button" data-track={t} aria-selected={mobileTrack === t} aria-controls={`plan-${t}`} onClick={() => setMobileTrack(t)} className="plan-tab">
+              <button key={t} type="button" data-track={t} aria-pressed={mobileTrack === t} aria-controls={`plan-${t}`} onClick={() => setMobileTrack(t)} className="plan-tab">
                 <Avatar track={t} size={28} decorative />
                 {plan.tracks[t].name}
               </button>
