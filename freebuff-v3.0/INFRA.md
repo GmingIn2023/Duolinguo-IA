@@ -41,8 +41,23 @@ replaces it with the **Site URL** otherwise. Checked with `curl -D -` against `/
 - `http://localhost:3000/auth/callback?next=/login/reset` →
   `Location: https://duolinguo-ia.onrender.com?code=…`.
 
-Production needs no change. For local development, add `http://localhost:3000/**` under
-Authentication → URL Configuration → Redirect URLs.
+Production needed no change. For local development, `http://localhost:3000/` and
+`http://localhost:3000/**` were added through the Management API. The list now reads:
+
+```
+https://duolinguo-ia.vercel.app,https://duolinguo-ia.vercel.app/auth/callback,
+https://duolinguo-ia.onrender.com/,https://duolinguo-ia.onrender.com/**,
+http://localhost:3000/,http://localhost:3000/**
+```
+
+Re-checked after the write with the same `curl -D -`: the localhost request now returns
+`Location: http://localhost:3000/login/reset#error=otp_expired&…` — the origin is kept instead of
+being replaced by the Site URL.
+
+One side note on that write: the management API echoed `null` for a handful of fields that sat at
+their defaults (`rate_limit_email_sent`, the captcha and SMS providers, the two session
+timeboxes). Auth still reports `ACTIVE_HEALTHY` and the flows that matter are unaffected; if those
+limits are ever tightened, set them again from the dashboard rather than trusting the echo.
 
 Writes go through the admin client and are always scoped to the signed-in user's id; learners can
 only read their own rows. That design predates this work and was not changed.
@@ -54,8 +69,10 @@ only read their own rows. That design predates this work and was not changed.
 | URL | `https://duolinguo-ia.onrender.com` |
 | Service id | `srv-dbcfhh9kjs5s73a7s0ag` |
 | Owner | `tea-dbc5nut9fdbs73bvdal0` |
-| Live commit | `3e80cba` |
-| Latest deploy | `dep-dbhtclm0tbcc73ahg71g` |
+| Live commit | `74743f0` |
+| Latest deploy | `dep-dbud40qvcj2c738jjl70` |
+| Auto-deploy | on, trigger `commit`, branch `main` |
+| Plan / region | free / frankfurt |
 
 Environment variables present (values not read): `NEXT_PUBLIC_SUPABASE_URL`,
 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SITE_URL`.

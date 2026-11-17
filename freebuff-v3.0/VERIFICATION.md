@@ -66,7 +66,7 @@ These were confirmed against the deployed services, not locally:
   answering, not timing out.
 - The live login page now renders **"Email ou mot de passe incorrect. Vérifie-les, ou crée un
   compte."** for that case, where it previously surfaced a transport error.
-- Render service is live at commit `3e80cba`. `AuthRetryableFetchError: fetch failed` entries in
+- Render service is live at commit `74743f0`. `AuthRetryableFetchError: fetch failed` entries in
   the log predate the restart and have not recurred.
 - All 7 migrations are applied remotely; `award_xp` has its 7-argument signature and
   `complete_lesson` exists.
@@ -92,7 +92,8 @@ Supabase side: `last_sign_in_at` moved to `21:28:57` (the code exchange) and `up
 
 **Two deviations, both environmental, neither in the app code:**
 
-1. The emailed link's `redirect_to` came back as the bare `https://duolinguo-ia.onrender.com`
+1. *(since fixed, see below)* The emailed link's `redirect_to` came back as the bare
+   `https://duolinguo-ia.onrender.com`
    instead of the localhost callback. GoTrue substitutes the project **Site URL** when the
    requested redirect is not allow-listed, and `http://localhost:3000/**` is not. Confirmed with
    `curl -D -`: the localhost request returned
@@ -101,24 +102,45 @@ Supabase side: `last_sign_in_at` moved to `21:28:57` (the code exchange) and `up
    `http://localhost:3000/**` in Authentication → URL Configuration → Redirect URLs. Because of
    this, the `code` was handed to the local callback directly, so the Supabase → app redirect hop
    itself was observed only against the production URL.
+
+   **Fixed after the run:** `http://localhost:3000/` and `http://localhost:3000/**` were added to
+   the allow-list. The same probe now answers
+   `303 Location: http://localhost:3000/login/reset#error=otp_expired&…`, i.e. the localhost origin
+   survives. The walk above still stands as it happened; a second walk would use the real redirect.
 2. The final submit was fired with `form.requestSubmit()`. Two real clicks and an Enter keypress
    on "Enregistrer" produced no POST in this automation session, while the identical button on
    `/login/forgot` submitted normally. A DOM probe showed the button visible, enabled,
    `type="submit"`, inside the form, with nothing overlapping it. The server action path is
    proven; the physical click on that one button is not.
 
+## Production, after deploy
+
+`74743f0` was pushed to `main`; Render is set to auto-deploy on commit and built
+`dep-dbud40qvcj2c738jjl70`. Checks against `https://duolinguo-ia.onrender.com`:
+
+| Check | Result |
+|-------|--------|
+| `/login/forgot` exists in prod | `404` while the new build was rolling, then **200** — the new route is served |
+| `strict-transport-security` | `max-age=63072000; includeSubDomains` |
+| `x-content-type-options` | `nosniff` |
+| `x-frame-options` | `DENY` |
+| `referrer-policy` | `strict-origin-when-cross-origin` |
+| `permissions-policy` | `camera=(), microphone=(), geolocation=(), payment=()` |
+| `x-powered-by` | absent |
+| `content-security-policy` | absent by design (`REMAINING.md` item 5) |
+
+So `next.config.ts` is not just accepted by the build, it is served by the running app through the
+Cloudflare edge in front of Render.
+
 ## What was NOT verified
 
 Being explicit, because these are the gaps a reviewer should close first:
 
-1. **The security headers were not observed on a live response.** They are configured in
-   `next.config.ts` and the build accepts the config; a `curl -I` against Render after deploy is
-   the check that closes this.
+1. **A reset walked from the production URL.** The routes are live and the origin is allow-listed,
+   but the walk needs an inbox, so it was not repeated from `onrender.com`.
 2. **`npm run content:check`** (the 47-lesson sweep, ~5 min) was not re-run, because no content
    file was touched by this work. It passed earlier in the audit.
-3. **The production redirect hop.** The reset was completed locally by handing the emailed `code`
-   to our own callback; the hop through Render happens only once the new routes are deployed.
-4. **The OG card by eye.** Its rendering is proven by the build and its tags by the built HTML,
+3. **The OG card by eye.** Its rendering is proven by the build and its tags by the built HTML,
    not by a visual check.
 
 ## Reproducing

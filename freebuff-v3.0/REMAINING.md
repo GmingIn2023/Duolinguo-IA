@@ -21,16 +21,21 @@ There is no legal notice, no privacy page, and no cookie statement. These cannot
 need a legal entity name, an address, a contact email and a hosting statement. Blocked on the
 owner, not on engineering.
 
-## 4. The reset flow — verified; two environment gaps left
+## 4. The reset flow — verified end to end; one hop left
 
-The reset flow now has a real run behind it (see `VERIFICATION.md`): request, email, code exchange,
-new password, `/learn` signed in. Two things remain, neither of them app code:
+The reset flow has a real run behind it (see `VERIFICATION.md`): request, email, code exchange,
+new password, `/learn` signed in. One thing remains, and no longer two:
 
-- **Local development needs `http://localhost:3000/**` in Supabase → Authentication → URL
-  Configuration → Redirect URLs.** Without it GoTrue rewrites the callback to the production Site
-  URL, which is correct in production and useless locally.
-- **The production redirect hop is still unobserved**, because the new routes are not deployed yet.
-  The first deploy closes it.
+- ~~**Local development needs `http://localhost:3000/**` in the redirect allow-list.**~~ **Done.**
+  The list is now `https://duolinguo-ia.vercel.app`, `…/auth/callback`,
+  `https://duolinguo-ia.onrender.com/`, `https://duolinguo-ia.onrender.com/**`,
+  `http://localhost:3000/`, `http://localhost:3000/**`. Re-checked with `curl -D -`: the same
+  `/auth/v1/verify` call that used to come back as the bare site URL now returns
+  `Location: http://localhost:3000/login/reset#error=…`. The localhost origin is kept.
+- **One reset walked from the production URL is still missing.** The routes are deployed
+  (`/login/forgot` answers 200 on Render), but walking it needs an inbox, so it was not done from
+  `https://duolinguo-ia.onrender.com`. Nothing suggests it would fail: the same code path, the same
+  Supabase project, and the `onrender.com` origin is allow-listed.
 
 Signup with email confirmation, ordinary login and the authenticated app were already exercised
 earlier; `/learn` renders a real account with XP, streak and review counts.
@@ -51,23 +56,25 @@ not the file, and that was outside what could be done safely here.
 
 ## 7. Verification gaps
 
-Live security headers (needs a deploy), the production redirect hop, and a re-run of
-`content:check` (no content file changed). Details in `VERIFICATION.md`. None of these are
-failures; they are checks that have not happened yet.
+The live security headers are no longer a gap: `curl -D -` against the Render origin returns HSTS,
+`nosniff`, `X-Frame-Options: DENY`, the referrer policy and the permissions policy. Still missing:
+one reset walked from the production URL, and a re-run of `content:check` (no content file
+changed). Details in `VERIFICATION.md`. Neither is a known failure; they are checks that have not
+happened yet.
 
 ## 8. Repository state
 
-- The work is committed locally as `37cd605` (`wip: sauvegarde du travail en cours sur la landing
-  et l'authentification`), 21 files against `3e80cba`.
-- Nothing was pushed. Nothing was deployed.
-- That commit also carries the `.claude/skills/**` deletions and the new skill folders. They
+- `37cd605` (`wip: sauvegarde du travail en cours sur la landing et l'authentification`, 21 files
+  against `3e80cba`) then `74743f0` (`docs(v3.0): …`, this folder and the regenerated patch) are on
+  `main` and on `origin/main`.
+- Render deployed `74743f0` automatically (`autoDeploy: commit` on `main`).
+- The first commit also carries the `.claude/skills/**` deletions and the new skill folders. They
   predate this work; they went in with it because the commit was made from the whole worktree.
-- `changes.patch` was regenerated against `3e80cba` after that commit;
+- `changes.patch` was regenerated against `3e80cba`;
   `git apply --check --reverse` exits 0 on the current tree.
 
 ## Suggested order for Claude
 
 1. Read `BEFORE-AFTER.md`, then `git apply --check --reverse freebuff-v3.0/changes.patch`.
 2. Decide on CSP with the Supabase URL in hand (item 5).
-3. Deploy, then `curl -I` the origin for the headers and walk one reset from the production URL
-   (item 4).
+3. Walk one reset from `https://duolinguo-ia.onrender.com/login/forgot` with a real inbox (item 4).

@@ -17,7 +17,7 @@ what it looked like before, what it looks like now, and what is still open.
 - No domain or DNS change. `Gusgus.ia` is a wordmark and metadata string only.
 - No pricing, no payments.
 - **P1.1 was skipped** on the user's instruction ("skip the p1.1 its bad").
-- Nothing was committed, pushed or deployed. The worktree is the deliverable.
+- Work is committed and pushed; production is built from `main`. See *Status at hand-off*.
 
 ## What changed, in one line each
 
@@ -43,10 +43,16 @@ what it looked like before, what it looks like now, and what is still open.
 
 ## Status at hand-off
 
-- Committed locally as `37cd605`, 21 files against `3e80cba`. Nothing was pushed. Nothing was
-  deployed.
+- Committed and pushed: `37cd605` (code, 21 files against `3e80cba`), then `74743f0` (this folder
+  and the regenerated patch). `main` is level with `origin/main`.
 - Typecheck: pass. Lint: pass. Tests: 289 passed, 8 skipped. Production build: pass.
 - Password reset: exercised end to end on a real inbox, landing on `/learn` signed in.
 - A second read of the diff removed four redundant pieces; see the review pass at the end of
   `BEFORE-AFTER.md`.
-- Ready for review. The only deploy-blocking unknown left is the live security-header check.
+- Deployed by Render from `74743f0`. `/login/forgot` answers **200** on
+  `https://duolinguo-ia.onrender.com`, and the security headers are served — HSTS, `nosniff`,
+  `X-Frame-Options: DENY`, referrer and permissions policies. CSP is still the open item.
+- `http://localhost:3000/**` was added to the Supabase redirect allow-list, so a reset mail opened
+  locally now returns to the dev server instead of being rewritten to the site URL.
+- Still open: the Content-Security-Policy (`REMAINING.md` item 5) and one reset walked from the
+  production URL.
