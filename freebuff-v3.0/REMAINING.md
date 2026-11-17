@@ -65,9 +65,10 @@ happened yet.
 ## 8. Repository state
 
 - `37cd605` (`wip: sauvegarde du travail en cours sur la landing et l'authentification`, 21 files
-  against `3e80cba`) then `74743f0` (`docs(v3.0): …`, this folder and the regenerated patch) are on
-  `main` and on `origin/main`.
-- Render deployed `74743f0` automatically (`autoDeploy: commit` on `main`).
+  against `3e80cba`), then `74743f0` and `064d69f` (`docs(v3.0): …`, this folder and the patch) are
+  on `main` and on `origin/main`.
+- Render deploys `main` automatically (`autoDeploy: commit`), so every docs commit rebuilds the
+  same app; the first live build of this code was `dep-dbud5knb9u1s738eidog` at 22:20 UTC.
 - The first commit also carries the `.claude/skills/**` deletions and the new skill folders. They
   predate this work; they went in with it because the commit was made from the whole worktree.
 - `changes.patch` was regenerated against `3e80cba`;

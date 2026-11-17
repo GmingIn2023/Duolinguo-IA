@@ -69,8 +69,8 @@ only read their own rows. That design predates this work and was not changed.
 | URL | `https://duolinguo-ia.onrender.com` |
 | Service id | `srv-dbcfhh9kjs5s73a7s0ag` |
 | Owner | `tea-dbc5nut9fdbs73bvdal0` |
-| Live commit | `74743f0` |
-| Latest deploy | `dep-dbud40qvcj2c738jjl70` |
+| Live commit | head of `main` (code from `37cd605`; the docs commits after it rebuild the same app) |
+| First live build of that code | `dep-dbud5knb9u1s738eidog`, live 2026-11-17 22:20 UTC |
 | Auto-deploy | on, trigger `commit`, branch `main` |
 | Plan / region | free / frankfurt |
 

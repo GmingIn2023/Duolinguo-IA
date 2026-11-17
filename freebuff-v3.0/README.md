@@ -49,7 +49,7 @@ what it looked like before, what it looks like now, and what is still open.
 - Password reset: exercised end to end on a real inbox, landing on `/learn` signed in.
 - A second read of the diff removed four redundant pieces; see the review pass at the end of
   `BEFORE-AFTER.md`.
-- Deployed by Render from `74743f0`. `/login/forgot` answers **200** on
+- Deployed by Render from `main` (first live build `dep-dbud5knb9u1s738eidog`). `/login/forgot` answers **200** on
   `https://duolinguo-ia.onrender.com`, and the security headers are served — HSTS, `nosniff`,
   `X-Frame-Options: DENY`, referrer and permissions policies. CSP is still the open item.
 - `http://localhost:3000/**` was added to the Supabase redirect allow-list, so a reset mail opened
