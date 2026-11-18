@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { publicOrigin } from "@/lib/publicOrigin";
 import { safeNext } from "@/lib/safeNext";
 
 /**
  * Landing point of the links sent by email.
  *
- * The templates carry `{{ .TokenHash }}` instead of `{{ .ConfirmationURL }}`, so the link is
+ * The template carries `{{ .TokenHash }}` instead of `{{ .ConfirmationURL }}`, so the link is
  * self-contained: it is verified here, on whatever device opened it. Nothing depends on the
  * browser that asked for the email, which is what broke the reset on a phone.
  *
@@ -23,7 +24,8 @@ function go(url: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
+  const origin = publicOrigin(request);
   const next = safeNext(searchParams.get("next"));
   const type = searchParams.get("type") ?? "";
   const tokenHash = searchParams.get("token_hash");
