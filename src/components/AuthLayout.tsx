@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Wordmark } from "@/components/Wordmark";
+import { legalLinks, legalReady } from "@/lib/legal";
 
 export function AuthLayout({ title, children, aside, track }: { title: string; children: React.ReactNode; aside?: React.ReactNode; track?: string }) {
   return (
@@ -9,6 +11,15 @@ export function AuthLayout({ title, children, aside, track }: { title: string; c
           <h1 className="display display-l">{title}</h1>
           {children}
         </main>
+        {legalReady && (
+          <nav aria-label="Informations légales" className="mt-auto flex flex-wrap gap-x-4 gap-y-1 pt-6 text-xs text-muted">
+            {legalLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="underline">
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
       </div>
       <div className="hidden bg-accent lg:block" style={{ background: track ? undefined : "var(--ink)" }}>
         {aside}

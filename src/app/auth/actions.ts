@@ -6,6 +6,7 @@ import { isTrackId } from "@/content";
 import { authErrorMessage } from "@/lib/authErrors";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safeNext";
+import { clientIp, limitFactor, rateLimit, throttleMessage } from "@/lib/rateLimit";
 import { gradePlacement, isGoal, legacyLevel } from "@/lib/placement";
 
 export type AuthState = { error: string | null; sentTo?: string; values?: { name?: string; email?: string } };
@@ -15,6 +16,9 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   const email = String(form.get("email") ?? "").trim();
   const password = String(form.get("password") ?? "");
   if (!email || !password) return { error: "Renseigne ton email et ton mot de passe.", values: { email } };
+  const h = await headers();
+  const gate = rateLimit(`login:${clientIp(h)}`, 10 * limitFactor(), 10 * 60_000);
+  if (!gate.ok) return { error: throttleMessage(gate.retryAfterSeconds, "login"), values: { email } };
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -34,6 +38,10 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
   if (!email) return { error: "Indique ton adresse email.", values };
   if (password.length < 8) return { error: "Mot de passe trop court : 8 caractères minimum.", values };
 
+  const h = await headers();
+  const gate = rateLimit(`signup:${clientIp(h)}`, 5 * limitFactor(), 60 * 60_000);
+  if (!gate.ok) return { error: throttleMessage(gate.retryAfterSeconds, "signup"), values };
+
   const track = form.get("track");
   // the placement answers are re-graded here, for the track they were a test of: a score sent by the browser is never trusted
   let level10: number | null = null;
@@ -48,7 +56,6 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
     }
   } catch {}
 
-  const h = await headers();
   // the confirmation link must point back to this site: prefer the configured URL over request
   // headers (Supabase's redirect allow-list is the second guard)
   const origin = process.env.SITE_URL?.replace(/\/$/, "") || (h.get("origin") ?? `https://${h.get("host")}`);
@@ -78,6 +85,8 @@ export async function requestPasswordReset(_: AuthState, form: FormData): Promis
   if (!email) return { error: "Indique l'adresse email de ton compte.", values: { email } };
 
   const h = await headers();
+  const gate = rateLimit(`forgot:${clientIp(h)}`, 5 * limitFactor(), 15 * 60_000);
+  if (!gate.ok) return { error: throttleMessage(gate.retryAfterSeconds, "forgot"), values: { email } };
   const origin = process.env.SITE_URL?.replace(/\/$/, "") || (h.get("origin") ?? `https://${h.get("host")}`);
   try {
     const supabase = await createClient();

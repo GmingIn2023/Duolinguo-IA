@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { legalLinks, legalReady } from "@/lib/legal";
 import { Caveat } from "next/font/google";
 import { HeroScene } from "@/components/landing/HeroScene";
 import { HowItWorks } from "@/components/landing/HowItWorks";
@@ -152,6 +153,15 @@ export default async function Home() {
           <div className="mt-12"><SleepingFooter /></div>
           <p className="display mt-6 overflow-hidden pb-[0.12em] text-[clamp(4.5rem,22vw,19rem)] leading-[0.85] tracking-[-0.06em]" aria-hidden>gusgus<span className="text-[0.4em] tracking-[-0.03em]">.ia</span></p>
           <p className="mt-4 text-paper/80">Apprendre l&apos;IA en français</p>
+          {legalReady && (
+            <nav aria-label="Informations légales" className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-paper/70">
+              {legalLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="underline hover:text-paper">
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
         </div>
       </footer>
     </div>
