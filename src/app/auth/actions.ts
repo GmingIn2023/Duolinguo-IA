@@ -6,7 +6,7 @@ import { isTrackId } from "@/content";
 import { authErrorMessage } from "@/lib/authErrors";
 import { createClient } from "@/lib/supabase/server";
 import { safeNext } from "@/lib/safeNext";
-import { clientIp, limitFactor, rateLimit, throttleMessage } from "@/lib/rateLimit";
+import { clientIp, limitFactor, rateLimit, rateLimitStatus, recordFailure, throttleMessage } from "@/lib/rateLimit";
 import { gradePlacement, isGoal, legacyLevel } from "@/lib/placement";
 
 export type AuthState = { error: string | null; sentTo?: string; values?: { name?: string; email?: string } };
@@ -17,12 +17,18 @@ export async function login(_: AuthState, form: FormData): Promise<AuthState> {
   const password = String(form.get("password") ?? "");
   if (!email || !password) return { error: "Renseigne ton email et ton mot de passe.", values: { email } };
   const h = await headers();
-  const gate = rateLimit(`login:${clientIp(h)}`, 10 * limitFactor(), 10 * 60_000);
+  // A shared address (school, office, household) must not be locked out by people who simply log in:
+  // only a wrong password counts against the window.
+  const failureKey = `login:${clientIp(h)}`;
+  const gate = rateLimitStatus(failureKey, 10 * limitFactor());
   if (!gate.ok) return { error: throttleMessage(gate.retryAfterSeconds, "login"), values: { email } };
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) return { error: authErrorMessage(error.message), values: { email } };
+    if (error) {
+      recordFailure(failureKey, 10 * 60_000);
+      return { error: authErrorMessage(error.message), values: { email } };
+    }
   } catch (e) {
     return { error: authErrorMessage(e instanceof Error ? e.message : "network"), values: { email } };
   }

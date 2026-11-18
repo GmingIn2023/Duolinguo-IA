@@ -27,6 +27,33 @@ export function rateLimit(key: string, limit: number, windowMs: number, now = Da
   return { ok: true };
 }
 
+/**
+ * Reads the counter without consuming anything.
+ *
+ * Login uses this instead of `rateLimit`: on a shared address (school, office, household), a
+ * hundred successful sign-ins must never count. Only the failures call `recordFailure`.
+ */
+export function rateLimitStatus(key: string, limit: number, now = Date.now()): RateLimitResult {
+  const bucket = buckets.get(key);
+  if (!bucket || bucket.resetAt <= now) return { ok: true };
+  if (bucket.count >= limit) {
+    return { ok: false, retryAfterSeconds: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)) };
+  }
+  return { ok: true };
+}
+
+/** Counts one failed attempt. Never call it after a success. */
+export function recordFailure(key: string, windowMs: number, now = Date.now()): void {
+  if (buckets.size >= MAX_BUCKETS) sweep(now);
+
+  const bucket = buckets.get(key);
+  if (!bucket || bucket.resetAt <= now) {
+    buckets.set(key, { count: 1, resetAt: now + windowMs });
+    return;
+  }
+  bucket.count += 1;
+}
+
 function sweep(now: number) {
   for (const [key, bucket] of buckets) {
     if (bucket.resetAt <= now) buckets.delete(key);

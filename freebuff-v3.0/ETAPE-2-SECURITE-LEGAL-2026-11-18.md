@@ -92,12 +92,14 @@ C'est un coût assumé : quelques millisecondes de rendu par page, en échange d
 
 | Action | Limite | Fenêtre | Clé |
 |---|---:|---|---|
-| Connexion | 10 | 10 minutes | IP |
+| Connexion | 10 **échecs** | 10 minutes | IP |
 | Inscription | 5 | 1 heure | IP |
 | Mot de passe oublié | 5 | 15 minutes | IP |
 | Rapports CSP | 120 | 1 minute | IP |
 
 En développement, les limites sont multipliées par 20 : tout le monde partage `localhost`, sinon l'auteur se bloquerait lui-même en testant.
+
+**Seuls les échecs comptent pour la connexion.** Une adresse partagée (école, bureau, foyer) peut enchaîner autant de connexions réussies qu'elle veut : le compteur ne bouge que sur un mot de passe refusé, et une panne réseau ne le fait pas bouger non plus. Un succès ne remet pas le compteur à zéro non plus, sinon il suffirait d'un compte valide pour réinitialiser la fenêtre.
 
 **Pourquoi par IP seulement.** Un compteur par compte permettrait à n'importe qui de bloquer le compte d'un autre en envoyant des tentatives (déni de service). L'IP est le bon grain : elle arrête le bourrage d'identifiants sans donner de levier sur un compte précis. Supabase applique déjà ses propres limites côté serveur.
 
@@ -277,7 +279,9 @@ Dans cet ordre, avec un critère d'acceptation à chaque fois.
 | `GET /api/csp-report` | `405` |
 | Pages légales | 16 marqueurs « à compléter », `noindex`, hors sitemap, liens masqués |
 
-Non testé : le déclenchement réel du throttle depuis l'interface (les server actions ne se rejouent pas facilement en ligne de commande ; la logique est couverte par les tests unitaires), et le comportement des rapports CSP dans un vrai navigateur sur plusieurs jours.
+Le throttle est déclenché pour de vrai depuis l'action serveur dans `src/app/auth/actions.test.ts` : dix échecs bloquent sans rappeler Supabase, cinq succès ne consomment pas le quota, 25 succès ne bloquent jamais, et quinze pannes réseau ne comptent pas.
+
+Non testé : le comportement des rapports CSP dans un vrai navigateur sur plusieurs jours.
 
 ---
 
