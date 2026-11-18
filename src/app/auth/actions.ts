@@ -59,7 +59,7 @@ export async function signup(_: AuthState, form: FormData): Promise<AuthState> {
       email,
       password,
       options: {
-        emailRedirectTo: `${origin}/auth/callback?next=/learn`,
+        emailRedirectTo: `${origin}/auth/confirm?next=/learn`,
         data: { display_name: name, track_id: isTrackId(track) ? track : null, placement_level: legacyLevel(level10 ?? 0), level10, onboarding },
       },
     });
@@ -82,7 +82,7 @@ export async function requestPasswordReset(_: AuthState, form: FormData): Promis
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/auth/callback?next=/login/reset`,
+      redirectTo: `${origin}/auth/confirm?next=/login/reset`,
     });
     if (error) return { error: authErrorMessage(error.message), values: { email } };
   } catch (e) {
@@ -91,7 +91,7 @@ export async function requestPasswordReset(_: AuthState, form: FormData): Promis
   return { error: null, sentTo: email, values: { email } };
 }
 
-/** Reached from the recovery link: the callback exchanged the code for a short-lived session. */
+/** Reached from the recovery link: /auth/confirm verified the token and opened a short-lived session. */
 export async function updatePassword(_: AuthState, form: FormData): Promise<AuthState> {
   const password = String(form.get("password") ?? "");
   const confirm = String(form.get("confirm") ?? "");
