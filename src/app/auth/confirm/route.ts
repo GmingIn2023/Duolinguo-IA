@@ -26,8 +26,9 @@ function go(url: string) {
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const origin = publicOrigin(request);
-  const next = safeNext(searchParams.get("next"));
   const type = searchParams.get("type") ?? "";
+  // a recovery link with no usable destination belongs on the password form, not on the path
+  const next = safeNext(searchParams.get("next"), type === "recovery" ? "/login/reset" : "/learn");
   const tokenHash = searchParams.get("token_hash");
   const code = searchParams.get("code");
 
